@@ -1,0 +1,20 @@
+package model.Item;
+
+import dto.GameActionContext;
+
+public class Viewfinder extends Item{
+
+    public Viewfinder(int typeItem, String name) {
+        super(typeItem, name);
+    }
+
+    //Chonj 1 nguoi ddeer solo
+    // chi huu dung trong 4 nguoi choi
+    @Override
+    public Object use(GameActionContext context) {
+        context.getRoom().setSoloMode(true, context.getArtor().getId(), context.getTarget().getId());
+        System.out.println("<UNK> <UNK> <UNK> <UNK> <UNK> <UNK> <UNK> <UNK> <UNK>");
+        System.out.println("You have activated solo mode between " + context.getArtor().getName() + " and " + context.getTarget().getName() + ".");
+        return "You have activated solo mode between " + context.getArtor().getName() + " and " + context.getTarget().getName() + ".";
+    }
+}
