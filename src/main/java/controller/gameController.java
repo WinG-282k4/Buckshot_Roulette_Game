@@ -8,8 +8,9 @@ import org.springframework.web.bind.annotation.PathVariable;
 import service.Service;
 
 @Controller
-public class controller {
+public class gameController {
 
+    //Handling logic game
     @Autowired
     private Service service;
 

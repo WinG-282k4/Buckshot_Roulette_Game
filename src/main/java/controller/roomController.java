@@ -3,34 +3,40 @@ package controller;
 import model.Player;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.bind.annotation.SessionAttribute;
+import org.springframework.messaging.handler.annotation.DestinationVariable;
+import org.springframework.messaging.handler.annotation.MessageMapping;
+import org.springframework.messaging.handler.annotation.SendTo;
+import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
+import org.springframework.stereotype.Controller;
 import service.Service;
 
-@RestController
-@RequestMapping("/room")
+import java.util.Objects;
+
+@Controller
 public class roomController {
 
     @Autowired
     private Service service;
 
-    @RequestMapping("join/{roomid}")
+    @MessageMapping("join/{roomid}")
+    @SendTo("/topic/room/{roomid}")
     public ResponseEntity<String> join(
-            @PathVariable String roomid,
-            @SessionAttribute("player") Player player
+            @DestinationVariable String roomid,
+            SimpMessageHeaderAccessor headerAccessor
     ) {
+        Player player = (Player) Objects.requireNonNull(headerAccessor.getSessionAttributes()).get("player");
         service.AddPlayerToRoom(Integer.parseInt(roomid),player);
-        return ResponseEntity.ok("Joined" + roomid);
+        return ResponseEntity.ok(player.getName() + "Joined" + roomid);
     }
 
-    @RequestMapping("leave/{roomid}")
+    @MessageMapping("leave/{roomid}")
+    @SendTo("/topic/room/{roomid}")
     public ResponseEntity<String> leave(
-            @PathVariable String roomid,
-            @SessionAttribute("player") Player player
+            @DestinationVariable String roomid,
+            SimpMessageHeaderAccessor headerAccessor
     ){
+        Player player = (Player) Objects.requireNonNull(headerAccessor.getSessionAttributes()).get("player");
         service.RemovePlayerFromRoom(Integer.parseInt(roomid),player);
-        return ResponseEntity.ok("Removed" + roomid);
+        return ResponseEntity.ok(player.getName() + "Removed" + roomid);
     }
 }

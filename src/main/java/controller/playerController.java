@@ -3,32 +3,32 @@ package controller;
 import jakarta.servlet.http.HttpSession;
 import model.Player;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.bind.annotation.SessionAttribute;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 import service.Service;
 
 @RestController
 @RequestMapping("/user")
-public class Playercontroller {
+public class playerController {
 
     @Autowired
     private Service service;
 
-    @RequestMapping("/creat/{name}")
-    public void CreatePlayer(
+    @PostMapping("/creat/{name}")
+    public ResponseEntity<Player> CreatePlayer(
             @PathVariable String name,
             HttpSession session
     ){
         Player newPlayer = new Player(name);
         session.setAttribute("player", newPlayer);
+        return ResponseEntity.ok(newPlayer);
     }
 
-    @RequestMapping("/off")
+    @PostMapping("/off")
     public void OffPlayer(
-            @SessionAttribute("player") Player player
+            HttpSession session
     ){
         //
+        session.removeAttribute("player");
     }
 }
