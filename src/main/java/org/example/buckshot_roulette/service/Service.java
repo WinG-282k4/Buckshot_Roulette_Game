@@ -158,7 +158,7 @@ public class Service {
 
         if(dmg > 0 && tempRoom.getIsSoloMode()){
             tempPlayerActor.setHealth(tempPlayerActor.getHealth() + 1);
-            tempRoom.setSoloMode(false);
+            tempRoom.setIsSoloMode(false);
             for(Player p : tempRoom.getPlayers()){
                 p.setIsSoloing(false);
             }

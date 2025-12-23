@@ -33,10 +33,6 @@ public class Room implements IRoomAction {
         this.SoloTurnOrder = new LinkedList<>();
     }
 
-    public void setSoloMode(Boolean soloMode) {
-        isSoloMode = soloMode;
-    }
-
     //Method
     @Override
     public void setSoloMode(boolean isSolo, String playerIdActor, String playerTargetId) {
