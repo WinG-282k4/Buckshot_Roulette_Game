@@ -1,6 +1,6 @@
-package model;
+package org.example.buckshot_roulette.model;
 
-import dto.IGunAction;
+import org.example.buckshot_roulette.dto.IGunAction;
 import lombok.Getter;
 import lombok.Setter;
 

@@ -1,6 +1,6 @@
-package model;
+package org.example.buckshot_roulette.model;
 
-import model.Item.*;
+import org.example.buckshot_roulette.model.Item.*;
 
 public class ItemFactory {
     public static final int ItemTypeCount = 7;

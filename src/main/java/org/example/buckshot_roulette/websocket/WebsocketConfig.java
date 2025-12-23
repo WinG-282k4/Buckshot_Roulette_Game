@@ -1,6 +1,6 @@
-package websocket;
+package org.example.buckshot_roulette.websocket;
 
-import Principal.MyHandshakeHandler;
+import org.example.buckshot_roulette.Principal.MyHandshakeHandler;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.messaging.simp.config.MessageBrokerRegistry;
 import org.springframework.web.socket.config.annotation.EnableWebSocketMessageBroker;
@@ -18,6 +18,7 @@ public class WebsocketConfig implements WebSocketMessageBrokerConfigurer {
         registry.addEndpoint("/ws-game")
                 .setHandshakeHandler(new MyHandshakeHandler())
                 .addInterceptors(new HttpSessionHandshakeInterceptor())
+                .setAllowedOriginPatterns("*")
                 .withSockJS();
     }
 
@@ -25,5 +26,6 @@ public class WebsocketConfig implements WebSocketMessageBrokerConfigurer {
     public void configureMessageBroker(MessageBrokerRegistry registry){
         registry.setApplicationDestinationPrefixes("/app");
         registry.enableSimpleBroker("/topic");
+        registry.setUserDestinationPrefix("/user");
     }
 }

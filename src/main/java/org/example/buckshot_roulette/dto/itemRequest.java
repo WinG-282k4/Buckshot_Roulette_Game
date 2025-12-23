@@ -1,4 +1,4 @@
-package dto;
+package org.example.buckshot_roulette.dto;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -7,5 +7,5 @@ import lombok.Setter;
 @Setter
 public class itemRequest {
     private int typeitem;
-    private Long targetid;
+    private String targetid;
 }

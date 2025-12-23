@@ -1,4 +1,4 @@
-package dto;
+package org.example.buckshot_roulette.dto;
 
 import lombok.Builder;
 import lombok.Getter;

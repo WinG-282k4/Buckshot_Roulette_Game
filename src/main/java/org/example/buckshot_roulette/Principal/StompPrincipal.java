@@ -1,4 +1,4 @@
-package Principal;
+package org.example.buckshot_roulette.Principal;
 
 import java.security.Principal;
 

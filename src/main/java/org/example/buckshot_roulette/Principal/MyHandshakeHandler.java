@@ -1,6 +1,6 @@
-package Principal;
+package org.example.buckshot_roulette.Principal;
 
-import model.Player;
+import org.example.buckshot_roulette.model.Player;
 import org.springframework.http.server.ServerHttpRequest;
 import org.springframework.web.socket.WebSocketHandler;
 import org.springframework.web.socket.server.support.DefaultHandshakeHandler;

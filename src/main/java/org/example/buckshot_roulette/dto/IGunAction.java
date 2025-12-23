@@ -1,4 +1,4 @@
-package dto;
+package org.example.buckshot_roulette.dto;
 
 public interface IGunAction {
     Boolean peek(); //Xem viên đạn tiếp theo

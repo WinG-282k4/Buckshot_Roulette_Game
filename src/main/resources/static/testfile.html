@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <title>Buckshot Roulette - Full API Test</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.5.1/sockjs.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
+  <style>
+    body { font-family: sans-serif; display: flex; gap: 20px; padding: 20px; background: #f0f2f5; }
+    .panel { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); width: 450px; }
+    .log-panel { flex-grow: 1; background: #1e1e1e; color: #00ff00; padding: 15px; border-radius: 8px; height: 85vh; overflow-y: auto; font-family: 'Courier New', monospace; }
+    h3 { border-bottom: 2px solid #ddd; padding-bottom: 5px; margin-top: 20px; }
+    input, button { padding: 8px; margin: 5px 0; width: 100%; box-sizing: border-box; }
+    button { cursor: pointer; font-weight: bold; }
+    .btn-game { background: #28a745; color: white; border: none; }
+    .btn-fire { background: #dc3545; color: white; border: none; }
+    .private-msg { color: #ffcc00; font-weight: bold; border-left: 3px solid #ffcc00; padding-left: 10px; margin: 5px 0; }
+  </style>
+</head>
+<body>
+
+<div class="panel">
+  <h2>Game Control Panel</h2>
+
+  <h3>1. Player (HTTP)</h3>
+  <input type="text" id="playerName" placeholder="Nhập tên người chơi...">
+  <button onclick="createPlayer()">Tạo Player (POST /user/create)</button>
+  <button onclick="offPlayer()">Đăng xuất (POST /user/off)</button>
+
+  <h3>2. Room (HTTP)</h3>
+  <button onclick="createRoom()">Tạo Phòng mới (/api/createroom)</button>
+  <input type="number" id="roomIdInput" value="1" placeholder="Nhập Room ID">
+  <button onclick="getRoomInfo()">Lấy thông tin Phòng (GET /api/rooms)</button>
+
+  <h3>3. WebSocket Connection</h3>
+  <button onclick="connectWS()" style="background: #007bff; color: white;">Kết nối WebSocket (/ws-game)</button>
+
+  <h3>4. Game Actions (WebSocket)</h3>
+  <button class="btn-game" onclick="joinRoom()">Vào phòng (join)</button>
+  <button class="btn-game" onclick="startGame()">Bắt đầu Game (startgame)</button>
+  <button class="btn-game" onclick="reload()">Nạp đạn mới (reload)</button>
+
+  <hr>
+  <input type="number" id="targetIdInput" placeholder="ID Nạn nhân (Target ID)">
+  <button class="btn-fire" onclick="fire()">KHAI HỎA (fire)</button>
+  <button onclick="targetPlayer()">Ngắm mục tiêu (target)</button>
+
+  <hr>
+  <input type="text" id="itemType" placeholder="Loại Item (Ví dụ: BEER, SAW...)">
+  <button onclick="useItem()">Dùng Item (use-item)</button>
+
+  <button onclick="leaveRoom()" style="margin-top: 20px; background: #6c757d; color: white;">Rời phòng (leave)</button>
+</div>
+
+<div class="log-panel" id="log">
+  <div>--- System Log Start ---</div>
+</div>
+
+<script>
+  var stompClient = null;
+  var currentRoomId = null;
+
+  function printLog(msg, isPrivate = false) {
+    const logDiv = document.getElementById('log');
+    const time = new Date().toLocaleTimeString();
+    const className = isPrivate ? 'private-msg' : '';
+    logDiv.innerHTML += `<div class="${className}">[${time}] ${msg}</div>`;
+    logDiv.scrollTop = logDiv.scrollHeight;
+  }
+
+  // --- HTTP CALLS ---
+  function createPlayer() {
+    const name = document.getElementById('playerName').value;
+    fetch(`/user/create/${name}`, { method: 'POST' })
+            .then(res => res.json())
+            .then(data => printLog(`Player created: ${data.name} (ID: ${data.id})`))
+            .catch(e => printLog("Lỗi: " + e));
+  }
+
+  function offPlayer() {
+    fetch('/user/off', { method: 'POST' }).then(() => printLog("Đã xóa Session Player."));
+  }
+
+  function createRoom() {
+    fetch('/api/createroom', { method: 'POST' })
+            .then(res => res.text())
+            .then(data => printLog(data));
+  }
+
+  function getRoomInfo() {
+    const id = document.getElementById('roomIdInput').value;
+    fetch(`/api/rooms/${id}`)
+            .then(res => res.json())
+            .then(data => printLog("Room Info: " + JSON.stringify(data)));
+  }
+
+  // --- WEBSOCKET LOGIC ---
+  function connectWS() {
+    const socket = new SockJS('/ws-game');
+    stompClient = Stomp.over(socket);
+    currentRoomId = document.getElementById('roomIdInput').value;
+
+    stompClient.connect({}, function (frame) {
+      printLog("WebSocket Connected!");
+
+      // 1. Subscribe topic chung của phòng
+      stompClient.subscribe(`/topic/room/${currentRoomId}`, function (message) {
+        const data = JSON.parse(message.body);
+        printLog(`[BROADCAST] Action: ${data.actionResponse?.action || 'Update'} | Msg: ${data.message || ''}`);
+        console.log("Full data:", data);
+      });
+
+      // 2. Subscribe topic RIÊNG (Lọc cho người bị bắn/nhận thông báo riêng)
+      stompClient.subscribe('/user/topic/event', function (message) {
+        const data = JSON.parse(message.body);
+        printLog(`[PRIVATE ALERT] ${data.type}: ${data.msg}`, true);
+      });
+    }, function(error) {
+      printLog("Kết nối lỗi: " + error);
+    });
+  }
+
+  // --- GAME ACTIONS SEND ---
+  function joinRoom() {
+    stompClient.send(`/app/join/${currentRoomId}`, {}, JSON.stringify({}));
+  }
+
+  function leaveRoom() {
+    stompClient.send(`/app/leave/${currentRoomId}`, {}, JSON.stringify({}));
+  }
+
+  function startGame() {
+    stompClient.send(`/app/room/${currentRoomId}/startgame`, {}, JSON.stringify({}));
+  }
+
+  function reload() {
+    stompClient.send(`/app/room/${currentRoomId}/reload`, {}, JSON.stringify({}));
+  }
+
+  function fire() {
+    const targetId = document.getElementById('targetIdInput').value;
+    stompClient.send(`/app/room/${currentRoomId}/fire/${targetId}`, {}, JSON.stringify({}));
+  }
+
+  function targetPlayer() {
+    const targetId = document.getElementById('targetIdInput').value;
+    stompClient.send(`/app/room/${currentRoomId}/target/${targetId}`, {}, JSON.stringify({}));
+  }
+
+  function useItem() {
+    const targetId = document.getElementById('targetIdInput').value;
+    const type = document.getElementById('itemType').value;
+    const payload = { targetid: parseInt(targetId), typeitem: type };
+    stompClient.send(`/app/room/${currentRoomId}/use-item`, {}, JSON.stringify(payload));
+  }
+
+</script>
+</body>
+</html>

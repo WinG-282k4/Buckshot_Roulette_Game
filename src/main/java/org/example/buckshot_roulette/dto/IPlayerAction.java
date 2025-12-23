@@ -1,12 +1,12 @@
-package dto;
+package org.example.buckshot_roulette.dto;
 
 
-import model.Item.Item;
+import org.example.buckshot_roulette.model.Item.Item;
 
 public interface IPlayerAction {
     void heal();
     void setHandcuffed(boolean status);
     String getName();
-    Long getId();
+    String getId();
     Item getItem(Class< ? extends Item> itemClass);
 }

@@ -1,9 +1,9 @@
-package dto;
+package org.example.buckshot_roulette.dto;
 
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
-import model.Player;
+import org.example.buckshot_roulette.model.Player;
 
 import java.util.List;
 

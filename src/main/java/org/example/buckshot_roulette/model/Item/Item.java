@@ -1,6 +1,6 @@
-package model.Item;
+package org.example.buckshot_roulette.model.Item;
 
-import dto.GameActionContext;
+import org.example.buckshot_roulette.dto.GameActionContext;
 import lombok.Getter;
 import lombok.Setter;
 

@@ -1,10 +1,12 @@
-package model;
+package org.example.buckshot_roulette.model;
 
 
-import dto.IPlayerAction;
 import lombok.Getter;
 import lombok.Setter;
-import model.Item.Item;
+import org.example.buckshot_roulette.dto.IPlayerAction;
+import org.example.buckshot_roulette.model.Item.Item;
+import tools.jackson.databind.annotation.JsonSerialize;
+import tools.jackson.databind.ser.std.ToStringSerializer;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -14,7 +16,7 @@ import java.util.concurrent.ThreadLocalRandom;
 @Setter
 public class Player implements IPlayerAction {
 
-    private Long ID;
+    private String ID;
     private String name;
     private int health;
     private boolean isHandcuffed;
@@ -30,13 +32,14 @@ public class Player implements IPlayerAction {
         this.isSoloing = false;
     }
 
-    private Long createID() {
+    private String createID() {
         // Sử dụng System.currentTimeMillis() thay vì tạo object Date mới để tiết kiệm tài nguyên
         long timestamp = System.currentTimeMillis();
         int random = ThreadLocalRandom.current().nextInt(0, 9999);
 
         // Kết hợp thay vì cộng dồn để tránh trùng
-        return timestamp * 10000 + random;
+        long id = timestamp + random;
+        return Long.toString(id);
     }
 
     @Override
@@ -51,7 +54,7 @@ public class Player implements IPlayerAction {
     }
 
     @Override
-    public Long getId() {
+    public String getId() {
         return ID;
     }
 

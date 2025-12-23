@@ -1,11 +1,11 @@
-package service;
+package org.example.buckshot_roulette.service;
 
-import dto.GameActionContext;
-import dto.RoomStatusResponse;
-import model.Item.Item;
-import model.ItemFactory;
-import model.Player;
-import model.Room;
+import org.example.buckshot_roulette.dto.GameActionContext;
+import org.example.buckshot_roulette.dto.RoomStatusResponse;
+import org.example.buckshot_roulette.model.Item.Item;
+import org.example.buckshot_roulette.model.ItemFactory;
+import org.example.buckshot_roulette.model.Player;
+import org.example.buckshot_roulette.model.Room;
 
 import java.util.List;
 import java.util.Objects;
@@ -83,7 +83,7 @@ public class Service {
     }
 
     //Player use item
-    public RoomStatusResponse PlayerUseItem(int roomid, Long playeridActor, Long playerIDtarget, int typeItem){
+    public RoomStatusResponse PlayerUseItem(int roomid, String playeridActor, String playerIDtarget, int typeItem){
 
         Room tempRoom = getRoom(roomid);
 
@@ -121,7 +121,7 @@ public class Service {
     }
 
     //Player fire target
-    public RoomStatusResponse PlayerFireTarget(int roomid, Long playeridActor, Long playeridTarget) {
+    public RoomStatusResponse PlayerFireTarget(int roomid, String playeridActor, String playeridTarget) {
         Room tempRoom = getRoom(roomid);
 //        System.out.println(tempRoom.getID());
         if (tempRoom == null) {
@@ -160,12 +160,15 @@ public class Service {
 
         System.out.println(dmg);
         tempPlayerTarget.setHealth(tempPlayerTarget.getHealth() - dmg);
+
         if(!Objects.equals(playeridActor, playeridTarget)){
             tempRoom.endAction();
             System.out.println("END ACTION");
         }
         else if (dmg != 0) tempRoom.endAction();
 
+        System.out.println("Room infor:");
+        tempRoom.Print();
         return tempRoom.getRoomStatus();
     }
 
@@ -187,7 +190,7 @@ public class Service {
 
 
     //Check turn belong someone
-    public Boolean checkCurrentTurn(int roomid, Long playerid){
+    public Boolean checkCurrentTurn(int roomid, String playerid){
 
         Room tempRoom = getRoom(roomid);
         Player tempPlayer = tempRoom.getPlayer(playerid);

@@ -1,9 +1,11 @@
-package model;
+package org.example.buckshot_roulette.model;
 
-import dto.IRoomAction;
-import dto.RoomStatusResponse;
 import lombok.Getter;
 import lombok.Setter;
+import org.example.buckshot_roulette.dto.IRoomAction;
+import org.example.buckshot_roulette.dto.RoomStatusResponse;
+import tools.jackson.databind.annotation.JsonSerialize;
+import tools.jackson.databind.ser.std.ToStringSerializer;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -14,6 +16,7 @@ import java.util.Queue;
 @Getter
 public class Room implements IRoomAction {
 
+    @JsonSerialize(using = ToStringSerializer.class)
     private int ID;
     private List<Player> players;
     private Queue<Player> turnOrder;
@@ -26,6 +29,8 @@ public class Room implements IRoomAction {
         this.isSoloMode = false;
         this.players = new LinkedList<Player>();
         this.gun = new Gun();
+        this.turnOrder = new LinkedList<Player>();
+        this.SoloTurnOrder = new LinkedList<>();
     }
 
     public void setSoloMode(Boolean soloMode) {
@@ -34,7 +39,7 @@ public class Room implements IRoomAction {
 
     //Method
     @Override
-    public void setSoloMode(boolean isSolo, Long playerIdActor, Long playerTargetId) {
+    public void setSoloMode(boolean isSolo, String playerIdActor, String playerTargetId) {
         if (Objects.equals(playerIdActor, playerTargetId)) {
             throw new IllegalArgumentException("Can not solo against yourself");
         }
@@ -51,12 +56,13 @@ public class Room implements IRoomAction {
     //Create turn order
     public void setTurnOrder() {
         int randomStartPlayerIndex = (int) (Math.random() * this.players.size());
+        Player player = this.players.get(randomStartPlayerIndex);
         this.turnOrder = new LinkedList<Player>();
         this.turnOrder.addAll(this.players);
 
         for (Player p : this.players) {
             assert turnOrder.peek() != null;
-            if (turnOrder.peek().getId() != randomStartPlayerIndex) {
+            if (!Objects.equals(turnOrder.peek().getId(), player.getId())) {
                 Player pollplayer = turnOrder.poll();
                 turnOrder.add(pollplayer);
             }else break;
@@ -64,7 +70,7 @@ public class Room implements IRoomAction {
     }
 
     //Get player on room
-    public Player getPlayer(Long playerId){
+    public Player getPlayer(String playerId){
         for (Player p : this.players) {
             if (Objects.equals(p.getId(), playerId)) {
                 return p;
@@ -74,23 +80,36 @@ public class Room implements IRoomAction {
     }
 
     //Next turn after player action
-    public void endAction(){
-        if(this.isSoloMode){
-            Player pollplayer = this.SoloTurnOrder.poll();
-            this.SoloTurnOrder.add(pollplayer);
+    public void endAction() {
+        // 1. Determine current queue based on mode
+        Queue<Player> currentQueue = this.isSoloMode ? this.SoloTurnOrder : this.turnOrder;
 
-        } else {
-            Player pollplayer = this.turnOrder.poll();
-            this.turnOrder.add(pollplayer);
+        // 2. Check if currentQueue is empty
+        if (currentQueue.isEmpty()) {
+            System.out.println("Lỗi: Hàng đợi không có người chơi!");
+            return;
         }
 
-        //Check next player can action
-        Player nextPlayer = this.turnOrder.peek();
-        if(!nextPlayer.canAction()) this.endAction();
+        // 3. Poll and add back the current player
+        Player pollplayer = currentQueue.poll();
+        if (pollplayer != null) {
+            currentQueue.add(pollplayer);
+        }
+
+        // 4. Check next player
+        Player nextPlayer = currentQueue.peek();
+
+        // if nextPlayer is null, return
+        if (nextPlayer == null) return;
+
+        // 5. Check if next player can action
+        if (!nextPlayer.canAction()) {
+            this.endAction();
+        }
     }
 
     //Check target player is soloing
-    public Boolean isSolo(Long playerId){
+    public Boolean isSolo(String playerId){
         if(!this.isSoloMode) return false;
         for (Player p : this.SoloTurnOrder) {
             if (Objects.equals(p.getId(), playerId)) {
