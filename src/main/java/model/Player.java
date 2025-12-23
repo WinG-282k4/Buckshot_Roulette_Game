@@ -14,17 +14,29 @@ import java.util.concurrent.ThreadLocalRandom;
 @Setter
 public class Player implements IPlayerAction {
 
-    private int ID;
+    private Long ID;
     private String name;
     private int health;
     private boolean isHandcuffed;
     private List<Item> items;
+    private Boolean isSoloing;
 
-    public Player(String name, int health) {
+    public Player(String name) {
+        this.ID = createID();
         this.name = name;
-        this.health = health;
+        this.health = 5;
         this.isHandcuffed = false;
         this.items = new ArrayList<>();
+        this.isSoloing = false;
+    }
+
+    private Long createID() {
+        // Sử dụng System.currentTimeMillis() thay vì tạo object Date mới để tiết kiệm tài nguyên
+        long timestamp = System.currentTimeMillis();
+        int random = ThreadLocalRandom.current().nextInt(0, 9999);
+
+        // Kết hợp thay vì cộng dồn để tránh trùng
+        return timestamp * 10000 + random;
     }
 
     @Override
@@ -39,7 +51,7 @@ public class Player implements IPlayerAction {
     }
 
     @Override
-    public int getId() {
+    public Long getId() {
         return ID;
     }
 
@@ -47,9 +59,6 @@ public class Player implements IPlayerAction {
     public String toString() {
         return this.ID + ":" +this.name; // Trả về tên thay vì địa chỉ ô nhớ
     }
-
-
-
 
     @Override
     public void setHandcuffed(boolean handcuffed) {

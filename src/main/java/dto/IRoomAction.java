@@ -1,5 +1,5 @@
 package dto;
 
 public interface IRoomAction {
-    public void setSoloMode(boolean isSolo, int playerId, int playerTargetId);
+    public void setSoloMode(boolean isSolo, Long playerId, Long playerTargetId);
 }

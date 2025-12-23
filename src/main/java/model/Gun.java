@@ -13,6 +13,8 @@ import java.util.concurrent.ThreadLocalRandom;
 public class Gun implements IGunAction {
     private Deque<Boolean> bullets;
     private Boolean isDoubledmg;
+    private int fakeCount;
+    private int realCount;
 
     public Gun(Deque<Boolean> bullets, Boolean isDoubledmg) {
         this.bullets = bullets;
@@ -22,6 +24,8 @@ public class Gun implements IGunAction {
     public Gun(){
         this.bullets = new ArrayDeque<>();
         this.isDoubledmg = false;
+        fakeCount = 0;
+        realCount = 0;
     }
 
     public Boolean getDoubledmg() {
@@ -73,20 +77,20 @@ public class Gun implements IGunAction {
 
     //Load bullet with random count
     public int[] loadBullet(int count) {
-        int RealCount = 0;
-        int FakeCount = 0;
+        this.realCount = 0;
+        this.fakeCount = 0;
         for (int i = 0; i < count; i++) {
             double rand = Math.random();
             if (rand < 0.5) {
                 this.bullets.addFirst(true);
-                RealCount ++;
+                realCount ++;
             } else {
                 this.bullets.addFirst(false);
-                FakeCount ++;
+                fakeCount ++;
             }
         }
 
-        return new int[]{FakeCount, RealCount};
+        return new int[]{fakeCount, realCount};
     }
 
     public int[] reload(int Playercount) {
@@ -95,5 +99,8 @@ public class Gun implements IGunAction {
         return loadBullet(randomNumber);
     }
 
-
+    //Get info bullets
+    public int[] getInfoBullets() {
+        return new int[]{this.fakeCount, this.realCount};
+    }
 }

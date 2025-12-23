@@ -7,6 +7,6 @@ public interface IPlayerAction {
     void heal();
     void setHandcuffed(boolean status);
     String getName();
-    int getId();
+    Long getId();
     Item getItem(Class< ? extends Item> itemClass);
 }

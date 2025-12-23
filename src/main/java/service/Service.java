@@ -7,10 +7,12 @@ import model.Player;
 import model.Room;
 
 import java.util.List;
+import java.util.Objects;
 
 @org.springframework.stereotype.Service
 public class Service {
     public List<Room> rooms;
+    public List<Player> players;
 
     public Service() {
         rooms = new java.util.ArrayList<Room>();
@@ -62,34 +64,22 @@ public class Service {
         }
 
         tempRoom.getPlayers().add(player);
-        player.setID(tempRoom.getPlayers().indexOf(player) + 1);
+
     }
 
     //Player leave Room
-    public void RemovePlayerFromRoom(int roomid, int playerid){
+    public void RemovePlayerFromRoom(int roomid, Player player){
         Room tempRoom = getRoom(roomid);
 
         if(tempRoom == null){
             throw new IllegalArgumentException("Room not found");
         }
 
-        Player tempPlayer = null;
-        for (Player p : tempRoom.getPlayers()){
-            if (p.getId() == playerid){
-                tempPlayer = p;
-            }
-        }
-
-        if(tempPlayer == null){
-            throw new IllegalArgumentException("Player not found in room");
-        }
-
-        tempRoom.getPlayers().remove(tempPlayer);
-        tempPlayer.setID(-1); //Reset player ID to indicate they are no longer in a room
+        tempRoom.getPlayers().remove(player);//Reset player ID to indicate they are no longer in a room
     }
 
     //Player use item
-    public void PlayerUseItem(int roomid, int playeridActor, int plaerIDtarget, int typeItem){
+    public void PlayerUseItem(int roomid, Long playeridActor, Long plaerIDtarget, int typeItem){
 
         Room tempRoom = getRoom(roomid);
 
@@ -115,7 +105,7 @@ public class Service {
         }
 
         //Check solomode
-        if(tempRoom.getSoloMode()){
+        if(tempRoom.getIsSoloMode()){
             if(!tempRoom.isSolo(plaerIDtarget))
                 return ;
         }
@@ -126,7 +116,7 @@ public class Service {
     }
 
     //Player fire target
-    public void PlayerFireTarget(int roomid, int playeridActor, int playeridTarget) {
+    public void PlayerFireTarget(int roomid, Long playeridActor, Long playeridTarget) {
         Room tempRoom = getRoom(roomid);
 //        System.out.println(tempRoom.getID());
         if (tempRoom == null) {
@@ -146,21 +136,24 @@ public class Service {
         if(!checkCurrentTurn(roomid, playeridActor) && !tempPlayerActor.canAction()){ return; }
 
         //Check solomode
-        if(tempRoom.getSoloMode()){
+        if(tempRoom.getIsSoloMode()){
             if(!tempRoom.isSolo(playeridTarget))
                 return ;
         }
 
         int dmg = tempRoom.getGun().fire();
 
-        if(dmg > 0 && tempRoom.getSoloMode()){
+        if(dmg > 0 && tempRoom.getIsSoloMode()){
             tempPlayerActor.setHealth(tempPlayerActor.getHealth() + 1);
             tempRoom.setSoloMode(false);
+            for(Player p : tempRoom.getPlayers()){
+                p.setIsSoloing(false);
+            }
         } //If having damage, end solo mode
 
         System.out.println(dmg);
         tempPlayerTarget.setHealth(tempPlayerTarget.getHealth() - dmg);
-        if(playeridActor != playeridTarget){
+        if(!Objects.equals(playeridActor, playeridTarget)){
             tempRoom.endAction();
             System.out.println("END ACTION");
         }
@@ -184,15 +177,12 @@ public class Service {
 
 
     //Check turn belong someone
-    public Boolean checkCurrentTurn(int roomid, int playerid){
+    public Boolean checkCurrentTurn(int roomid, Long playerid){
 
         Room tempRoom = getRoom(roomid);
         Player tempPlayer = tempRoom.getPlayer(playerid);
 
-        if(tempRoom.getTurnOrder().peek() == tempPlayer){
-            return true;
-        }
-        return false;
+        return tempRoom.getTurnOrder().peek() == tempPlayer;
     }
 }
 

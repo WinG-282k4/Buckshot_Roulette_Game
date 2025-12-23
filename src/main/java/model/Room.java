@@ -1,11 +1,13 @@
 package model;
 
 import dto.IRoomAction;
+import dto.RoomStatusResponse;
 import lombok.Getter;
 import lombok.Setter;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Queue;
 
 @Setter
@@ -26,24 +28,21 @@ public class Room implements IRoomAction {
         this.gun = new Gun();
     }
 
-    public Boolean getSoloMode() {
-        return isSoloMode;
-    }
-
     public void setSoloMode(Boolean soloMode) {
         isSoloMode = soloMode;
     }
 
     //Method
     @Override
-    public void setSoloMode(boolean isSolo, int playerIdActor, int playerTargetId) {
-        if ( playerIdActor == playerTargetId) {
+    public void setSoloMode(boolean isSolo, Long playerIdActor, Long playerTargetId) {
+        if (Objects.equals(playerIdActor, playerTargetId)) {
             throw new IllegalArgumentException("Can not solo against yourself");
         }
         this.isSoloMode = isSolo;
         this.SoloTurnOrder = new LinkedList<Player>();
         for (Player p : this.turnOrder) {
-            if (p.getId() == playerIdActor || p.getId() == playerTargetId) {
+            if (Objects.equals(p.getId(), playerIdActor) || Objects.equals(p.getId(), playerTargetId)) {
+                p.setIsSoloing(true);
                 this.SoloTurnOrder.add(p);
             }
         }
@@ -53,11 +52,10 @@ public class Room implements IRoomAction {
     public void setTurnOrder() {
         int randomStartPlayerIndex = (int) (Math.random() * this.players.size());
         this.turnOrder = new LinkedList<Player>();
-        for (Player p : this.players) {
-            this.turnOrder.add(p);
-        }
+        this.turnOrder.addAll(this.players);
 
         for (Player p : this.players) {
+            assert turnOrder.peek() != null;
             if (turnOrder.peek().getId() != randomStartPlayerIndex) {
                 Player pollplayer = turnOrder.poll();
                 turnOrder.add(pollplayer);
@@ -66,9 +64,9 @@ public class Room implements IRoomAction {
     }
 
     //Get player on room
-    public Player getPlayer(int playerId){
+    public Player getPlayer(Long playerId){
         for (Player p : this.players) {
-            if (p.getId() == playerId) {
+            if (Objects.equals(p.getId(), playerId)) {
                 return p;
             }
         }
@@ -92,10 +90,10 @@ public class Room implements IRoomAction {
     }
 
     //Check target player is soloing
-    public Boolean isSolo(int playerId){
+    public Boolean isSolo(Long playerId){
         if(!this.isSoloMode) return false;
         for (Player p : this.SoloTurnOrder) {
-            if (p.getId() == playerId) {
+            if (Objects.equals(p.getId(), playerId)) {
                 return true;
             }
         }
@@ -113,5 +111,22 @@ public class Room implements IRoomAction {
         for (Player p : players) {
             System.out.printf("Player Name: %s, Health: %d, Items: %s\n", p.getName(), p.getHealth(), p.getItems());
         }
+    }
+
+    //Convert to Response
+    public RoomStatusResponse getRoomStatus(){
+
+        Player nextPlayer = this.turnOrder.poll();
+        if(this.isSoloMode){
+            nextPlayer = this.SoloTurnOrder.peek();
+        }
+
+        return RoomStatusResponse.builder()
+                .roomid(this.getID())
+                .gun(this.getGun().getInfoBullets())
+                .players(this.getPlayers())
+                .nextPlayer(nextPlayer)
+                .isSoloMode(this.getIsSoloMode())
+                .build();
     }
 }
