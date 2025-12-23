@@ -122,6 +122,7 @@ public class Room implements IRoomAction {
         }
 
         return RoomStatusResponse.builder()
+                .status("OK")
                 .roomid(this.getID())
                 .gun(this.getGun().getInfoBullets())
                 .players(this.getPlayers())

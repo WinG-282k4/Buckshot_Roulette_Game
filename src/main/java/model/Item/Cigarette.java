@@ -4,8 +4,8 @@ import dto.GameActionContext;
 
 public class Cigarette extends Item {
 
-    public Cigarette(int typeItem, String name) {
-        super(typeItem, name);
+    public Cigarette (int id, String name, boolean isTargetNulltable) {
+        super(id, name, isTargetNulltable);
     }
 
     //Vaajt phaamr nay giups hoi maus +1

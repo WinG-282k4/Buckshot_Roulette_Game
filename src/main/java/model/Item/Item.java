@@ -9,10 +9,12 @@ import lombok.Setter;
 public abstract class Item {
     private int typeItem;
     private String name;
+    private boolean isTargetNulltable;
 
-    public Item(int typeItem, String name) {
+    public Item(int typeItem, String name, boolean isTargetNulltable) {
         this.typeItem = typeItem;
         this.name = name;
+        this.isTargetNulltable = isTargetNulltable;
     }
 
     @Override

@@ -1,6 +1,7 @@
 package service;
 
 import dto.GameActionContext;
+import dto.RoomStatusResponse;
 import model.Item.Item;
 import model.ItemFactory;
 import model.Player;
@@ -29,7 +30,7 @@ public class Service {
     }
 
     //Start Game
-    public void StartGame(int roomid){
+    public RoomStatusResponse StartGame(int roomid){
         Room tempRoom = getRoom(roomid);
 
         if(tempRoom == null){
@@ -45,6 +46,8 @@ public class Service {
             p.getItems().clear();
             p.CreateStarterItems();
         }
+
+        return tempRoom.getRoomStatus();
     }
 
     //Create new Room
@@ -68,7 +71,7 @@ public class Service {
     }
 
     //Player leave Room
-    public void RemovePlayerFromRoom(int roomid, Player player){
+    public RoomStatusResponse RemovePlayerFromRoom(int roomid, Player player){
         Room tempRoom = getRoom(roomid);
 
         if(tempRoom == null){
@@ -76,10 +79,11 @@ public class Service {
         }
 
         tempRoom.getPlayers().remove(player);//Reset player ID to indicate they are no longer in a room
+        return tempRoom.getRoomStatus();
     }
 
     //Player use item
-    public void PlayerUseItem(int roomid, Long playeridActor, Long plaerIDtarget, int typeItem){
+    public RoomStatusResponse PlayerUseItem(int roomid, Long playeridActor, Long playerIDtarget, int typeItem){
 
         Room tempRoom = getRoom(roomid);
 
@@ -88,7 +92,7 @@ public class Service {
         }
 
         Player tempPlayerActor = tempRoom.getPlayer(playeridActor);
-        Player tempPlayerTarget = tempRoom.getPlayer(plaerIDtarget);
+        Player tempPlayerTarget = tempRoom.getPlayer(playerIDtarget);
 
         if(tempPlayerActor == null || tempPlayerTarget == null){
             throw new IllegalArgumentException("Player not found in room");
@@ -105,18 +109,19 @@ public class Service {
         }
 
         //Check solomode
-        if(tempRoom.getIsSoloMode()){
-            if(!tempRoom.isSolo(plaerIDtarget))
-                return ;
+        if(tempRoom.getIsSoloMode() && !useItem.isTargetNulltable()){
+            if(!tempRoom.isSolo(playerIDtarget)) // check target is soloing
+                throw new IllegalArgumentException("Target is not solo.");
         }
 
         useItem.use(new GameActionContext(tempRoom.getGun(), tempPlayerActor, tempPlayerTarget, tempRoom));
         tempPlayerActor.getItems().remove(useItem);
         System.out.println("Player " + useItem.getName() + " has been used");
+        return tempRoom.getRoomStatus();
     }
 
     //Player fire target
-    public void PlayerFireTarget(int roomid, Long playeridActor, Long playeridTarget) {
+    public RoomStatusResponse PlayerFireTarget(int roomid, Long playeridActor, Long playeridTarget) {
         Room tempRoom = getRoom(roomid);
 //        System.out.println(tempRoom.getID());
         if (tempRoom == null) {
@@ -133,12 +138,14 @@ public class Service {
         }
 
         //Check turn can action
-        if(!checkCurrentTurn(roomid, playeridActor) && !tempPlayerActor.canAction()){ return; }
+        if(!checkCurrentTurn(roomid, playeridActor) && !tempPlayerActor.canAction()){
+            throw new IllegalArgumentException("You have handcuffed and cannot perform actions this turn.");
+        }
 
         //Check solomode
         if(tempRoom.getIsSoloMode()){
             if(!tempRoom.isSolo(playeridTarget))
-                return ;
+                throw new IllegalArgumentException("Target is not solo.");
         }
 
         int dmg = tempRoom.getGun().fire();
@@ -158,10 +165,12 @@ public class Service {
             System.out.println("END ACTION");
         }
         else if (dmg != 0) tempRoom.endAction();
+
+        return tempRoom.getRoomStatus();
     }
 
     //End round
-    public void nextRound(int roomid){
+    public RoomStatusResponse nextRound(int roomid){
         Room tempRoom = getRoom(roomid);
 
         if(tempRoom == null){
@@ -173,6 +182,7 @@ public class Service {
         for(Player p : tempRoom.getPlayers()){
             p.CreateStarterItems();
         }
+        return tempRoom.getRoomStatus();
     }
 
 

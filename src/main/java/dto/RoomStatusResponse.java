@@ -11,9 +11,11 @@ import java.util.List;
 @Setter
 @Builder
 public class RoomStatusResponse {
+    private String status;
     private int roomid;
     private int[] gun;
     private List<Player> players;
     private Player nextPlayer;
     private Boolean isSoloMode;
+    private ActionResponse actionResponse;
 }

@@ -4,8 +4,8 @@ import dto.GameActionContext;
 
 public class Chainsaw extends Item {
 
-    public Chainsaw(int typeItem, String name) {
-        super(typeItem, name);
+    public Chainsaw(int id, String name, boolean isTargetNulltable) {
+        super(id, name, isTargetNulltable);
     }
     //Gap doi sat thuong cho lan ban tiep
     @Override

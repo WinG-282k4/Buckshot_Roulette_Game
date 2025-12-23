@@ -4,8 +4,8 @@ import dto.GameActionContext;
 
 public class Beer extends  Item {
 
-    public Beer(int typeItem, String name) {
-        super(typeItem, name);
+    public Beer(int id, String name, boolean isTargetNulltable) {
+        super(id, name, isTargetNulltable);
     }
     //Bo qua vien ddan tiep theo
     @Override

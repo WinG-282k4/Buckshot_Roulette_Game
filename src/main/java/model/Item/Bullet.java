@@ -4,8 +4,8 @@ import dto.GameActionContext;
 
 public class Bullet extends  Item {
 
-    public Bullet(int typeItem, String name) {
-        super(typeItem, name);
+    public Bullet(int id, String name, boolean isTargetNulltable) {
+        super(id, name, isTargetNulltable);
     }
     //Thêm 1 viên dan ngau nhien
     @Override

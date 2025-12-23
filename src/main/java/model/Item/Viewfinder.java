@@ -4,8 +4,8 @@ import dto.GameActionContext;
 
 public class Viewfinder extends Item{
 
-    public Viewfinder(int typeItem, String name) {
-        super(typeItem, name);
+    public Viewfinder(int id, String name, boolean isTargetNulltable) {
+        super(id, name, isTargetNulltable);
     }
 
     //Chonj 1 nguoi ddeer solo

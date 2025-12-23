@@ -4,8 +4,8 @@ import dto.GameActionContext;
 
 public class Glass extends  Item {
 
-    public Glass(int typeItem, String name) {
-        super(typeItem, name);
+    public Glass (int id, String name, boolean isTargetNulltable) {
+        super(id, name, isTargetNulltable);
     }
     //Xem duowjc vien dan hien tai laf gia hay that
     @Override

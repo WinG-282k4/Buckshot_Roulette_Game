@@ -4,8 +4,8 @@ import dto.GameActionContext;
 
 public class Handcuffs extends Item {
 
-    public Handcuffs(int typeItem, String name) {
-        super(typeItem, name);
+    public Handcuffs(int id, String name, boolean isTargetNulltable) {
+        super(id, name, isTargetNulltable);
     }
 
     //Su dung de cam tay ai do
