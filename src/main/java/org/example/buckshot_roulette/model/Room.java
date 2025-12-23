@@ -85,7 +85,7 @@ public class Room implements IRoomAction {
         Queue<Player> currentQueue = this.isSoloMode ? this.SoloTurnOrder : this.turnOrder;
 
         // 2. Check if currentQueue is empty
-        if (currentQueue.isEmpty()) {
+        if (currentQueue == null || currentQueue.isEmpty()) {
             System.out.println("Lỗi: Hàng đợi không có người chơi!");
             return;
         }
@@ -135,9 +135,16 @@ public class Room implements IRoomAction {
     //Convert to Response
     public RoomStatusResponse getRoomStatus(){
 
-        Player nextPlayer = this.turnOrder.poll();
+        // Use peek() instead of poll() to avoid removing player from the queue when just reporting nextPlayer
+        Player nextPlayer = null;
+        if (this.turnOrder != null && !this.turnOrder.isEmpty()) {
+            nextPlayer = this.turnOrder.peek();
+        }
+
         if(this.isSoloMode){
-            nextPlayer = this.SoloTurnOrder.peek();
+            if (this.SoloTurnOrder != null && !this.SoloTurnOrder.isEmpty()){
+                nextPlayer = this.SoloTurnOrder.peek();
+            }
         }
 
         return RoomStatusResponse.builder()

@@ -167,7 +167,7 @@ public class gameController {
 
         // if NULL or empty, skip sending victim notification
         if (targetId == null || targetId.isEmpty()) {
-            System.out.println("Lỗi: ID không tồn tại!");
+            System.out.println("ID target không tồn tại! (Bỏ qua vì không cần thiết thông báo");
             return;
         }
         String victimid = result.getActionResponse().getTargetid();

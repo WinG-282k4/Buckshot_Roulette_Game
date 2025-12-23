@@ -47,6 +47,9 @@ public class Service {
             p.CreateStarterItems();
         }
 
+        System.out.println("Room infor at start game:");
+        tempRoom.Print();
+
         return tempRoom.getRoomStatus();
     }
 
@@ -128,6 +131,9 @@ public class Service {
             throw new IllegalArgumentException("Room not found");
         }
 
+        System.out.println("Room infor origin:");
+        tempRoom.Print();
+
         Player tempPlayerActor = tempRoom.getPlayer(playeridActor);
         Player tempPlayerTarget = tempRoom.getPlayer(playeridTarget);
 
@@ -167,7 +173,7 @@ public class Service {
         }
         else if (dmg != 0) tempRoom.endAction();
 
-        System.out.println("Room infor:");
+        System.out.println("Room infor after:");
         tempRoom.Print();
         return tempRoom.getRoomStatus();
     }
