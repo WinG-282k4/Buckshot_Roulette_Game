@@ -141,7 +141,7 @@ public class gameController {
         messagingTemplate.convertAndSend(destination, result);
 
         // B. Send payload to notify a victim
-        if (result.getActionResponse().getTargetid() == null) { return;}
+        if (result.getActionResponse().getTargetid().isEmpty()) { return;}
         String victimid = result.getActionResponse().getTargetid();
         String action = result.getActionResponse().getAction();
 

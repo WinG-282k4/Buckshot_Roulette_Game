@@ -20,13 +20,13 @@ public class roomController {
 
     @MessageMapping("join/{roomid}")
     @SendTo("/topic/room/{roomid}")
-    public ResponseEntity<String> join(
+    public String join(
             @DestinationVariable String roomid,
             SimpMessageHeaderAccessor headerAccessor
     ) {
         Player player = (Player) Objects.requireNonNull(headerAccessor.getSessionAttributes()).get("player");
         service.AddPlayerToRoom(Integer.parseInt(roomid),player);
-        return ResponseEntity.ok(player.getName() + "Joined" + roomid);
+        return player.getName() + "Joined" + roomid;
     }
 
     @MessageMapping("leave/{roomid}")

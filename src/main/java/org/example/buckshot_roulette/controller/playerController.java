@@ -14,7 +14,7 @@ public class playerController {
     @Autowired
     private Service service;
 
-    @PostMapping("/creat/{name}")
+    @PostMapping("/create/{name}")
     public ResponseEntity<Player> CreatePlayer(
             @PathVariable String name,
             HttpSession session
