@@ -203,5 +203,19 @@ public class Service {
 
         return tempRoom.getTurnOrder().peek() == tempPlayer;
     }
+
+    public List<Integer> getAnyRoom(int pageNumber) {
+        int pageSize = 10;
+        int startIndex = (pageNumber - 1) * pageSize;
+        int endIndex = Math.min(startIndex + pageSize, rooms.size());
+        if (startIndex >= rooms.size() || startIndex < 0) {
+            throw new IllegalArgumentException("Page number out of range");
+        }
+        // For simplicity, return the first room in the page
+        for (int i = startIndex; i < endIndex; i++) {
+            System.out.println("Room ID: " + rooms.get(i).getID());
+        }
+        return rooms.subList(startIndex, endIndex).stream().map(Room::getID).toList();
+    }
 }
 

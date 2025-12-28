@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
@@ -75,5 +76,14 @@ public class roomController {
         logger.info("Received API: GET /api/rooms");
         Room room = service.getRoom(roomid);
         return ResponseEntity.ok(room.getRoomStatus());
+    }
+
+    @GetMapping("/api/rooms/{page}")
+    public ResponseEntity<List<Integer>> getAllRooms(
+            @PathVariable int page
+    ) {
+        logger.info("Received API: GET /api/rooms");
+        List<Integer> room = service.getAnyRoom(page);
+        return ResponseEntity.ok(room);
     }
 }
