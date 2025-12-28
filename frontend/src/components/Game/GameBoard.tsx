@@ -68,19 +68,30 @@ export default function GameBoard() {
     );
   }
 
+  const isMyTurnFlag = isMyTurn();
+  const currentPlayer = myPlayer();
+  const nextPlayer = roomStatus.nextPlayer;
+  const messageText = roomStatus.message?.trim();
+
   const handleStartGame = () => {
     wsService.startGame();
   };
 
   const handleFire = (targetId: string) => {
+    if (!isMyTurnFlag) {
+      console.warn('Attempted to fire outside your turn');
+      return;
+    }
+
     wsService.fire(targetId);
   };
 
-  const handleReload = () => {
-    wsService.reload();
-  };
-
   const handleUseItem = (itemType: number, targetId?: string) => {
+    if (!isMyTurnFlag) {
+      console.warn('Attempted to use item outside your turn');
+      return;
+    }
+
     wsService.useItem(itemType, targetId);
   };
 
@@ -90,25 +101,27 @@ export default function GameBoard() {
       <div className="text-center mb-8">
         <h1 className="text-4xl font-bold text-red-500">ROOM #{roomStatus.roomid}</h1>
         <p className="text-gray-400 mt-2">
-          {roomStatus.nextPlayer ? 'Đang chơi' : 'Đang chờ...'}
+          {nextPlayer ? 'Đang chơi' : 'Đang chờ...'}
         </p>
         {roomStatus.isSoloMode && (
           <p className="text-yellow-500 font-semibold mt-2">⚔️ SOLO MODE ACTIVE</p>
         )}
 
         {/* Message Notification */}
-        {roomStatus.message && roomStatus.message.trim() !== '' && (
-          <div className="mt-3 inline-block bg-blue-900 border-2 border-blue-500 px-6 py-2 rounded-lg max-w-2xl">
-            <p className="text-blue-300 font-medium">
-              📢 {roomStatus.message}
-            </p>
+        {messageText && (
+          <div className="mt-3 flex justify-center">
+            <div className="inline-block bg-blue-900 border-2 border-blue-500 px-6 py-2 rounded-lg max-w-2xl text-left">
+              <p className="text-blue-300 font-medium">
+                📢 {messageText}
+              </p>
+            </div>
           </div>
         )}
 
         {/* Turn Indicator */}
-        {roomStatus.nextPlayer && myPlayer() && (
-          <div className="mt-4 inline-block">
-            {roomStatus.nextPlayer.ID === myPlayer()?.ID ? (
+        {nextPlayer && currentPlayer && (
+          <div className="mt-4 flex justify-center">
+            {nextPlayer.ID === currentPlayer.ID ? (
               <div className="bg-green-900 border-2 border-green-500 px-6 py-3 rounded-lg">
                 <p className="text-green-400 font-bold text-xl">
                   🎯 LƯỢT CỦA BẠN!
@@ -117,7 +130,7 @@ export default function GameBoard() {
             ) : (
               <div className="bg-gray-800 border-2 border-gray-600 px-6 py-3 rounded-lg">
                 <p className="text-gray-300 font-bold text-lg">
-                  ⏳ Lượt của: <span className="text-yellow-400">{roomStatus.nextPlayer.name}</span>
+                  ⏳ Lượt của: <span className="text-yellow-400">{nextPlayer.name}</span>
                 </p>
               </div>
             )}
@@ -131,8 +144,8 @@ export default function GameBoard() {
         <div className="lg:col-span-1">
           <PlayerList
             players={roomStatus.players}
-            nextPlayer={roomStatus.nextPlayer}
-            currentPlayerId={myPlayer()?.ID}
+            nextPlayer={nextPlayer}
+            currentPlayerId={currentPlayer?.ID}
           />
         </div>
 
@@ -145,17 +158,17 @@ export default function GameBoard() {
           />
 
           {/* Items */}
-          {myPlayer() && (
+          {currentPlayer && (
             <ItemSlots
-              items={myPlayer()!.items}
+              items={currentPlayer.items}
               onUseItem={handleUseItem}
-              canUse={isMyTurn()}
+              canUse={isMyTurnFlag}
               players={roomStatus.players}
             />
           )}
 
           {/* Action Buttons */}
-          {roomStatus.status === 'WAITING' ? (
+          {roomStatus.status === 'Waiting' ? (
             <button
               onClick={handleStartGame}
               className="w-full py-4 bg-green-600 hover:bg-green-700 text-white text-xl font-bold rounded-lg transition-colors"
@@ -165,26 +178,23 @@ export default function GameBoard() {
           ) : (
             <ActionButtons
               players={roomStatus.players}
-              currentPlayerId={myPlayer()?.ID}
-              isMyTurn={isMyTurn()}
+              currentPlayerId={currentPlayer?.ID}
+              isMyTurn={isMyTurnFlag}
               onFire={handleFire}
-              onReload={handleReload}
-              gun={roomStatus.gun}
             />
           )}
         </div>
       </div>
 
       {/* Turn Indicator */}
-      {roomStatus.nextPlayer && (
+      {nextPlayer && (
         <div className="fixed bottom-8 left-1/2 transform -translate-x-1/2 bg-gray-900 px-6 py-3 rounded-full border-2 border-yellow-500">
           <p className="text-yellow-500 font-bold">
-            🎯 Lượt: {roomStatus.nextPlayer.name}
-            {isMyTurn() && ' (Bạn!)'}
+            🎯 Lượt: {nextPlayer.name}
+            {isMyTurnFlag && ' (Bạn!)'}
           </p>
         </div>
       )}
     </div>
   );
 }
-

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Player } from '../../types/player.types';
 
 interface ActionButtonsProps {
@@ -6,24 +6,24 @@ interface ActionButtonsProps {
   currentPlayerId?: string;
   isMyTurn: boolean;
   onFire: (targetId: string) => void;
-  onReload: () => void;
-  gun: number[]; // [fakeCount, realCount]
 }
 
 export default function ActionButtons({
   players,
   currentPlayerId,
   isMyTurn,
-  onFire,
-  onReload,
-  gun
+  onFire
 }: ActionButtonsProps) {
   const [showTargetSelection, setShowTargetSelection] = useState(false);
-  const [fakeCount, realCount] = gun;
-  const totalBullets = fakeCount + realCount;
-  const canReload = totalBullets === 0; // Chỉ reload khi hết đạn
+
+  useEffect(() => {
+    if (!isMyTurn) {
+      setShowTargetSelection(false);
+    }
+  }, [isMyTurn]);
 
   const handleFireClick = () => {
+    if (!isMyTurn) return;
     setShowTargetSelection(true);
   };
 
@@ -32,17 +32,8 @@ export default function ActionButtons({
     setShowTargetSelection(false);
   };
 
-  const handleReloadClick = () => {
-    if (!canReload) {
-      alert('Không thể nạp đạn khi súng còn đạn! Hãy bắn hết đạn trước.');
-      return;
-    }
-    onReload();
-  };
-
   return (
     <div className="space-y-4">
-      {/* Chỉ còn nút BẮN, reload tự động ngầm */}
       <button
         onClick={handleFireClick}
         disabled={!isMyTurn}
@@ -56,8 +47,6 @@ export default function ActionButtons({
         🔫 BẮN
       </button>
 
-
-      {/* Target Selection Modal */}
       {showTargetSelection && (
         <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50">
           <div className="bg-gray-900 p-6 rounded-lg max-w-md w-full border-2 border-red-600 m-4">
@@ -102,4 +91,3 @@ export default function ActionButtons({
     </div>
   );
 }
-

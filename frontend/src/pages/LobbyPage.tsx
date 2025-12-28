@@ -48,7 +48,7 @@ export default function LobbyPage() {
               return {
                 id: data.roomid,
                 playerCount: data.players.length,
-                status: data.nextPlayer ? 'PLAYING' : 'WAITING' // Có nextPlayer = đã start
+                status: data.status // Backend đã trả về "Playing" hoặc "Waiting"
               };
             }
           } catch (err) {
@@ -212,37 +212,37 @@ export default function LobbyPage() {
                             👥 {room.playerCount} người
                           </span>
                           <span style={{
-                            color: room.status === 'WAITING' ? '#10b981' : '#ef4444'
+                            color: room.status === 'Waiting' ? '#10b981' : '#ef4444'
                           }}>
-                            ● {room.status === 'WAITING' ? 'Đang chờ' : 'Đang chơi'}
+                            ● {room.status === 'Waiting' ? 'Đang chờ' : 'Đang chơi'}
                           </span>
                         </div>
                       </div>
                       <button
                         onClick={() => handleJoinRoom(room.id)}
-                        disabled={room.status !== 'WAITING' || room.playerCount >= 4}
+                        disabled={room.status !== 'Waiting' || room.playerCount >= 4}
                         style={{
                           padding: '12px 28px',
-                          background: (room.status === 'WAITING' && room.playerCount < 4) ? '#3b82f6' : '#4b5563',
+                          background: (room.status === 'Waiting' && room.playerCount < 4) ? '#3b82f6' : '#4b5563',
                           color: 'white',
                           border: 'none',
                           borderRadius: '8px',
                           fontSize: '16px',
                           fontWeight: 'bold',
-                          cursor: (room.status === 'WAITING' && room.playerCount < 4) ? 'pointer' : 'not-allowed'
+                          cursor: (room.status === 'Waiting' && room.playerCount < 4) ? 'pointer' : 'not-allowed'
                         }}
                         onMouseEnter={(e) => {
-                          if (room.status === 'WAITING' && room.playerCount < 4) {
+                          if (room.status === 'Waiting' && room.playerCount < 4) {
                             e.currentTarget.style.background = '#2563eb';
                           }
                         }}
                         onMouseLeave={(e) => {
-                          if (room.status === 'WAITING' && room.playerCount < 4) {
+                          if (room.status === 'Waiting' && room.playerCount < 4) {
                             e.currentTarget.style.background = '#3b82f6';
                           }
                         }}
                       >
-                        {room.status !== 'WAITING'
+                        {room.status !== 'Waiting'
                           ? 'ĐANG CHƠI'
                           : room.playerCount >= 4
                             ? 'ĐẦY (4/4)'
