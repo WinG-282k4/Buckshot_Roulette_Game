@@ -1,6 +1,7 @@
 package org.example.buckshot_roulette.model.Item;
 
 import org.example.buckshot_roulette.dto.GameActionContext;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -9,12 +10,13 @@ import lombok.Setter;
 public abstract class Item {
     private int typeItem;
     private String name;
-    private boolean isTargetNulltable;
+    @JsonProperty("isTargetNulltable")
+    private boolean isTargetRequire;
 
-    public Item(int typeItem, String name, boolean isTargetNulltable) {
+    public Item( int typeItem, String name, boolean isTargetRequire) {
         this.typeItem = typeItem;
         this.name = name;
-        this.isTargetNulltable = isTargetNulltable;
+        this.isTargetRequire = isTargetRequire;
     }
 
     @Override

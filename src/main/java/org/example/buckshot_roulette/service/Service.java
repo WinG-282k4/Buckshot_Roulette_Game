@@ -6,7 +6,9 @@ import org.example.buckshot_roulette.model.Item.Item;
 import org.example.buckshot_roulette.model.ItemFactory;
 import org.example.buckshot_roulette.model.Player;
 import org.example.buckshot_roulette.model.Room;
+import org.example.buckshot_roulette.model.RoomLoby;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -50,7 +52,7 @@ public class Service {
         System.out.println("Room infor at start game:");
         tempRoom.Print();
 
-        return tempRoom.getRoomStatus("Game has started!");
+        return tempRoom.toRoomStatus("Game has started!");
     }
 
     //Create new Room
@@ -71,7 +73,7 @@ public class Service {
 
         if (
                 tempRoom.getPlayers().contains(player)
-                || tempRoom.getPlayers().size() > 4
+                || tempRoom.getPlayers().size() >= 4
                 || tempRoom.getTurnOrder().peek() != null
         ){
             throw new IllegalArgumentException("Cannot join room");
@@ -89,8 +91,8 @@ public class Service {
             throw new IllegalArgumentException("Room not found");
         }
 
-        tempRoom.getPlayers().remove(player);//Reset player ID to indicate they are no longer in a room
-        return tempRoom.getRoomStatus("Player " + player.getName() + " has left the room.");
+        tempRoom.getPlayers().remove(player);
+        return tempRoom.toRoomStatus("Player " + player.getName() + " has left the room.");
     }
 
     //Player use item
@@ -121,7 +123,7 @@ public class Service {
         }
 
         //Check solomode
-        if(tempRoom.getIsSoloMode() && !useItem.isTargetNulltable()){
+        if(tempRoom.getIsSoloMode() && useItem.isTargetRequire()){
             if(!tempRoom.isSolo(playerIDtarget)) // check target is soloing
                 throw new IllegalArgumentException("Target is not solo.");
         }
@@ -129,7 +131,7 @@ public class Service {
         String message = (String) useItem.use(new GameActionContext(tempRoom.getGun(), tempPlayerActor, tempPlayerTarget, tempRoom));
         tempPlayerActor.getItems().remove(useItem);
         System.out.println("Player " + useItem.getName() + " has been used");
-        return tempRoom.getRoomStatus(message);
+        return tempRoom.toRoomStatus(message);
     }
 
     //Player fire target
@@ -182,33 +184,29 @@ public class Service {
         }
         else if (dmg != 0) tempRoom.endAction();
 
+        nextRound(tempRoom);
+
         System.out.println("Room infor after:");
         tempRoom.Print();
-        return tempRoom.getRoomStatus("Player " + tempPlayerActor.getName() + " fired " + tempPlayerTarget.getName() + " for " + dmg + " damage.");
+        return tempRoom.toRoomStatus("Player " + tempPlayerActor.getName() + " fired " + tempPlayerTarget.getName() + " for " + dmg + " damage.");
     }
 
-    //End round
-    public RoomStatusResponse nextRound(int roomid){
-        Room tempRoom = getRoom(roomid);
-
-        if(tempRoom == null){
-            throw new IllegalArgumentException("Room not found");
-        }
+    //End round when gun empty
+    public void nextRound(Room room){
 
         // Kiểm tra xem gun còn đạn không
-        int[] gunInfo = tempRoom.getGun().getInfoBullets();
+        int[] gunInfo = room.getGun().getInfoBullets();
         int totalBullets = gunInfo[0] + gunInfo[1]; // fakeCount + realCount
 
         if(totalBullets > 0){
-            throw new IllegalArgumentException("Cannot reload when gun still has bullets. Current bullets: " + totalBullets);
+            return;
         }
 
-        tempRoom.getGun().reload(tempRoom.getPlayers().size());
+        room.getGun().reload(room.getPlayers().size());
 
-        for(Player p : tempRoom.getPlayers()){
+        for(Player p : room.getPlayers()){
             p.CreateStarterItems();
         }
-        return tempRoom.getRoomStatus("Reload completed. Let go next round !");
     }
 
 
@@ -221,7 +219,7 @@ public class Service {
         return tempRoom.getTurnOrder().peek() == tempPlayer;
     }
 
-    public List<Integer> getAnyRoom(int pageNumber) {
+    public List<RoomLoby> getAnyRoom(int pageNumber) {
         int pageSize = 10;
         int startIndex = pageNumber * pageSize;  // Page 0 = index 0, page 1 = index 10
         int endIndex = Math.min(startIndex + pageSize, rooms.size());
@@ -233,12 +231,16 @@ public class Service {
         }
 
         // Log rooms
+        List<RoomLoby> listroom = new ArrayList<RoomLoby>();
         System.out.println("Returning rooms for page " + pageNumber + " (index " + startIndex + " to " + endIndex + "):");
         for (int i = startIndex; i < endIndex; i++) {
             System.out.println("Room ID: " + rooms.get(i).getID() + " - Players: " + rooms.get(i).getPlayers().size());
+            listroom.add(new RoomLoby(rooms.get(i).getID(), rooms.get(i).checkStatus()));
         }
 
-        return rooms.subList(startIndex, endIndex).stream().map(Room::getID).toList();
+
+
+        return listroom;
     }
 }
 

@@ -128,28 +128,58 @@ public class Room implements IRoomAction {
         }
     }
 
-    //Convert to Response
-    public RoomStatusResponse getRoomStatus(String message){
-
-        // Use peek() instead of poll() to avoid removing player from the queue when just reporting nextPlayer
-        Player nextPlayer = null;
-        String status;
+    //Get next player
+    public Player getNextPlayer(){
         if (this.turnOrder != null && !this.turnOrder.isEmpty()) {
-            nextPlayer = this.turnOrder.peek();
+            return this.turnOrder.peek();
         }
 
         if(this.isSoloMode){
             if (this.SoloTurnOrder != null && !this.SoloTurnOrder.isEmpty()){
-                nextPlayer = this.SoloTurnOrder.peek();
+                return this.SoloTurnOrder.peek();
             }
         }
 
-        if (nextPlayer != null){
+        return null;
+    }
+
+    //Check room status
+    public String checkStatus(){
+
+        String status;
+
+        // Check if game has ended (only 1 or fewer players alive)
+        int aliveCount = 0;
+        for(Player p : this.players){
+            if(p.getHealth() > 0){
+                aliveCount++;
+            }
+        }
+
+        if(aliveCount <= 1){
+            status = "Ended";
+            return status;
+        }
+
+        // If nextPlayer exists, game is playing
+        if (getNextPlayer() != null){
             status = "Playing";
         }
         else {
+            // No nextPlayer and game not ended = waiting
             status = "Waiting";
         }
+
+        return status;
+    }
+
+    //Convert to Response
+    public RoomStatusResponse toRoomStatus(String message){
+
+        // Use peek() instead of poll() to avoid removing player from the queue when just reporting nextPlayer
+        Player nextPlayer = getNextPlayer();
+
+        String status = this.checkStatus();
 
         return RoomStatusResponse.builder()
                 .status(status)

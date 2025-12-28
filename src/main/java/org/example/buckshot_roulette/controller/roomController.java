@@ -3,6 +3,7 @@ package org.example.buckshot_roulette.controller;
 import org.example.buckshot_roulette.dto.RoomStatusResponse;
 import org.example.buckshot_roulette.model.Player;
 import org.example.buckshot_roulette.model.Room;
+import org.example.buckshot_roulette.model.RoomLoby;
 import org.example.buckshot_roulette.service.Service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -75,15 +76,15 @@ public class roomController {
     ) {
         logger.info("Received API: GET /api/rooms/{} (get room by ID)", roomid);
         Room room = service.getRoom(roomid);
-        return ResponseEntity.ok(room.getRoomStatus(""));
+        return ResponseEntity.ok(room.toRoomStatus(""));
     }
 
     @GetMapping("/api/rooms/list/{page}")
-    public ResponseEntity<List<Integer>> getAllRooms(
+    public ResponseEntity<List<RoomLoby>> getAllRooms(
             @PathVariable int page
     ) {
         logger.info("Received API: GET /api/rooms/list/{} (get room list)", page);
-        List<Integer> room = service.getAnyRoom(page);
+        List<RoomLoby> room = service.getAnyRoom(page);
         return ResponseEntity.ok(room);
     }
 }

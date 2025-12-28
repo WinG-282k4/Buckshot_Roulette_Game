@@ -49,22 +49,6 @@ public class gameController {
         sendResults(room);
     }
 
-    @MessageMapping("/room/{roomid}/reload")
-    public void reloadRoom(
-            @DestinationVariable String roomid
-    ){
-        logger.info("Received API: POST /app/room/{}/reload", roomid);
-        //Call server to handle logic
-        RoomStatusResponse room = service.nextRound(Integer.parseInt(roomid));
-
-        //Build action response to notify
-        room.setActionResponse(ActionResponse.builder()
-                .action("RELOAD")
-                .build());
-
-        sendResults(room);
-    }
-
     @MessageMapping("/room/{roomid}/fire/{targetplayerid}")
     public void fire(
             @DestinationVariable String roomid,
@@ -136,7 +120,7 @@ public class gameController {
         Room room = service.getRoom(Integer.parseInt(roomid));
 
         //Create status room to response
-        RoomStatusResponse sRoom = room.getRoomStatus("");
+        RoomStatusResponse sRoom = room.toRoomStatus("");
         sRoom.setActionResponse(ActionResponse.builder()
                 .actorId(actorPlayer.getId())
                 .action("TARGET")
