@@ -1,5 +1,6 @@
 import { useGameStore } from '../../stores/gameStore';
 import { wsService } from '../../services/websocket.service';
+import { useNavigate } from 'react-router-dom';
 import PlayerList from './PlayerList';
 import GunDisplay from './GunDisplay';
 import ActionButtons from './ActionButtons';
@@ -8,8 +9,16 @@ import ItemSlots from './ItemSlots';
 export default function GameBoard() {
   const { roomStatus, isMyTurn, myPlayer } = useGameStore();
   const currentPlayer = myPlayer();
+  const navigate = useNavigate();
 
   console.log('🎮 GameBoard render - roomStatus:', roomStatus);
+
+  // Game Ended - Hiển thị thông báo kết thúc
+  if (roomStatus && roomStatus.status === 'Ended') {
+    // Tìm người chiến thắng từ players (người có health > 0)
+    const winner = roomStatus.players.find(p => p.health > 0);
+    const currentPlayerObj = currentPlayer;
+    const isCurrentPlayerWinner = currentPlayerObj && winner && currentPlayerObj.ID === winner.ID;
 
 
   // Debug mode: Hiển thị UI ngay cả khi chưa có data
