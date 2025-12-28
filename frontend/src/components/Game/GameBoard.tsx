@@ -1,4 +1,3 @@
-import { useEffect } from 'react';
 import { useGameStore } from '../../stores/gameStore';
 import { wsService } from '../../services/websocket.service';
 import PlayerList from './PlayerList';
@@ -8,24 +7,10 @@ import ItemSlots from './ItemSlots';
 
 export default function GameBoard() {
   const { roomStatus, isMyTurn, myPlayer } = useGameStore();
+  const currentPlayer = myPlayer();
 
   console.log('🎮 GameBoard render - roomStatus:', roomStatus);
 
-  // Auto reload khi hết đạn và đến lượt mình
-  useEffect(() => {
-    if (!roomStatus || roomStatus.status !== 'PLAYING') return;
-
-    const [fakeCount, realCount] = roomStatus.gun;
-    const totalBullets = fakeCount + realCount;
-
-    // Nếu hết đạn VÀ đến lượt mình → Tự động reload
-    if (totalBullets === 0 && isMyTurn()) {
-      console.log('🔄 Auto reload: Gun is empty and it\'s my turn');
-      setTimeout(() => {
-        wsService.reload();
-      }, 1000); // Delay 1s để player thấy gun empty
-    }
-  }, [roomStatus?.gun, isMyTurn, roomStatus?.status]);
 
   // Debug mode: Hiển thị UI ngay cả khi chưa có data
   if (!roomStatus) {
@@ -69,7 +54,6 @@ export default function GameBoard() {
   }
 
   const isMyTurnFlag = isMyTurn();
-  const currentPlayer = myPlayer();
   const nextPlayer = roomStatus.nextPlayer;
   const messageText = roomStatus.message?.trim();
 

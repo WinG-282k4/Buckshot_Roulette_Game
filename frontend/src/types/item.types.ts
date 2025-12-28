@@ -24,3 +24,12 @@ export const ItemNames: Record<ItemType, string> = {
   [ItemType.VIEWFINDER]: "Viewfinder"
 };
 
+export const ItemDescriptions: Record<ItemType, string> = {
+  [ItemType.BEER]: "Loại bỏ viên đạn hiện tại khỏi súng.",
+  [ItemType.BULLET]: "Thêm một viên đạn vào súng.",
+  [ItemType.CHAINSAW]: "Gây 2 sát thương cho lần bắn tiếp.",
+  [ItemType.CIGARETTE]: "Hồi phục 1 máu cho bản thân.",
+  [ItemType.GLASS]: "Xem viên đạn tiếp theo trong súng.",
+  [ItemType.HANDCUFFS]: "Mục tiêu bỏ lượt tiếp theo.",
+  [ItemType.VIEWFINDER]: "Chọn 1 đối thủ để solo."
+};

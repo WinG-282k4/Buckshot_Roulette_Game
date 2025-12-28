@@ -39,7 +39,7 @@ export default function PlayerList({ players, nextPlayer, currentPlayerId }: Pla
 
               {/* Health */}
               <div className="flex gap-1">
-                {Array.from({ length: 5 }).map((_, i) => (
+                {Array.from({ length: 6 }).map((_, i) => (
                   <div
                     key={i}
                     className={`

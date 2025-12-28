@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Item, ItemType } from '../../types/item.types';
+import { Item, ItemType, ItemDescriptions } from '../../types/item.types';
 import { Player } from '../../types/player.types';
 
 interface ItemSlotsProps {
@@ -43,18 +43,20 @@ export default function ItemSlots({ items, onUseItem, canUse, players }: ItemSlo
 
     setSelectedItem(item);
     setSelectedItemIndex(index);
+    setIsChoosingTarget(false);
   };
 
   const handleConfirmUseItem = () => {
     if (!selectedItem) return;
 
     if (selectedItem.isTargetNulltable) {
+      // Show target selection modal
       setIsChoosingTarget(true);
-      return;
+    } else {
+      // Use item directly without target
+      onUseItem(selectedItem.typeItem);
+      resetSelection();
     }
-
-    onUseItem(selectedItem.typeItem);
-    resetSelection();
   };
 
   const handleUseOnTarget = (targetId: string) => {
@@ -95,20 +97,20 @@ export default function ItemSlots({ items, onUseItem, canUse, players }: ItemSlo
             ))}
           </div>
 
-          {selectedItem && (
+          {selectedItem && !isChoosingTarget && (
             <div className="mt-4 px-3 py-2 bg-yellow-900/30 rounded-lg border border-yellow-600 text-sm text-yellow-200">
               <p className="font-semibold">{selectedItem.name}</p>
-              <p className="text-yellow-100">Nhấn "Dùng item" để thực hiện. Nhấn lại để hủy chọn.</p>
+              <p className="text-yellow-100">{ItemDescriptions[selectedItem.typeItem]}</p>
             </div>
           )}
 
-          {selectedItem && (
+          {selectedItem && !isChoosingTarget && (
             <button
               onClick={handleConfirmUseItem}
               disabled={!canUse}
               className="mt-3 w-full py-3 bg-gradient-to-r from-yellow-500 to-yellow-600 text-black font-semibold rounded-lg hover:from-yellow-400 hover:to-yellow-500 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
             >
-              DÙNG ITEM
+              USE ITEM
             </button>
           )}
         </>
