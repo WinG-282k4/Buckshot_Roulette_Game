@@ -2,6 +2,7 @@ import { Player } from './player.types';
 
 export interface RoomStatusResponse {
   status: string;
+  message?: string;  // Thông báo chung trong phòng
   roomid: number;
   gun: number[]; // [fakeCount, realCount]
   players: Player[];

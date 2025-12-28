@@ -39,12 +39,25 @@ public class Gun implements IGunAction {
     // Additional methods related to Gun behavior can be added here
     //Get dmg
     public int fire(){
-        int dmg = this.bullets.poll()? 1 : 0;
+        Boolean bullet = this.bullets.poll();
+        if (bullet == null) {
+            return 0; // No bullets left
+        }
+
+        int dmg = bullet ? 1 : 0;
+
+        // Update counts
+        if (bullet) {
+            realCount--;
+        } else {
+            fakeCount--;
+        }
+
         if(isDoubledmg){
             dmg *= 2;
         }
         this.isDoubledmg = false;
-//        this.bullets.poll();
+
         return dmg;
     }
 
@@ -61,7 +74,15 @@ public class Gun implements IGunAction {
     //Remove first bullet
     @Override
     public void eject() {
-        this.bullets.pollFirst();
+        Boolean bullet = this.bullets.pollFirst();
+        if (bullet != null) {
+            // Update counts
+            if (bullet) {
+                realCount--;
+            } else {
+                fakeCount--;
+            }
+        }
     }
 
     //Add random bullet at the end
@@ -70,8 +91,10 @@ public class Gun implements IGunAction {
         double rand = Math.random();
         if (rand < 0.5) {
             this.bullets.addLast(true);
+            realCount++;
         } else {
             this.bullets.addLast(false);
+            fakeCount++;
         }
     }
 

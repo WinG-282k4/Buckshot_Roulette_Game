@@ -12,6 +12,7 @@ import java.util.List;
 @Builder
 public class RoomStatusResponse {
     private String status;
+    private String message;  // Thông báo chung trong phòng
     private int roomid;
     private int[] gun;
     private List<Player> players;

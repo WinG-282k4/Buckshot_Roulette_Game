@@ -129,10 +129,11 @@ public class Room implements IRoomAction {
     }
 
     //Convert to Response
-    public RoomStatusResponse getRoomStatus(){
+    public RoomStatusResponse getRoomStatus(String message){
 
         // Use peek() instead of poll() to avoid removing player from the queue when just reporting nextPlayer
         Player nextPlayer = null;
+        String status;
         if (this.turnOrder != null && !this.turnOrder.isEmpty()) {
             nextPlayer = this.turnOrder.peek();
         }
@@ -143,8 +144,16 @@ public class Room implements IRoomAction {
             }
         }
 
+        if (nextPlayer != null){
+            status = "Playing";
+        }
+        else {
+            status = "Waiting";
+        }
+
         return RoomStatusResponse.builder()
-                .status("OK")
+                .status(status)
+                .message(message)  // Thêm message
                 .roomid(this.getID())
                 .gun(this.getGun().getInfoBullets())
                 .players(this.getPlayers())

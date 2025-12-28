@@ -95,8 +95,8 @@ export default function RoomPage() {
     );
   }
 
-  // Waiting Room (status === "WAITING")
-  if (!roomStatus || roomStatus.status === 'WAITING') {
+  // Waiting Room - Khi chưa có nextPlayer (chưa start game)
+  if (!roomStatus || !roomStatus.nextPlayer) {
     return (
       <div style={{
         minHeight: '100vh',
@@ -143,6 +143,26 @@ export default function RoomPage() {
               fontWeight: 'bold'
             }}>
               👥 Người chơi ({roomStatus?.players.length || 1}/4)
+              {roomStatus && roomStatus.players.length >= 2 && roomStatus.players.length < 4 && (
+                <span style={{
+                  marginLeft: '10px',
+                  fontSize: '14px',
+                  color: '#22c55e',
+                  fontWeight: 'normal'
+                }}>
+                  ✓ Đủ người để bắt đầu
+                </span>
+              )}
+              {roomStatus && roomStatus.players.length >= 4 && (
+                <span style={{
+                  marginLeft: '10px',
+                  fontSize: '14px',
+                  color: '#fbbf24',
+                  fontWeight: 'normal'
+                }}>
+                  ⚠️ Phòng đã đầy
+                </span>
+              )}
             </h2>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
@@ -307,7 +327,7 @@ export default function RoomPage() {
     );
   }
 
-  // Game Board (status === "PLAYING")
+  // Game Board - Khi đã có nextPlayer (game đã start)
   return <GameBoard />;
 }
 

@@ -57,9 +57,26 @@ export class WebSocketService {
 
     // Subscribe to room updates
     this.client.subscribe(`/topic/room/${roomId}`, (message: IMessage) => {
-      const data: RoomStatusResponse = JSON.parse(message.body);
-      console.log('📨 Room update:', data);
-      this.onRoomUpdateCallback?.(data);
+      const data = JSON.parse(message.body);
+      console.log('📨 Room update received:', data);
+
+      // Backend trả về Map {message: "..."} cho join/leave
+      // Backend trả về RoomStatusResponse cho game actions
+
+      if (data.message && typeof data.message === 'string' && !data.status && !data.roomid) {
+        // Map message từ join/leave
+        console.log('📬 Join/Leave event:', data.message);
+        // Fetch room status để update UI
+        this.fetchRoomStatus(roomId);
+      } else if (data.status || data.roomid !== undefined || data.players) {
+        // RoomStatusResponse từ game actions
+        console.log('🎮 Game update:', data);
+        this.onRoomUpdateCallback?.(data);
+      } else {
+        // Unknown format - fetch to be safe
+        console.log('⚠️ Unknown format, fetching...');
+        this.fetchRoomStatus(roomId);
+      }
     });
 
     // Send join message
@@ -67,6 +84,22 @@ export class WebSocketService {
       destination: `/app/join/${roomId}`,
       body: JSON.stringify({ name: playerName })
     });
+  }
+
+  // Fetch room status từ REST API
+  private async fetchRoomStatus(roomId: number) {
+    try {
+      const response = await fetch(`http://localhost:8080/api/rooms/${roomId}`, {
+        credentials: 'include'
+      });
+      if (response.ok) {
+        const data = await response.json();
+        console.log('📊 Fetched room status:', data);
+        this.onRoomUpdateCallback?.(data);
+      }
+    } catch (error) {
+      console.error('Error fetching room status:', error);
+    }
   }
 
   // Start game
@@ -83,9 +116,10 @@ export class WebSocketService {
   fire(targetPlayerId: string) {
     if (!this.roomId || !this.client?.connected) return;
 
+    console.log('🔫 Firing at target:', targetPlayerId);
     this.client.publish({
       destination: `/app/room/${this.roomId}/fire/${targetPlayerId}`,
-      body: JSON.stringify({ actorId: this.playerId })
+      body: JSON.stringify({})  // Backend lấy actor từ session
     });
   }
 
@@ -103,6 +137,7 @@ export class WebSocketService {
   useItem(itemType: number, targetId?: string) {
     if (!this.roomId || !this.client?.connected) return;
 
+    console.log('🎒 Using item:', { itemType, targetId });
     this.client.publish({
       destination: `/app/room/${this.roomId}/use-item`,
       body: JSON.stringify({

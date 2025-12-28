@@ -7,6 +7,7 @@ interface ActionButtonsProps {
   isMyTurn: boolean;
   onFire: (targetId: string) => void;
   onReload: () => void;
+  gun: number[]; // [fakeCount, realCount]
 }
 
 export default function ActionButtons({
@@ -14,9 +15,13 @@ export default function ActionButtons({
   currentPlayerId,
   isMyTurn,
   onFire,
-  onReload
+  onReload,
+  gun
 }: ActionButtonsProps) {
   const [showTargetSelection, setShowTargetSelection] = useState(false);
+  const [fakeCount, realCount] = gun;
+  const totalBullets = fakeCount + realCount;
+  const canReload = totalBullets === 0; // Chỉ reload khi hết đạn
 
   const handleFireClick = () => {
     setShowTargetSelection(true);
@@ -27,35 +32,30 @@ export default function ActionButtons({
     setShowTargetSelection(false);
   };
 
+  const handleReloadClick = () => {
+    if (!canReload) {
+      alert('Không thể nạp đạn khi súng còn đạn! Hãy bắn hết đạn trước.');
+      return;
+    }
+    onReload();
+  };
+
   return (
     <div className="space-y-4">
-      <div className="grid grid-cols-2 gap-4">
-        <button
-          onClick={handleFireClick}
-          disabled={!isMyTurn}
-          className={`
-            py-6 rounded-lg text-xl font-bold transition-all
-            ${isMyTurn 
-              ? 'bg-red-600 hover:bg-red-700 text-white shadow-lg hover:shadow-red-500/50' 
-              : 'bg-gray-700 text-gray-400 cursor-not-allowed'}
-          `}
-        >
-          🔫 BẮN
-        </button>
+      {/* Chỉ còn nút BẮN, reload tự động ngầm */}
+      <button
+        onClick={handleFireClick}
+        disabled={!isMyTurn}
+        className={`
+          w-full py-8 rounded-lg text-2xl font-bold transition-all
+          ${isMyTurn 
+            ? 'bg-red-600 hover:bg-red-700 text-white shadow-lg hover:shadow-red-500/50' 
+            : 'bg-gray-700 text-gray-400 cursor-not-allowed'}
+        `}
+      >
+        🔫 BẮN
+      </button>
 
-        <button
-          onClick={onReload}
-          disabled={!isMyTurn}
-          className={`
-            py-6 rounded-lg text-xl font-bold transition-all
-            ${isMyTurn 
-              ? 'bg-blue-600 hover:bg-blue-700 text-white shadow-lg hover:shadow-blue-500/50' 
-              : 'bg-gray-700 text-gray-400 cursor-not-allowed'}
-          `}
-        >
-          🔄 NẠP ĐẠN
-        </button>
-      </div>
 
       {/* Target Selection Modal */}
       {showTargetSelection && (

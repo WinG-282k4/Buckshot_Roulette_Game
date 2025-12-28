@@ -70,19 +70,19 @@ public class roomController {
     }
 
     @GetMapping("/api/rooms/{roomid}")
-    public ResponseEntity<RoomStatusResponse> getRooms(
+    public ResponseEntity<RoomStatusResponse> getRoomById(
             @PathVariable int roomid
     ) {
-        logger.info("Received API: GET /api/rooms");
+        logger.info("Received API: GET /api/rooms/{} (get room by ID)", roomid);
         Room room = service.getRoom(roomid);
-        return ResponseEntity.ok(room.getRoomStatus());
+        return ResponseEntity.ok(room.getRoomStatus(""));
     }
 
-    @GetMapping("/api/rooms/{page}")
+    @GetMapping("/api/rooms/list/{page}")
     public ResponseEntity<List<Integer>> getAllRooms(
             @PathVariable int page
     ) {
-        logger.info("Received API: GET /api/rooms");
+        logger.info("Received API: GET /api/rooms/list/{} (get room list)", page);
         List<Integer> room = service.getAnyRoom(page);
         return ResponseEntity.ok(room);
     }

@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { useGameStore } from '../../stores/gameStore';
 import { wsService } from '../../services/websocket.service';
 import PlayerList from './PlayerList';
@@ -9,6 +10,22 @@ export default function GameBoard() {
   const { roomStatus, isMyTurn, myPlayer } = useGameStore();
 
   console.log('🎮 GameBoard render - roomStatus:', roomStatus);
+
+  // Auto reload khi hết đạn và đến lượt mình
+  useEffect(() => {
+    if (!roomStatus || roomStatus.status !== 'PLAYING') return;
+
+    const [fakeCount, realCount] = roomStatus.gun;
+    const totalBullets = fakeCount + realCount;
+
+    // Nếu hết đạn VÀ đến lượt mình → Tự động reload
+    if (totalBullets === 0 && isMyTurn()) {
+      console.log('🔄 Auto reload: Gun is empty and it\'s my turn');
+      setTimeout(() => {
+        wsService.reload();
+      }, 1000); // Delay 1s để player thấy gun empty
+    }
+  }, [roomStatus?.gun, isMyTurn, roomStatus?.status]);
 
   // Debug mode: Hiển thị UI ngay cả khi chưa có data
   if (!roomStatus) {
@@ -73,10 +90,38 @@ export default function GameBoard() {
       <div className="text-center mb-8">
         <h1 className="text-4xl font-bold text-red-500">ROOM #{roomStatus.roomid}</h1>
         <p className="text-gray-400 mt-2">
-          {roomStatus.status === 'WAITING' ? 'Đang chờ...' : 'Đang chơi'}
+          {roomStatus.nextPlayer ? 'Đang chơi' : 'Đang chờ...'}
         </p>
         {roomStatus.isSoloMode && (
           <p className="text-yellow-500 font-semibold mt-2">⚔️ SOLO MODE ACTIVE</p>
+        )}
+
+        {/* Message Notification */}
+        {roomStatus.message && roomStatus.message.trim() !== '' && (
+          <div className="mt-3 inline-block bg-blue-900 border-2 border-blue-500 px-6 py-2 rounded-lg max-w-2xl">
+            <p className="text-blue-300 font-medium">
+              📢 {roomStatus.message}
+            </p>
+          </div>
+        )}
+
+        {/* Turn Indicator */}
+        {roomStatus.nextPlayer && myPlayer() && (
+          <div className="mt-4 inline-block">
+            {roomStatus.nextPlayer.ID === myPlayer()?.ID ? (
+              <div className="bg-green-900 border-2 border-green-500 px-6 py-3 rounded-lg">
+                <p className="text-green-400 font-bold text-xl">
+                  🎯 LƯỢT CỦA BẠN!
+                </p>
+              </div>
+            ) : (
+              <div className="bg-gray-800 border-2 border-gray-600 px-6 py-3 rounded-lg">
+                <p className="text-gray-300 font-bold text-lg">
+                  ⏳ Lượt của: <span className="text-yellow-400">{roomStatus.nextPlayer.name}</span>
+                </p>
+              </div>
+            )}
+          </div>
         )}
       </div>
 
@@ -124,6 +169,7 @@ export default function GameBoard() {
               isMyTurn={isMyTurn()}
               onFire={handleFire}
               onReload={handleReload}
+              gun={roomStatus.gun}
             />
           )}
         </div>

@@ -121,7 +121,6 @@ public class gameController {
 
         //Send result
         sendResults(room);
-
     }
 
     @MessageMapping("/room/{roomid}/target/{targetplayerid}")
@@ -137,7 +136,7 @@ public class gameController {
         Room room = service.getRoom(Integer.parseInt(roomid));
 
         //Create status room to response
-        RoomStatusResponse sRoom = room.getRoomStatus();
+        RoomStatusResponse sRoom = room.getRoomStatus("");
         sRoom.setActionResponse(ActionResponse.builder()
                 .actorId(actorPlayer.getId())
                 .action("TARGET")

@@ -50,7 +50,7 @@ public class Service {
         System.out.println("Room infor at start game:");
         tempRoom.Print();
 
-        return tempRoom.getRoomStatus();
+        return tempRoom.getRoomStatus("Game has started!");
     }
 
     //Create new Room
@@ -69,6 +69,14 @@ public class Service {
             throw new IllegalArgumentException("Room not found");
         }
 
+        if (
+                tempRoom.getPlayers().contains(player)
+                || tempRoom.getPlayers().size() > 4
+                || tempRoom.getTurnOrder().peek() != null
+        ){
+            throw new IllegalArgumentException("Cannot join room");
+        }
+
         tempRoom.getPlayers().add(player);
 
     }
@@ -82,7 +90,7 @@ public class Service {
         }
 
         tempRoom.getPlayers().remove(player);//Reset player ID to indicate they are no longer in a room
-        return tempRoom.getRoomStatus();
+        return tempRoom.getRoomStatus("Player " + player.getName() + " has left the room.");
     }
 
     //Player use item
@@ -95,10 +103,11 @@ public class Service {
         }
 
         Player tempPlayerActor = tempRoom.getPlayer(playeridActor);
+        if (playerIDtarget == null) playerIDtarget = tempPlayerActor.getId();
         Player tempPlayerTarget = tempRoom.getPlayer(playerIDtarget);
 
-        if(tempPlayerActor == null || tempPlayerTarget == null){
-            throw new IllegalArgumentException("Player not found in room");
+        if(tempPlayerActor == null){
+            throw new IllegalArgumentException("You are not in room");
         }
 
         Item useItem = tempPlayerActor.getItem(ItemFactory.createItem(typeItem).getClass());
@@ -117,10 +126,10 @@ public class Service {
                 throw new IllegalArgumentException("Target is not solo.");
         }
 
-        useItem.use(new GameActionContext(tempRoom.getGun(), tempPlayerActor, tempPlayerTarget, tempRoom));
+        String message = (String) useItem.use(new GameActionContext(tempRoom.getGun(), tempPlayerActor, tempPlayerTarget, tempRoom));
         tempPlayerActor.getItems().remove(useItem);
         System.out.println("Player " + useItem.getName() + " has been used");
-        return tempRoom.getRoomStatus();
+        return tempRoom.getRoomStatus(message);
     }
 
     //Player fire target
@@ -175,7 +184,7 @@ public class Service {
 
         System.out.println("Room infor after:");
         tempRoom.Print();
-        return tempRoom.getRoomStatus();
+        return tempRoom.getRoomStatus("Player " + tempPlayerActor.getName() + " fired " + tempPlayerTarget.getName() + " for " + dmg + " damage.");
     }
 
     //End round
@@ -186,12 +195,20 @@ public class Service {
             throw new IllegalArgumentException("Room not found");
         }
 
+        // Kiểm tra xem gun còn đạn không
+        int[] gunInfo = tempRoom.getGun().getInfoBullets();
+        int totalBullets = gunInfo[0] + gunInfo[1]; // fakeCount + realCount
+
+        if(totalBullets > 0){
+            throw new IllegalArgumentException("Cannot reload when gun still has bullets. Current bullets: " + totalBullets);
+        }
+
         tempRoom.getGun().reload(tempRoom.getPlayers().size());
 
         for(Player p : tempRoom.getPlayers()){
             p.CreateStarterItems();
         }
-        return tempRoom.getRoomStatus();
+        return tempRoom.getRoomStatus("Reload completed. Let go next round !");
     }
 
 
@@ -206,15 +223,21 @@ public class Service {
 
     public List<Integer> getAnyRoom(int pageNumber) {
         int pageSize = 10;
-        int startIndex = (pageNumber - 1) * pageSize;
+        int startIndex = pageNumber * pageSize;  // Page 0 = index 0, page 1 = index 10
         int endIndex = Math.min(startIndex + pageSize, rooms.size());
-        if (startIndex >= rooms.size() || startIndex < 0) {
-            throw new IllegalArgumentException("Page number out of range");
+
+        // Nếu không có room nào hoặc page out of range
+        if (rooms.isEmpty() || startIndex >= rooms.size() || startIndex < 0) {
+            System.out.println("No rooms available for page: " + pageNumber);
+            return new java.util.ArrayList<>();  // Return empty list thay vì throw exception
         }
-        // For simplicity, return the first room in the page
+
+        // Log rooms
+        System.out.println("Returning rooms for page " + pageNumber + " (index " + startIndex + " to " + endIndex + "):");
         for (int i = startIndex; i < endIndex; i++) {
-            System.out.println("Room ID: " + rooms.get(i).getID());
+            System.out.println("Room ID: " + rooms.get(i).getID() + " - Players: " + rooms.get(i).getPlayers().size());
         }
+
         return rooms.subList(startIndex, endIndex).stream().map(Room::getID).toList();
     }
 }

@@ -11,7 +11,8 @@ public class Glass extends  Item {
     @Override
     public Object use(GameActionContext context) {
         boolean bullet = context.getGun().peek();
+        String result = bullet ? "The bullet is real" : "The Bullet is fake";
         System.out.println(bullet? "The bullet is real." : "The bullet is fake.");
-        return bullet;
+        return result;
     }
 }

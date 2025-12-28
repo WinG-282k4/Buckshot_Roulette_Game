@@ -16,24 +16,54 @@ export default function LobbyPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [roomIdInput, setRoomIdInput] = useState('');
 
-  // Fetch danh sách phòng
+  // Fetch danh sách phòng - Chỉ khi mount và khi click Làm mới
   useEffect(() => {
     fetchRooms();
-    const interval = setInterval(fetchRooms, 3000); // Refresh mỗi 3 giây
-    return () => clearInterval(interval);
+    // Bỏ auto-refresh
   }, []);
 
   const fetchRooms = async () => {
     try {
-      // TODO: Backend cần có API GET /api/rooms để lấy danh sách
-      // Tạm thời mock data
-      setRooms([
-        // { id: 1, playerCount: 2, status: 'WAITING' },
-        // { id: 2, playerCount: 1, status: 'WAITING' },
-      ]);
+      // Call API để lấy danh sách room IDs
+      const response = await fetch('http://localhost:8080/api/rooms/list/0', {
+        credentials: 'include'
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch rooms');
+      }
+
+      const roomIds: number[] = await response.json();
+      console.log('📋 Fetched room IDs:', roomIds);
+
+      // Fetch chi tiết từng phòng
+      const roomDetails = await Promise.all(
+        roomIds.map(async (id) => {
+          try {
+            const res = await fetch(`http://localhost:8080/api/rooms/${id}`, {
+              credentials: 'include'
+            });
+            if (res.ok) {
+              const data = await res.json();
+              return {
+                id: data.roomid,
+                playerCount: data.players.length,
+                status: data.nextPlayer ? 'PLAYING' : 'WAITING' // Có nextPlayer = đã start
+              };
+            }
+          } catch (err) {
+            console.error('Error fetching room', id, err);
+          }
+          return null;
+        })
+      );
+
+      // Filter out null values
+      setRooms(roomDetails.filter(r => r !== null) as Room[]);
       setIsLoading(false);
     } catch (error) {
       console.error('Error fetching rooms:', error);
+      setRooms([]);
       setIsLoading(false);
     }
   };
@@ -190,29 +220,33 @@ export default function LobbyPage() {
                       </div>
                       <button
                         onClick={() => handleJoinRoom(room.id)}
-                        disabled={room.status !== 'WAITING'}
+                        disabled={room.status !== 'WAITING' || room.playerCount >= 4}
                         style={{
                           padding: '12px 28px',
-                          background: room.status === 'WAITING' ? '#3b82f6' : '#4b5563',
+                          background: (room.status === 'WAITING' && room.playerCount < 4) ? '#3b82f6' : '#4b5563',
                           color: 'white',
                           border: 'none',
                           borderRadius: '8px',
                           fontSize: '16px',
                           fontWeight: 'bold',
-                          cursor: room.status === 'WAITING' ? 'pointer' : 'not-allowed'
+                          cursor: (room.status === 'WAITING' && room.playerCount < 4) ? 'pointer' : 'not-allowed'
                         }}
                         onMouseEnter={(e) => {
-                          if (room.status === 'WAITING') {
+                          if (room.status === 'WAITING' && room.playerCount < 4) {
                             e.currentTarget.style.background = '#2563eb';
                           }
                         }}
                         onMouseLeave={(e) => {
-                          if (room.status === 'WAITING') {
+                          if (room.status === 'WAITING' && room.playerCount < 4) {
                             e.currentTarget.style.background = '#3b82f6';
                           }
                         }}
                       >
-                        {room.status === 'WAITING' ? 'THAM GIA' : 'FULL'}
+                        {room.status !== 'WAITING'
+                          ? 'ĐANG CHƠI'
+                          : room.playerCount >= 4
+                            ? 'ĐẦY (4/4)'
+                            : 'THAM GIA'}
                       </button>
                     </div>
                   ))}
