@@ -146,6 +146,17 @@ export class WebSocketService {
     });
   }
 
+  // Leave room
+  leaveRoom(roomId: number) {
+    if (!this.client?.connected) return;
+
+    console.log('👋 Leaving room:', roomId);
+    this.client.publish({
+      destination: `/app/leave/${roomId}`,
+      body: JSON.stringify({})
+    });
+  }
+
   // Set callbacks
   onRoomUpdate(callback: (data: RoomStatusResponse) => void) {
     this.onRoomUpdateCallback = callback;

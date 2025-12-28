@@ -300,7 +300,11 @@ export default function RoomPage() {
 
           {/* Back button */}
           <button
-            onClick={() => navigate('/lobby?name=' + encodeURIComponent(playerName))}
+            onClick={() => {
+              // Gửi API leave trước khi quay lại
+              wsService.leaveRoom(Number(roomId));
+              navigate('/lobby?name=' + encodeURIComponent(playerName));
+            }}
             style={{
               width: '100%',
               padding: '14px',
