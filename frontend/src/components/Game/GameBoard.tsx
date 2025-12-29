@@ -293,6 +293,20 @@ export default function GameBoard() {
           </p>
         </div>
       )}
+
+      {/* Back to Lobby Button */}
+      <div className="fixed bottom-8 right-8">
+        <button
+          onClick={() => {
+            const roomId = roomStatus?.roomid;
+            wsService.leaveRoom(Number(roomId));
+            navigate('/lobby');
+          }}
+          className="px-6 py-3 bg-gray-700 hover:bg-gray-600 text-white font-bold rounded-lg transition-colors"
+        >
+          ← LOBBY
+        </button>
+      </div>
     </div>
   );
 }

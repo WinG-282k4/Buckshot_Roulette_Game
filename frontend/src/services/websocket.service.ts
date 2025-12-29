@@ -5,6 +5,7 @@ import { RoomStatusResponse } from '../types/room.types';
 export class WebSocketService {
   private client: Client | null = null;
   private roomId: number | null = null;
+  private playerId: string | null = null;
 
   // Callbacks
   private onRoomUpdateCallback: ((data: RoomStatusResponse) => void) | null = null;
@@ -171,8 +172,12 @@ export class WebSocketService {
   }
 
   setPlayerId(id: string) {
-    // Keep setter for future usage while no local storage needed yet
-    console.log('Player ID stored (unused for now):', id);
+    this.playerId = id;
+    console.log('Player ID stored:', id);
+  }
+
+  getPlayerId(): string | null {
+    return this.playerId;
   }
 }
 

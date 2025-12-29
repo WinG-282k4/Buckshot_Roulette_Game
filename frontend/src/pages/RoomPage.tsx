@@ -12,6 +12,7 @@ export default function RoomPage() {
 
   const [isConnected, setIsConnected] = useState(false);
   const [isPlayerCreated, setIsPlayerCreated] = useState(false);
+  const [isViewer, setIsViewer] = useState(false);
   const { roomStatus, setRoomStatus, setCurrentPlayer } = useGameStore();
 
   // Tạo player trước khi connect WebSocket
@@ -56,10 +57,30 @@ export default function RoomPage() {
       setRoomStatus(data);
 
       // Tìm player hiện tại trong danh sách
-      const myPlayer = data.players.find(p => p.name === playerName);
-      if (myPlayer) {
-        setCurrentPlayer(myPlayer);
-        wsService.setPlayerId(myPlayer.ID);
+      let myPlayerId = wsService.getPlayerId();
+
+      // Nếu chưa có playerId, tìm bằng tên
+      if (!myPlayerId) {
+        const myPlayer = data.players.find(p => p.name === playerName);
+        if (myPlayer) {
+          myPlayerId = myPlayer.ID;
+          wsService.setPlayerId(myPlayerId);
+          setCurrentPlayer(myPlayer);
+          setIsViewer(false);
+        } else {
+          // Không tìm thấy player → là viewer
+          console.log('📺 Bạn đang xem như viewer');
+          setIsViewer(true);
+        }
+      } else {
+        // Nếu có playerId, tìm bằng ID
+        const myPlayer = data.players.find(p => p.ID === myPlayerId);
+        if (myPlayer) {
+          setCurrentPlayer(myPlayer);
+          setIsViewer(false);
+        } else {
+          setIsViewer(true);
+        }
       }
     });
 
@@ -95,8 +116,8 @@ export default function RoomPage() {
     );
   }
 
-  // Waiting Room - Khi chưa có nextPlayer (chưa start game)
-  if (!roomStatus || !roomStatus.nextPlayer) {
+  // Waiting Room - Khi status là "Waiting"
+  if (!roomStatus || roomStatus.status === 'Waiting') {
     return (
       <div style={{
         minHeight: '100vh',
@@ -125,6 +146,11 @@ export default function RoomPage() {
               <p style={{ color: '#fbbf24', fontSize: '20px', fontWeight: 'bold' }}>
                 Room #{roomId}
               </p>
+              {isViewer && (
+                <p style={{ color: '#f97316', fontSize: '14px', marginTop: '8px' }}>
+                  📺 Bạn đang xem như VIEWER
+                </p>
+              )}
             </div>
           </div>
 
@@ -264,34 +290,36 @@ export default function RoomPage() {
           {/* Start Button */}
           <button
             onClick={() => wsService.startGame()}
-            disabled={!roomStatus || roomStatus.players.length < 2}
+            disabled={!roomStatus || roomStatus.players.length < 2 || isViewer}
             style={{
               width: '100%',
               padding: '20px',
-              background: (roomStatus && roomStatus.players.length >= 2) ? '#22c55e' : '#4b5563',
+              background: (roomStatus && roomStatus.players.length >= 2 && !isViewer) ? '#22c55e' : '#4b5563',
               color: 'white',
               border: 'none',
               borderRadius: '12px',
               fontSize: '24px',
               fontWeight: 'bold',
-              cursor: (roomStatus && roomStatus.players.length >= 2) ? 'pointer' : 'not-allowed',
+              cursor: (roomStatus && roomStatus.players.length >= 2 && !isViewer) ? 'pointer' : 'not-allowed',
               transition: 'all 0.3s',
               marginBottom: '20px'
             }}
             onMouseEnter={(e) => {
-              if (roomStatus && roomStatus.players.length >= 2) {
+              if (roomStatus && roomStatus.players.length >= 2 && !isViewer) {
                 e.currentTarget.style.background = '#16a34a';
                 e.currentTarget.style.transform = 'translateY(-3px)';
               }
             }}
             onMouseLeave={(e) => {
-              if (roomStatus && roomStatus.players.length >= 2) {
+              if (roomStatus && roomStatus.players.length >= 2 && !isViewer) {
                 e.currentTarget.style.background = '#22c55e';
                 e.currentTarget.style.transform = 'translateY(0)';
               }
             }}
           >
-            {roomStatus && roomStatus.players.length >= 2 ? (
+            {isViewer ? (
+              <>📺 BẠN LÀ VIEWER</>
+            ) : roomStatus && roomStatus.players.length >= 2 ? (
               <>🎮 BẮT ĐẦU GAME</>
             ) : (
               <>⏳ CHỜ NGƯỜI CHƠI</>

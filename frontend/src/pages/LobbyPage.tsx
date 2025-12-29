@@ -2,8 +2,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 
 interface Room {
-  id: number;
-  playerCount: number;
+  roomid: number;
   status: string;
 }
 
@@ -24,7 +23,7 @@ export default function LobbyPage() {
 
   const fetchRooms = async () => {
     try {
-      // Call API để lấy danh sách room IDs
+      // Call API để lấy danh sách RoomLoby (roomid và status)
       const response = await fetch('http://localhost:8080/api/rooms/list/0', {
         credentials: 'include'
       });
@@ -33,33 +32,10 @@ export default function LobbyPage() {
         throw new Error('Failed to fetch rooms');
       }
 
-      const roomIds: number[] = await response.json();
-      console.log('📋 Fetched room IDs:', roomIds);
+      const roomList: Room[] = await response.json();
+      console.log('📋 Fetched rooms:', roomList);
 
-      // Fetch chi tiết từng phòng
-      const roomDetails = await Promise.all(
-        roomIds.map(async (id) => {
-          try {
-            const res = await fetch(`http://localhost:8080/api/rooms/${id}`, {
-              credentials: 'include'
-            });
-            if (res.ok) {
-              const data = await res.json();
-              return {
-                id: data.roomid,
-                playerCount: data.players.length,
-                status: data.status // Backend đã trả về "Playing" hoặc "Waiting"
-              };
-            }
-          } catch (err) {
-            console.error('Error fetching room', id, err);
-          }
-          return null;
-        })
-      );
-
-      // Filter out null values
-      setRooms(roomDetails.filter(r => r !== null) as Room[]);
+      setRooms(roomList);
       setIsLoading(false);
     } catch (error) {
       console.error('Error fetching rooms:', error);
@@ -178,7 +154,7 @@ export default function LobbyPage() {
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
                   {rooms.map((room) => (
                     <div
-                      key={room.id}
+                      key={room.roomid}
                       style={{
                         background: '#1f2937',
                         padding: '20px',
@@ -205,12 +181,9 @@ export default function LobbyPage() {
                           marginBottom: '8px',
                           fontWeight: 'bold'
                         }}>
-                          🎮 Phòng #{room.id}
+                          🎮 Phòng #{room.roomid}
                         </h3>
                         <div style={{ display: 'flex', gap: '15px', fontSize: '14px' }}>
-                          <span style={{ color: '#9ca3af' }}>
-                            👥 {room.playerCount} người
-                          </span>
                           <span style={{
                             color: room.status === 'Waiting' ? '#10b981' : '#ef4444'
                           }}>
@@ -219,34 +192,32 @@ export default function LobbyPage() {
                         </div>
                       </div>
                       <button
-                        onClick={() => handleJoinRoom(room.id)}
-                        disabled={room.status !== 'Waiting' || room.playerCount >= 4}
+                        onClick={() => handleJoinRoom(room.roomid)}
+                        disabled={room.status !== 'Waiting'}
                         style={{
                           padding: '12px 28px',
-                          background: (room.status === 'Waiting' && room.playerCount < 4) ? '#3b82f6' : '#4b5563',
+                          background: room.status === 'Waiting' ? '#3b82f6' : '#4b5563',
                           color: 'white',
                           border: 'none',
                           borderRadius: '8px',
                           fontSize: '16px',
                           fontWeight: 'bold',
-                          cursor: (room.status === 'Waiting' && room.playerCount < 4) ? 'pointer' : 'not-allowed'
+                          cursor: room.status === 'Waiting' ? 'pointer' : 'not-allowed'
                         }}
                         onMouseEnter={(e) => {
-                          if (room.status === 'Waiting' && room.playerCount < 4) {
+                          if (room.status === 'Waiting') {
                             e.currentTarget.style.background = '#2563eb';
                           }
                         }}
                         onMouseLeave={(e) => {
-                          if (room.status === 'Waiting' && room.playerCount < 4) {
+                          if (room.status === 'Waiting') {
                             e.currentTarget.style.background = '#3b82f6';
                           }
                         }}
                       >
                         {room.status !== 'Waiting'
                           ? 'ĐANG CHƠI'
-                          : room.playerCount >= 4
-                            ? 'ĐẦY (4/4)'
-                            : 'THAM GIA'}
+                          : 'THAM GIA'}
                       </button>
                     </div>
                   ))}

@@ -145,8 +145,13 @@ public class Room implements IRoomAction {
 
     //Check room status
     public String checkStatus(){
-
         String status;
+
+        // Check if there are enough players to start (minimum 2 players)
+        if(this.players.size() < 2){
+            status = "Waiting";
+            return status;
+        }
 
         // Check if game has ended (only 1 or fewer players alive)
         int aliveCount = 0;
@@ -172,6 +177,7 @@ public class Room implements IRoomAction {
 
         return status;
     }
+
 
     //Convert to Response
     public RoomStatusResponse toRoomStatus(String message){

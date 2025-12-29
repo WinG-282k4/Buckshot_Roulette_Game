@@ -98,20 +98,20 @@ export default function ItemSlots({ items, onUseItem, canUse, players }: ItemSlo
           </div>
 
           {selectedItem && !isChoosingTarget && (
-            <div className="mt-4 px-3 py-2 bg-yellow-900/30 rounded-lg border border-yellow-600 text-sm text-yellow-200">
-              <p className="font-semibold">{selectedItem.name}</p>
-              <p className="text-yellow-100">{ItemDescriptions[selectedItem.typeItem]}</p>
-            </div>
-          )}
+            <>
+              <div className="mt-4 px-3 py-2 bg-yellow-900/30 rounded-lg border border-yellow-600 text-sm text-yellow-200">
+                <p className="font-semibold">{selectedItem.name}</p>
+                <p className="text-yellow-100">{ItemDescriptions[selectedItem.typeItem]}</p>
+              </div>
 
-          {selectedItem && !isChoosingTarget && (
-            <button
-              onClick={handleConfirmUseItem}
-              disabled={!canUse}
-              className="mt-3 w-full py-3 bg-gradient-to-r from-yellow-500 to-yellow-600 text-black font-semibold rounded-lg hover:from-yellow-400 hover:to-yellow-500 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
-            >
-              USE ITEM
-            </button>
+              <button
+                onClick={handleConfirmUseItem}
+                disabled={!canUse}
+                className="mt-3 w-full py-3 bg-gradient-to-r from-yellow-500 to-yellow-600 text-black font-semibold rounded-lg hover:from-yellow-400 hover:to-yellow-500 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+              >
+                USE ITEM
+              </button>
+            </>
           )}
         </>
       )}
