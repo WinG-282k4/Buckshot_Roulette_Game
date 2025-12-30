@@ -76,7 +76,7 @@ public class Service {
         if (existingPlayer != null) {
             // Player with same ID already exists - replace the old object with new one
             // This handles the reload case where new Player object is created with same ID
-            System.out.println("🔄 Player " + player.getName() + " (ID: " + player.getId() + ") already in room, updating reference");
+            System.out.println("Player " + player.getName() + " (ID: " + player.getId() + ") already in room, updating reference");
             tempRoom.getPlayers().remove(existingPlayer);
             tempRoom.getPlayers().add(player);
             return;
@@ -93,7 +93,7 @@ public class Service {
         }
 
         tempRoom.getPlayers().add(player);
-        System.out.println("✅ Player " + player.getName() + " (ID: " + player.getId() + ") joined room " + roomid);
+        System.out.println("Player " + player.getName() + " (ID: " + player.getId() + ") joined room " + roomid);
     }
 
     //Player leave Room

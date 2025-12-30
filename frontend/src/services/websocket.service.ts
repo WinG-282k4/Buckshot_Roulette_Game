@@ -7,6 +7,8 @@ export class WebSocketService {
   private roomId: number | null = null;
   private playerId: string | null = null;
   private pendingRoomRejoin: { roomId: number; playerName: string } | null = null;
+  private lastJoinRoomId: number | null = null;  // Track last join to prevent duplicates
+  private lastJoinPlayerName: string | null = null;
 
   // Callbacks
   private onRoomUpdateCallback: ((data: RoomStatusResponse) => void) | null = null;
@@ -75,6 +77,15 @@ export class WebSocketService {
       console.error('WebSocket not connected!');
       return;
     }
+
+    // Prevent duplicate join calls (especially from React StrictMode)
+    if (this.lastJoinRoomId === roomId && this.lastJoinPlayerName === playerName) {
+      console.log('⚠️ Already joining/joined room', roomId, 'with player', playerName, '- skipping duplicate join');
+      return;
+    }
+
+    this.lastJoinRoomId = roomId;
+    this.lastJoinPlayerName = playerName;
 
     this.roomId = roomId;
 

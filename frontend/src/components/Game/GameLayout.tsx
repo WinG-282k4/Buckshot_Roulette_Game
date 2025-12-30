@@ -16,7 +16,8 @@ interface ActionResponse {
 
 interface GameLayoutProps {
   players: Player[];
-  currentPlayerId?: string;
+  currentPlayerId?: string;  // Current player ID (me - who I am)
+  nextPlayerId?: string;     // Next player ID (whose turn it is)
   gun?: number[];
   actionResponse?: ActionResponse | null;
   isMyTurn: boolean;
@@ -84,6 +85,7 @@ const avatarMap: Record<string, string> = {
 function GameLayout({
   players,
   currentPlayerId,
+  nextPlayerId,
   gun = [],
   actionResponse,
   isMyTurn,
@@ -92,26 +94,26 @@ function GameLayout({
 }: GameLayoutProps) {
   const [selectedTarget, setSelectedTarget] = useState<string | null>(null);
 
-  // Lấy thông tin từ props
-  // currentPlayerId = nextPlayer.ID (từ WebSocket) - người có lượt hiện tại
-  // isMyTurn = có phải lượt của tôi không
-  // Suy ra: myPlayerId = player có isMyTurn = true hoặc là currentPlayer của localStorage
-
   // Find "me" - người đang chơi game này
-  const me = players.find(p => p.ID === players[0]?.ID); // Hoặc lấy từ localStorage/context
+  // Use currentPlayerId (từ gameStore's currentPlayer.ID) - đây là player ID của bạn
+  const me = players.find(p => p.ID === currentPlayerId);
+
+  // If currentPlayerId is not found, fall back to first player (shouldn't happen in normal flow)
+  const fallbackPlayer = me || players[0];
 
   // Find danh sách đối thủ (loại bỏ mình)
-  const opponents = players.filter(p => p.ID !== me?.ID);
+  const opponents = players.filter(p => p.ID !== fallbackPlayer?.ID);
 
   // Assign positions cố định
   const player3 = opponents[0]; // Top
   const player4 = opponents[1]; // Left
   const player2 = opponents[2]; // Right
-  const currentPlayer = me; // Me luôn ở dưới
+  const currentPlayer = fallbackPlayer; // Người chơi hiện tại ở dưới
 
   // Debug log
-  console.log('me:', me?.ID, 'nextPlayer (có lượt):', currentPlayerId, 'isMyTurn:', isMyTurn);
-  console.log('player3:', player3?.ID, 'player4:', player4?.ID, 'player2:', player2?.ID);
+  console.log('👤 Current Player (me):', currentPlayer?.ID, currentPlayer?.name);
+  console.log('🎯 Next Turn (nextPlayer):', currentPlayerId, 'isMyTurn:', isMyTurn);
+  console.log('⚔️ Opponents - Top:', player3?.ID, '| Left:', player4?.ID, '| Right:', player2?.ID);
 
   const getAvatarImage = (color?: string): string => {
     if (!color) return purpleAvatar;
@@ -184,7 +186,7 @@ function GameLayout({
         {/* Player Me - Bottom Center */}
         {currentPlayer && (
           <div
-            className={`player-me ${currentPlayerId === currentPlayer.ID ? 'is-my-turn' : ''} ${selectedTarget === currentPlayer.ID ? 'selected' : ''}`}
+            className={`player-me ${isMyTurn ? 'is-my-turn' : ''} ${selectedTarget === currentPlayer.ID ? 'selected' : ''}`}
             onClick={() => {
               if (isMyTurn && currentPlayer.health > 0) {
                 setSelectedTarget(selectedTarget === currentPlayer.ID ? null : currentPlayer.ID);
@@ -245,7 +247,7 @@ function GameLayout({
         {/* Player 3 - Top Center */}
         {player3 && (
           <div
-            className={`player-3 ${selectedTarget === player3.ID ? 'selected' : ''} ${currentPlayerId === player3.ID ? 'is-my-turn' : ''}`}
+            className={`player-3 ${selectedTarget === player3.ID ? 'selected' : ''} ${nextPlayerId === player3.ID ? 'is-my-turn' : ''}`}
             onClick={() => {
               if (isMyTurn && player3.health > 0) {
                 setSelectedTarget(selectedTarget === player3.ID ? null : player3.ID);
@@ -291,7 +293,7 @@ function GameLayout({
         {/* Player 4 - Left */}
         {player4 && (
           <div
-            className={`player-4 ${selectedTarget === player4.ID ? 'selected' : ''} ${currentPlayerId === player4.ID ? 'is-my-turn' : ''}`}
+            className={`player-4 ${selectedTarget === player4.ID ? 'selected' : ''} ${nextPlayerId === player4.ID ? 'is-my-turn' : ''}`}
             onClick={() => {
               if (isMyTurn && player4.health > 0) {
                 setSelectedTarget(selectedTarget === player4.ID ? null : player4.ID);
@@ -345,7 +347,7 @@ function GameLayout({
         {/* Player 2 - Right */}
         {player2 && (
           <div
-            className={`player-2 ${selectedTarget === player2.ID ? 'selected' : ''} ${currentPlayerId === player2.ID ? 'is-my-turn' : ''}`}
+            className={`player-2 ${selectedTarget === player2.ID ? 'selected' : ''} ${nextPlayerId === player2.ID ? 'is-my-turn' : ''}`}
             onClick={() => {
               if (isMyTurn && player2.health > 0) {
                 setSelectedTarget(selectedTarget === player2.ID ? null : player2.ID);

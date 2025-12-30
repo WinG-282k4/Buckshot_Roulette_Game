@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useParams, useSearchParams, useNavigate } from 'react-router-dom';
 import { wsService } from '../services/websocket.service';
 import { useGameStore } from '../stores/gameStore';
@@ -36,10 +36,23 @@ export default function RoomPage() {
   const [isViewer, setIsViewer] = useState(false);
   const { roomStatus, setRoomStatus, setCurrentPlayer } = useGameStore();
 
+  // Ref to prevent duplicate player creation (React StrictMode calls effect twice in dev)
+  const playerCreationInProgressRef = useRef(false);
+
+  // Ref to prevent duplicate WebSocket connections
+  const wsConnectionSetupRef = useRef(false);
+
   // Tạo player trước khi connect WebSocket
   useEffect(() => {
+    // Prevent duplicate calls due to React StrictMode in development
+    if (playerCreationInProgressRef.current) {
+      console.log('⚠️ Player creation already in progress, skipping duplicate call');
+      return;
+    }
+
     const createPlayer = async () => {
       try {
+        playerCreationInProgressRef.current = true;
         const backendUrl = `http://${window.location.hostname}:8080`;
         const response = await fetch(`${backendUrl}/user/create/${encodeURIComponent(playerName)}`, {
           method: 'POST',
@@ -75,6 +88,13 @@ export default function RoomPage() {
     // Chỉ connect WebSocket khi player đã được tạo
     if (!isPlayerCreated) return;
 
+    // Prevent duplicate setup due to React StrictMode in development
+    if (wsConnectionSetupRef.current) {
+      console.log('⚠️ WebSocket setup already in progress, skipping duplicate setup');
+      return;
+    }
+    wsConnectionSetupRef.current = true;
+
     // Set pending room rejoin (important for reload scenario)
     if (roomId) {
       wsService.setPendingRoomRejoin(Number(roomId), playerName);
@@ -93,31 +113,36 @@ export default function RoomPage() {
 
     wsService.onRoomUpdate((data) => {
       console.log('📨 Room update received:', data);
+      console.log('👥 Players in room:', data.players.map(p => ({ id: p.ID, name: p.name })));
       setRoomStatus(data);
 
       // Tìm player hiện tại trong danh sách
       let myPlayerId = wsService.getPlayerId();
+      console.log('🔍 Looking for myPlayerId:', myPlayerId, 'or playerName:', playerName);
 
       // Nếu chưa có playerId, tìm bằng tên
       if (!myPlayerId) {
         const myPlayer = data.players.find(p => p.name === playerName);
         if (myPlayer) {
           myPlayerId = myPlayer.ID;
+          console.log('✅ Found player by name:', { id: myPlayer.ID, name: myPlayer.name });
           wsService.setPlayerId(myPlayerId);
           setCurrentPlayer(myPlayer);
           setIsViewer(false);
         } else {
           // Không tìm thấy player → là viewer
-          console.log('📺 Bạn đang xem như viewer');
+          console.log('📺 Bạn đang xem như viewer (player name not found in room)');
           setIsViewer(true);
         }
       } else {
         // Nếu có playerId, tìm bằng ID
         const myPlayer = data.players.find(p => p.ID === myPlayerId);
         if (myPlayer) {
+          console.log('✅ Found player by ID:', { id: myPlayer.ID, name: myPlayer.name });
           setCurrentPlayer(myPlayer);
           setIsViewer(false);
         } else {
+          console.log('⚠️ Player ID not found in room:', myPlayerId);
           setIsViewer(true);
         }
       }
@@ -128,6 +153,7 @@ export default function RoomPage() {
 
     // Cleanup
     return () => {
+      wsConnectionSetupRef.current = false;
       wsService.disconnect();
     };
   }, [isPlayerCreated, roomId, playerName, setRoomStatus, setCurrentPlayer]);
