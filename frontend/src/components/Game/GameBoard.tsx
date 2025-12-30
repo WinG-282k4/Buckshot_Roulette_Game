@@ -182,7 +182,7 @@ export default function GameBoard() {
     return (
       <GameLayout
         players={roomStatus.players}
-        currentPlayerId={currentPlayer?.ID}
+        currentPlayerId={roomStatus.nextPlayer?.ID}
         gun={roomStatus.gun}
         actionResponse={roomStatus.actionResponse}
         isMyTurn={isMyTurnFlag}
@@ -196,7 +196,7 @@ export default function GameBoard() {
   return (
     <GameLayout
       players={roomStatus.players}
-      currentPlayerId={currentPlayer?.ID}
+      currentPlayerId={roomStatus.nextPlayer?.ID}
       gun={roomStatus.gun}
       actionResponse={roomStatus.actionResponse}
       isMyTurn={isMyTurnFlag}

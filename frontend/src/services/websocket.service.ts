@@ -6,15 +6,27 @@ export class WebSocketService {
   private client: Client | null = null;
   private roomId: number | null = null;
   private playerId: string | null = null;
+  private pendingRoomRejoin: { roomId: number; playerName: string } | null = null;
 
   // Callbacks
   private onRoomUpdateCallback: ((data: RoomStatusResponse) => void) | null = null;
   private onConnectCallback: (() => void) | null = null;
-  private onErrorCallback: ((error: any) => void) | null = null;
+  private onErrorCallback: ((error: Record<string, unknown>) => void) | null = null;
 
-  constructor(serverUrl: string = 'http://localhost:8080') {
+  constructor(serverUrl?: string) {
+    // Auto-detect backend URL từ frontend hostname
+    const backendUrl = serverUrl || (() => {
+      // Lấy hostname hiện tại (có thể là localhost, 192.168.153.1, etc.)
+      const hostname = window.location.hostname;
+      // Nếu là localhost/127.0.0.1, dùng localhost (dev mode)
+      // Nếu là IP, dùng IP đó (production/LAN mode)
+      return `http://${hostname}:8080`;
+    })();
+
+    console.log('🔌 Connecting to backend at:', backendUrl);
+
     this.client = new Client({
-      webSocketFactory: () => new SockJS(`${serverUrl}/ws-game`),
+      webSocketFactory: () => new SockJS(`${backendUrl}/ws-game`),
       debug: (str) => console.log('[STOMP]', str),
       reconnectDelay: 5000,
       heartbeatIncoming: 4000,
@@ -23,6 +35,17 @@ export class WebSocketService {
 
     this.client.onConnect = () => {
       console.log('✅ WebSocket connected!');
+
+      // Auto-rejoin phòng nếu có pending rejoin (from page reload)
+      if (this.pendingRoomRejoin) {
+        console.log('🔄 Auto-rejoin phòng after reconnection:', this.pendingRoomRejoin);
+        const { roomId, playerName } = this.pendingRoomRejoin;
+        setTimeout(() => {
+          this.joinRoom(roomId, playerName);
+        }, 500);
+        this.pendingRoomRejoin = null; // Clear after rejoin
+      }
+
       this.onConnectCallback?.();
     };
 
@@ -79,7 +102,7 @@ export class WebSocketService {
       }
     });
 
-    // Send join message
+    // Send join message with playerName in body (as fallback when session expires)
     this.client.publish({
       destination: `/app/join/${roomId}`,
       body: JSON.stringify({ name: playerName })
@@ -89,7 +112,7 @@ export class WebSocketService {
   // Fetch room status từ REST API
   private async fetchRoomStatus(roomId: number) {
     try {
-      const response = await fetch(`http://localhost:8080/api/rooms/${roomId}`, {
+      const response = await fetch(`http://${window.location.hostname}:8080/api/rooms/${roomId}`, {
         credentials: 'include'
       });
       if (response.ok) {
@@ -167,7 +190,7 @@ export class WebSocketService {
     this.onConnectCallback = callback;
   }
 
-  onError(callback: (error: any) => void) {
+  onError(callback: (error: Record<string, unknown>) => void) {
     this.onErrorCallback = callback;
   }
 
@@ -178,6 +201,12 @@ export class WebSocketService {
 
   getPlayerId(): string | null {
     return this.playerId;
+  }
+
+  // Set pending room rejoin for page reload scenario
+  setPendingRoomRejoin(roomId: number, playerName: string) {
+    this.pendingRoomRejoin = { roomId, playerName };
+    console.log('🔔 Pending room rejoin set:', { roomId, playerName });
   }
 }
 

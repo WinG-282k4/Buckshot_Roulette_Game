@@ -25,12 +25,13 @@
 
 .background-main {
   position: absolute;
-  width: 2085px;
-  height: 1150px;
-  left: -83px;
-  top: -35px;
+  width: 100%;
+  height: 100%;
+  left: 0;
+  top: 0;
   background: url('/assets/img/background/background main v2.jpg') no-repeat;
   background-size: cover;
+  background-position: center;
 }
 
 /* Ammo Display */
@@ -131,12 +132,32 @@
   z-index: 20;
 }
 
+/* Player Me highlight khi có lượt */
+.player-me.is-my-turn .player-avatar-circle {
+  box-shadow: 0 0 20px rgba(99, 71, 255, 1), 0 0 40px rgba(99, 71, 255, 0.8), 0 0 60px rgba(99, 71, 255, 0.6) !important;
+  border: 3px solid rgba(99, 71, 255, 1) !important;
+}
+
+.player-me.is-my-turn .player-name-hp {
+  box-shadow: 0 0 15px rgba(99, 71, 255, 0.8), inset 0 0 10px rgba(99, 71, 255, 0.3) !important;
+  border: 2px solid rgba(99, 71, 255, 1) !important;
+}
+
+@keyframes pulse-player {
+  0%, 100% {
+    filter: brightness(1);
+  }
+  50% {
+    filter: brightness(1.3);
+  }
+}
+
 .player-avatar-circle {
   width: 205px;
   height: 205px;
-  background: #c4c4c4;
-  border-radius: 50%;
-  border: 5px solid black;
+  background: transparent;
+  border-radius: 0;
+  border: none;
   flex-shrink: 0;
   position: relative;
   grid-column: 1;
@@ -144,12 +165,10 @@
 }
 
 .player-avatar {
-  width: 176px;
-  height: 226px;
-  position: absolute;
-  left: 15px;
-  top: 14px;
-  object-fit: cover;
+  width: 200px;
+  height: 230px;
+  position: relative;
+  object-fit: contain;
   z-index: 5;
 }
 
@@ -274,18 +293,17 @@
   grid-column: 4;
   grid-row: 2;
   filter: drop-shadow(0 0 8px rgba(255, 200, 0, 0.8));
-  animation: pulse-use 1s ease-in-out infinite;
+  cursor: pointer;
+  transition: all 0.2s ease;
 }
 
-@keyframes pulse-use {
-  0%, 100% {
-    transform: scale(1);
-    filter: drop-shadow(0 0 8px rgba(255, 200, 0, 0.8));
-  }
-  50% {
-    transform: scale(1.05);
-    filter: drop-shadow(0 0 15px rgba(255, 200, 0, 1));
-  }
+.use-icon:hover {
+  transform: scale(1.1);
+  filter: drop-shadow(0 0 15px rgba(255, 200, 0, 1));
+}
+
+.use-icon:active {
+  transform: scale(0.95);
 }
 
 .fire-button {
@@ -363,6 +381,17 @@
   filter: brightness(1.3);
 }
 
+/* Player 3 highlight khi có lượt */
+.player-3.is-my-turn .player-avatar-circle {
+  box-shadow: 0 0 20px rgba(99, 71, 255, 1), 0 0 40px rgba(99, 71, 255, 0.8), 0 0 60px rgba(99, 71, 255, 0.6) !important;
+  border: 3px solid rgba(99, 71, 255, 1) !important;
+}
+
+.player-3.is-my-turn .player-name-hp {
+  box-shadow: 0 0 15px rgba(99, 71, 255, 0.8), inset 0 0 10px rgba(99, 71, 255, 0.3) !important;
+  border: 2px solid rgba(99, 71, 255, 1) !important;
+}
+
 .player-3 .player-avatar-circle {
   position: relative;
   grid-column: 1;
@@ -388,9 +417,17 @@
 .player-3 .player-effect {
   grid-column: 4;
   grid-row: 1 / 3;
-  position: static;
   width: 180px !important;
   height: auto !important;
+  background: rgba(245.19, 55.4, 55.4, 0.11) !important;
+  border-radius: 5px !important;
+  display: flex !important;
+  flex-direction: row !important;
+  gap: 8px !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 6px !important;
+  min-height: 45px !important;
 }
 
 .target-indicator {
@@ -413,142 +450,285 @@
 
 /* Player 4 - Left */
 .player-4 {
-  width: 400px;
-  height: auto;
   position: absolute;
-  left: 0px;
+  left: 10px;
   top: 250px;
   background: transparent;
-  display: grid;
-  grid-template-columns: 180px 1fr 180px;
-  grid-template-rows: auto auto;
-  gap: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
   z-index: 20;
   cursor: pointer;
   transition: all 0.2s ease;
+  width: 300px;
 }
 
 .player-4.selected {
   filter: brightness(1.3);
 }
 
-.player-4 .player-avatar-circle {
-  width: 188px;
-  height: 177px;
-  grid-column: 1;
-  grid-row: 1 / 3;
-  position: relative;
-  margin: 0;
+/* Player 4 highlight khi có lượt */
+.player-4.is-my-turn .player-avatar {
+  filter: drop-shadow(0 0 20px rgba(99, 71, 255, 1)) drop-shadow(0 0 30px rgba(99, 71, 255, 0.8)) !important;
+  box-shadow: 0 0 25px rgba(99, 71, 255, 0.9) !important;
+}
+
+.player-4.is-my-turn .player-4-name-hp-col {
+  filter: drop-shadow(0 0 15px rgba(99, 71, 255, 0.8)) !important;
+}
+
+.player-4.is-my-turn .player-name-hp {
+  box-shadow: 0 0 15px rgba(99, 71, 255, 0.8), inset 0 0 10px rgba(99, 71, 255, 0.3) !important;
+  border: 2px solid rgba(99, 71, 255, 1) !important;
+  background: rgba(99, 71, 255, 0.2) !important;
+}
+
+/* Row 1: Avatar | Name + HP */
+.player-4 .player-4-row1 {
+  display: flex !important;
+  gap: 8px !important;
+  align-items: flex-start !important;
 }
 
 .player-4 .player-avatar {
-  position: absolute;
-  left: 14px;
-  top: -10px;
+  width: 200px !important;
+  height: 200px !important;
+  object-fit: contain !important;
+  flex-shrink: 0 !important;
 }
 
-.player-4 .player-hp-bar {
-  grid-column: 2;
-  grid-row: 1;
-  width: auto;
-  position: static;
+/* Name + HP column */
+.player-4 .player-4-name-hp-col {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 4px !important;
 }
 
-.player-4 .player-items {
-  grid-column: 2;
-  grid-row: 2;
-  position: static;
-  top: auto;
-  left: auto;
-  grid-template-columns: repeat(4, 1fr) !important;
-  grid-template-rows: auto !important;
-  width: auto !important;
-  height: auto !important;
+.player-4 .player-name-hp {
+  width: 90px !important;
+  text-align: center !important;
+  background: rgba(56.81, 71.39, 231.71, 0.13) !important;
+  padding: 8px !important;
+  border-radius: 5px !important;
+  font-size: 12px !important;
+  color: white !important;
+  font-weight: bold !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  min-height: 40px !important;
+}
+
+.player-4 .player-hp-bar-vertical {
+  width: 90px !important;
+  padding: 6px !important;
+  background: rgba(56.81, 71.39, 231.71, 0.13) !important;
+  border-radius: 5px !important;
+  display: flex !important;
+  justify-content: center !important;
+}
+
+.player-4 .health-bar-vertical {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 4px !important;
+  align-items: center !important;
+}
+
+.player-4 .health-slot {
+  width: 8px !important;
+  height: 12px !important;
+  border: 1px solid #888 !important;
+  border-radius: 2px !important;
+  background: #333 !important;
+}
+
+.player-4 .health-slot.alive {
+  background: #ef4444 !important;
+  border-color: #dc2626 !important;
+}
+
+.player-4 .health-slot.dead {
+  background: #333 !important;
+  border-color: #555 !important;
 }
 
 .player-4 .player-effect {
-  grid-column: 3;
-  grid-row: 1 / 3;
-  position: static;
-  width: 180px !important;
-  height: auto !important;
-  left: auto;
-  top: auto;
+  width: 300px !important;
+  background: rgba(245.19, 55.4, 55.4, 0.11) !important;
+  border-radius: 5px !important;
+  display: flex !important;
+  flex-direction: row !important;
+  gap: 8px !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 6px !important;
+  min-height: 45px !important;
+}
+
+.player-4 .effect-icon {
+  width: 50px !important;
+  height: 50px !important;
+  object-fit: cover !important;
+  border-radius: 3px !important;
+}
+
+.player-4 .player-items {
+  display: grid !important;
+  grid-template-columns: repeat(4, 1fr) !important;
+  grid-template-rows: repeat(2, 1fr) !important;
+  gap: 4px !important;
+  padding: 8px !important;
+  background: rgba(177, 90, 14, 0.5) !important;
+  border-radius: 10px !important;
+  width: 300px !important;
 }
 
 .player-4 .item-slot {
-  width: 79px;
-  height: 69px;
+  width: 35px !important;
+  height: 35px !important;
 }
 
 /* Player 2 - Right */
 .player-2 {
-  width: 400px;
-  height: auto;
   position: absolute;
-  right: 0px;
+  right: 10px;
   top: 250px;
   background: transparent;
-  display: grid;
-  grid-template-columns: 180px 1fr 180px;
-  grid-template-rows: auto auto;
-  gap: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
   z-index: 20;
   cursor: pointer;
   transition: all 0.2s ease;
+  width: 300px;
 }
 
 .player-2.selected {
   filter: brightness(1.3);
 }
 
-.player-2 .player-avatar-circle {
-  width: 188px;
-  height: 177px;
-  grid-column: 3;
-  grid-row: 1 / 3;
-  position: relative;
-  margin: 0;
+/* Player 2 highlight khi có lượt */
+.player-2.is-my-turn .player-avatar {
+  filter: drop-shadow(0 0 20px rgba(99, 71, 255, 1)) drop-shadow(0 0 30px rgba(99, 71, 255, 0.8)) !important;
+  box-shadow: 0 0 25px rgba(99, 71, 255, 0.9) !important;
+}
+
+.player-2.is-my-turn .player-2-name-hp-col {
+  filter: drop-shadow(0 0 15px rgba(99, 71, 255, 0.8)) !important;
+}
+
+.player-2.is-my-turn .player-name-hp {
+  box-shadow: 0 0 15px rgba(99, 71, 255, 0.8), inset 0 0 10px rgba(99, 71, 255, 0.3) !important;
+  border: 2px solid rgba(99, 71, 255, 1) !important;
+  background: rgba(99, 71, 255, 0.2) !important;
+}
+
+/* Row 1: Name + HP | Avatar (ngược lại) */
+.player-2 .player-2-row1 {
+  display: flex !important;
+  gap: 8px !important;
+  align-items: flex-start !important;
+  flex-direction: row-reverse !important;
 }
 
 .player-2 .player-avatar {
-  position: absolute;
-  right: 14px;
-  top: -10px;
+  width: 200px !important;
+  height: 200px !important;
+  object-fit: contain !important;
+  flex-shrink: 0 !important;
 }
 
-.player-2 .player-hp-bar {
-  grid-column: 2;
-  grid-row: 1;
-  width: auto;
-  position: static;
+/* Name + HP column */
+.player-2 .player-2-name-hp-col {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 4px !important;
 }
 
-.player-2 .player-items {
-  grid-column: 2;
-  grid-row: 2;
-  position: static;
-  top: auto;
-  left: auto;
-  grid-template-columns: repeat(4, 1fr) !important;
-  grid-template-rows: auto !important;
-  width: auto !important;
-  height: auto !important;
+.player-2 .player-name-hp {
+  width: 90px !important;
+  text-align: center !important;
+  background: rgba(56.81, 71.39, 231.71, 0.13) !important;
+  padding: 8px !important;
+  border-radius: 5px !important;
+  font-size: 12px !important;
+  color: white !important;
+  font-weight: bold !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  min-height: 40px !important;
+}
+
+.player-2 .player-hp-bar-vertical {
+  width: 90px !important;
+  padding: 6px !important;
+  background: rgba(56.81, 71.39, 231.71, 0.13) !important;
+  border-radius: 5px !important;
+  display: flex !important;
+  justify-content: center !important;
+}
+
+.player-2 .health-bar-vertical {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 4px !important;
+  align-items: center !important;
+}
+
+.player-2 .health-slot {
+  width: 8px !important;
+  height: 12px !important;
+  border: 1px solid #888 !important;
+  border-radius: 2px !important;
+  background: #333 !important;
+}
+
+.player-2 .health-slot.alive {
+  background: #ef4444 !important;
+  border-color: #dc2626 !important;
+}
+
+.player-2 .health-slot.dead {
+  background: #333 !important;
+  border-color: #555 !important;
 }
 
 .player-2 .player-effect {
-  grid-column: 1;
-  grid-row: 1 / 3;
-  position: static;
-  width: 180px !important;
-  height: auto !important;
-  left: auto;
-  top: auto;
+  width: 300px !important;
+  background: rgba(245.19, 55.4, 55.4, 0.11) !important;
+  border-radius: 5px !important;
+  display: flex !important;
+  flex-direction: row !important;
+  gap: 8px !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 6px !important;
+  min-height: 45px !important;
+}
+
+.player-2 .effect-icon {
+  width: 50px !important;
+  height: 50px !important;
+  object-fit: cover !important;
+  border-radius: 3px !important;
+}
+
+.player-2 .player-items {
+  display: grid !important;
+  grid-template-columns: repeat(4, 1fr) !important;
+  grid-template-rows: repeat(2, 1fr) !important;
+  gap: 4px !important;
+  padding: 8px !important;
+  background: rgba(177, 90, 14, 0.5) !important;
+  border-radius: 10px !important;
+  width: 300px !important;
 }
 
 .player-2 .item-slot {
-  width: 79px;
-  height: 69px;
+  width: 35px !important;
+  height: 35px !important;
 }
 
 /* Back Button */

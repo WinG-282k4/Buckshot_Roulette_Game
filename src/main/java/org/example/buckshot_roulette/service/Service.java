@@ -71,16 +71,29 @@ public class Service {
             throw new IllegalArgumentException("Room not found");
         }
 
-        if (
-                tempRoom.getPlayers().contains(player)
-                || tempRoom.getPlayers().size() >= 4
-                || tempRoom.getTurnOrder().peek() != null
-        ){
-            throw new IllegalArgumentException("Cannot join room");
+        // Check if player with same ID already in room (important for reload scenario)
+        Player existingPlayer = tempRoom.getPlayer(player.getId());
+        if (existingPlayer != null) {
+            // Player with same ID already exists - replace the old object with new one
+            // This handles the reload case where new Player object is created with same ID
+            System.out.println("🔄 Player " + player.getName() + " (ID: " + player.getId() + ") already in room, updating reference");
+            tempRoom.getPlayers().remove(existingPlayer);
+            tempRoom.getPlayers().add(player);
+            return;
+        }
+
+        // Check if room is full
+        if (tempRoom.getPlayers().size() >= 4) {
+            throw new IllegalArgumentException("Room is full (max 4 players)");
+        }
+
+        // Check if game already started (turnOrder has been set)
+        if (tempRoom.getTurnOrder().peek() != null) {
+            throw new IllegalArgumentException("Game has already started, cannot join");
         }
 
         tempRoom.getPlayers().add(player);
-
+        System.out.println("✅ Player " + player.getName() + " (ID: " + player.getId() + ") joined room " + roomid);
     }
 
     //Player leave Room
@@ -91,7 +104,14 @@ public class Service {
             throw new IllegalArgumentException("Room not found");
         }
 
-        tempRoom.getPlayers().remove(player);
+        // Remove player by ID instead of object reference
+        Player playerToRemove = tempRoom.getPlayer(player.getId());
+        if (playerToRemove != null) {
+            tempRoom.getPlayers().remove(playerToRemove);
+            System.out.println("✅ Player " + player.getName() + " (ID: " + player.getId() + ") left room " + roomid);
+        } else {
+            System.out.println("⚠️ Player " + player.getName() + " (ID: " + player.getId() + ") not found in room " + roomid);
+        }
         return tempRoom.toRoomStatus("Player " + player.getName() + " has left the room.");
     }
 

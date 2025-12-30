@@ -10,6 +10,27 @@ export default function RoomPage() {
   const playerName = searchParams.get('name') || 'Anonymous';
   const navigate = useNavigate();
 
+  // Lưu roomId và playerName vào localStorage (cho reload)
+  useEffect(() => {
+    if (roomId && playerName !== 'Anonymous') {
+      localStorage.setItem('lastRoomId', roomId);
+      localStorage.setItem('lastPlayerName', playerName);
+      console.log('💾 Saved room info to localStorage:', { roomId, playerName });
+    }
+  }, [roomId, playerName]);
+
+  // Nếu không có roomId từ URL, thử lấy từ localStorage
+  useEffect(() => {
+    if (!roomId) {
+      const savedRoomId = localStorage.getItem('lastRoomId');
+      if (savedRoomId) {
+        console.log('🔄 Khôi phục roomId từ localStorage:', savedRoomId);
+        // Redirect đến phòng cũ
+        navigate(`/room/${savedRoomId}?name=${encodeURIComponent(playerName)}`);
+      }
+    }
+  }, [roomId, playerName, navigate]);
+
   const [isConnected, setIsConnected] = useState(false);
   const [isPlayerCreated, setIsPlayerCreated] = useState(false);
   const [isViewer, setIsViewer] = useState(false);
@@ -19,7 +40,8 @@ export default function RoomPage() {
   useEffect(() => {
     const createPlayer = async () => {
       try {
-        const response = await fetch(`http://localhost:8080/user/create/${encodeURIComponent(playerName)}`, {
+        const backendUrl = `http://${window.location.hostname}:8080`;
+        const response = await fetch(`${backendUrl}/user/create/${encodeURIComponent(playerName)}`, {
           method: 'POST',
           credentials: 'include'
         });
@@ -27,6 +49,14 @@ export default function RoomPage() {
         if (response.ok) {
           const player = await response.json();
           console.log('✅ Player created/verified:', player);
+
+          // Lưu playerId vào localStorage để WebSocket có thể dùng
+          const playerId = player.ID || player.id;
+          if (playerId) {
+            localStorage.setItem('playerId', String(playerId));
+            console.log('💾 Saved playerId to localStorage:', playerId);
+          }
+
           setIsPlayerCreated(true);
         } else {
           throw new Error('Failed to create player');
@@ -45,11 +75,20 @@ export default function RoomPage() {
     // Chỉ connect WebSocket khi player đã được tạo
     if (!isPlayerCreated) return;
 
+    // Set pending room rejoin (important for reload scenario)
+    if (roomId) {
+      wsService.setPendingRoomRejoin(Number(roomId), playerName);
+    }
+
     // Setup WebSocket callbacks
     wsService.onConnect(() => {
       console.log('✅ WebSocket connected! Joining room:', roomId);
       setIsConnected(true);
-      wsService.joinRoom(Number(roomId), playerName);
+      // Auto-rejoin already handled by wsService.onConnect
+      // But explicitly call for non-reload scenarios
+      if (roomId && !wsService.getPlayerId()) {
+        wsService.joinRoom(Number(roomId), playerName);
+      }
     });
 
     wsService.onRoomUpdate((data) => {

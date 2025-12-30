@@ -18,7 +18,13 @@ public class WebsocketConfig implements WebSocketMessageBrokerConfigurer {
         registry.addEndpoint("/ws-game")
                 .setHandshakeHandler(new MyHandshakeHandler())
                 .addInterceptors(new HttpSessionHandshakeInterceptor())
-                .setAllowedOriginPatterns("http://localhost:5173", "http://localhost:*")
+                .setAllowedOriginPatterns(
+                    "http://localhost:5173",
+                    "http://localhost:*",
+                    "http://192.168.153.1:*",
+                    "http://192.168.31.86:*",
+                    "http://*.168.*.1:*"
+                )
                 .withSockJS();
     }
 

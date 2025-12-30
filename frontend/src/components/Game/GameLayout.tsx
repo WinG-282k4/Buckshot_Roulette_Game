@@ -92,14 +92,26 @@ function GameLayout({
 }: GameLayoutProps) {
   const [selectedTarget, setSelectedTarget] = useState<string | null>(null);
 
-  // Get current player and others
-  const currentPlayer = players.find(p => p.ID === currentPlayerId);
-  const otherPlayers = players.filter(p => p.ID !== currentPlayerId);
+  // Lấy thông tin từ props
+  // currentPlayerId = nextPlayer.ID (từ WebSocket) - người có lượt hiện tại
+  // isMyTurn = có phải lượt của tôi không
+  // Suy ra: myPlayerId = player có isMyTurn = true hoặc là currentPlayer của localStorage
 
-  // Assign positions
-  const player3 = otherPlayers[0]; // Top
-  const player4 = otherPlayers[1]; // Left
-  const player2 = otherPlayers[2]; // Right
+  // Find "me" - người đang chơi game này
+  const me = players.find(p => p.ID === players[0]?.ID); // Hoặc lấy từ localStorage/context
+
+  // Find danh sách đối thủ (loại bỏ mình)
+  const opponents = players.filter(p => p.ID !== me?.ID);
+
+  // Assign positions cố định
+  const player3 = opponents[0]; // Top
+  const player4 = opponents[1]; // Left
+  const player2 = opponents[2]; // Right
+  const currentPlayer = me; // Me luôn ở dưới
+
+  // Debug log
+  console.log('me:', me?.ID, 'nextPlayer (có lượt):', currentPlayerId, 'isMyTurn:', isMyTurn);
+  console.log('player3:', player3?.ID, 'player4:', player4?.ID, 'player2:', player2?.ID);
 
   const getAvatarImage = (color?: string): string => {
     if (!color) return purpleAvatar;
@@ -144,8 +156,9 @@ function GameLayout({
     setSelectedTarget(null);
   };
 
-
-  const ammoCount = Array.isArray(gun) ? gun.length : 0;
+  // Tính ammo từ [fakeCount, realCount]
+  const fakeCount = Array.isArray(gun) && gun.length >= 1 ? gun[0] : 0;
+  const realCount = Array.isArray(gun) && gun.length >= 2 ? gun[1] : 0;
 
   return (
     <div className="game-container">
@@ -155,9 +168,9 @@ function GameLayout({
 
         {/* Ammo Display */}
         <div className="ammo-display">
-          <div className="ammo-number current">{ammoCount}</div>
+          <div className="ammo-number current">{fakeCount}</div>
           <div className="ammo-divider">/</div>
-          <div className="ammo-number total">{ammoCount}</div>
+          <div className="ammo-number total">{realCount}</div>
         </div>
 
         {/* Hit Effect Animation */}
@@ -170,7 +183,15 @@ function GameLayout({
 
         {/* Player Me - Bottom Center */}
         {currentPlayer && (
-          <div className="player-me">
+          <div
+            className={`player-me ${currentPlayerId === currentPlayer.ID ? 'is-my-turn' : ''} ${selectedTarget === currentPlayer.ID ? 'selected' : ''}`}
+            onClick={() => {
+              if (isMyTurn && currentPlayer.health > 0) {
+                setSelectedTarget(selectedTarget === currentPlayer.ID ? null : currentPlayer.ID);
+              }
+            }}
+            style={{ cursor: isMyTurn && currentPlayer.health > 0 ? 'pointer' : 'default' }}
+          >
             {/* Avatar - Column 1, Row 1-2 */}
             <div className="player-avatar-circle" />
             <img
@@ -224,7 +245,7 @@ function GameLayout({
         {/* Player 3 - Top Center */}
         {player3 && (
           <div
-            className={`player-3 ${selectedTarget === player3.ID ? 'selected' : ''}`}
+            className={`player-3 ${selectedTarget === player3.ID ? 'selected' : ''} ${currentPlayerId === player3.ID ? 'is-my-turn' : ''}`}
             onClick={() => {
               if (isMyTurn && player3.health > 0) {
                 setSelectedTarget(selectedTarget === player3.ID ? null : player3.ID);
@@ -270,7 +291,7 @@ function GameLayout({
         {/* Player 4 - Left */}
         {player4 && (
           <div
-            className={`player-4 ${selectedTarget === player4.ID ? 'selected' : ''}`}
+            className={`player-4 ${selectedTarget === player4.ID ? 'selected' : ''} ${currentPlayerId === player4.ID ? 'is-my-turn' : ''}`}
             onClick={() => {
               if (isMyTurn && player4.health > 0) {
                 setSelectedTarget(selectedTarget === player4.ID ? null : player4.ID);
@@ -278,13 +299,29 @@ function GameLayout({
             }}
             style={{ cursor: isMyTurn && player4.health > 0 ? 'pointer' : 'default' }}
           >
-            <div className="player-avatar-circle" />
-            <img
-              className="player-avatar"
-              src={getAvatarImage(player4.color)}
-              alt={player4.name}
-            />
+            {/* Row 1: Avatar | Name + HP */}
+            <div className="player-4-row1">
+              {/* Column 1: Avatar */}
+              <img
+                className="player-avatar"
+                src={getAvatarImage(player4.color)}
+                alt={player4.name}
+              />
 
+              {/* Column 2: Name + HP */}
+              <div className="player-4-name-hp-col">
+                <div className="player-name-hp">
+                  <span className="player-name-text">{player4.name}</span>
+                </div>
+                <div className="player-hp-bar-vertical">
+                  <div className="health-bar-vertical">
+                    {getHealthBar(player4.health)}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Row 2: Effects */}
             <div className="player-effect">
               {player4.effects?.includes('soloing') && (
                 <img src={soloingImg} alt="soloing" className="effect-icon" />
@@ -294,15 +331,7 @@ function GameLayout({
               )}
             </div>
 
-            <div className="player-hp-bar">
-              <div className="player-name-hp">
-                <span className="player-name-text">{player4.name}</span>
-              </div>
-              <div className="health-bar">
-                {getHealthBar(player4.health)}
-              </div>
-            </div>
-
+            {/* Row 3: Items 4x2 */}
             <div className="player-items">
               {getItemSlots(player4.items)}
             </div>
@@ -316,7 +345,7 @@ function GameLayout({
         {/* Player 2 - Right */}
         {player2 && (
           <div
-            className={`player-2 ${selectedTarget === player2.ID ? 'selected' : ''}`}
+            className={`player-2 ${selectedTarget === player2.ID ? 'selected' : ''} ${currentPlayerId === player2.ID ? 'is-my-turn' : ''}`}
             onClick={() => {
               if (isMyTurn && player2.health > 0) {
                 setSelectedTarget(selectedTarget === player2.ID ? null : player2.ID);
@@ -324,13 +353,29 @@ function GameLayout({
             }}
             style={{ cursor: isMyTurn && player2.health > 0 ? 'pointer' : 'default' }}
           >
-            <div className="player-avatar-circle" />
-            <img
-              className="player-avatar"
-              src={getAvatarImage(player2.color)}
-              alt={player2.name}
-            />
+            {/* Row 1: Name + HP | Avatar */}
+            <div className="player-2-row1">
+              {/* Column 1: Name + HP */}
+              <div className="player-2-name-hp-col">
+                <div className="player-name-hp">
+                  <span className="player-name-text">{player2.name}</span>
+                </div>
+                <div className="player-hp-bar-vertical">
+                  <div className="health-bar-vertical">
+                    {getHealthBar(player2.health)}
+                  </div>
+                </div>
+              </div>
 
+              {/* Column 2: Avatar */}
+              <img
+                className="player-avatar"
+                src={getAvatarImage(player2.color)}
+                alt={player2.name}
+              />
+            </div>
+
+            {/* Row 2: Effects */}
             <div className="player-effect">
               {player2.effects?.includes('soloing') && (
                 <img src={soloingImg} alt="soloing" className="effect-icon" />
@@ -340,15 +385,7 @@ function GameLayout({
               )}
             </div>
 
-            <div className="player-hp-bar">
-              <div className="player-name-hp">
-                <span className="player-name-text">{player2.name}</span>
-              </div>
-              <div className="health-bar">
-                {getHealthBar(player2.health)}
-              </div>
-            </div>
-
+            {/* Row 3: Items 4x2 */}
             <div className="player-items">
               {getItemSlots(player2.items)}
             </div>

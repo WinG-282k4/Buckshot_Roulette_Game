@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
+import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
 import org.springframework.stereotype.Controller;
@@ -21,7 +22,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 
 @Controller
 public class roomController {
@@ -43,11 +43,38 @@ public class roomController {
     @SendTo("/topic/room/{roomid}")
     public Map<String, String> join(
             @DestinationVariable String roomid,
+            @Payload Map<String, String> payload,
             SimpMessageHeaderAccessor headerAccessor
     ) {
-        Player player = (Player) Objects.requireNonNull(headerAccessor.getSessionAttributes()).get("player");
-        logger.info("Received API: WebSocket /app/join/{} by player {} (name={})", roomid, player != null ? player.getId() : "unknown", player != null ? player.getName() : "unknown");
-        service.AddPlayerToRoom(Integer.parseInt(roomid),player);
+        Player player = null;
+
+        // Thử lấy player từ session trước
+        Map<String, Object> sessionAttributes = headerAccessor.getSessionAttributes();
+        if (sessionAttributes != null) {
+            player = (Player) sessionAttributes.get("player");
+        }
+
+        // Nếu session không có player, tạo player mới từ playerName trong payload
+        if (player == null && payload.containsKey("name")) {
+            String playerName = payload.get("name");
+            player = new Player(playerName);
+            logger.info("Session expired: created new player from payload - {}", playerName);
+            // Lưu vào session để các request tiếp theo có thể lấy
+            if (sessionAttributes != null) {
+                sessionAttributes.put("player", player);
+            }
+        }
+
+        if (player == null) {
+            logger.error("Cannot determine player for join request");
+            Map<String, String> errorResponse = new HashMap<>();
+            errorResponse.put("error", "Player not found");
+            return errorResponse;
+        }
+
+        logger.info("Received API: WebSocket /app/join/{} by player {} (name={})", roomid, player.getId(), player.getName());
+        service.AddPlayerToRoom(Integer.parseInt(roomid), player);
+
         // Trả về Map để có định dạng JSON chuẩn: {"message": "Thanh Joined 1"}
         Map<String, String> response = new HashMap<>();
         response.put("message", player.getName() + " Joined " + roomid);
@@ -58,11 +85,36 @@ public class roomController {
     @SendTo("/topic/room/{roomid}")
     public Map<String, String> leave(
             @DestinationVariable String roomid,
+            @Payload Map<String, String> payload,
             SimpMessageHeaderAccessor headerAccessor
     ){
-        Player player = (Player) Objects.requireNonNull(headerAccessor.getSessionAttributes()).get("player");
-        logger.info("Received API: WebSocket /app/leave/{} by player {} (name={})", roomid, player != null ? player.getId() : "unknown", player != null ? player.getName() : "unknown");
-        service.RemovePlayerFromRoom(Integer.parseInt(roomid),player);
+        Player player = null;
+
+        // Thử lấy player từ session trước
+        Map<String, Object> sessionAttributes = headerAccessor.getSessionAttributes();
+        if (sessionAttributes != null) {
+            player = (Player) sessionAttributes.get("player");
+        }
+
+        // Nếu session không có player, tạo player mới từ playerName trong payload
+        if (player == null && payload.containsKey("name")) {
+            String playerName = payload.get("name");
+            player = new Player(playerName);
+            logger.info("Session expired: created new player from payload - {}", playerName);
+            if (sessionAttributes != null) {
+                sessionAttributes.put("player", player);
+            }
+        }
+
+        if (player == null) {
+            logger.error("Cannot determine player for leave request");
+            Map<String, String> errorResponse = new HashMap<>();
+            errorResponse.put("error", "Player not found");
+            return errorResponse;
+        }
+
+        logger.info("Received API: WebSocket /app/leave/{} by player {} (name={})", roomid, player.getId(), player.getName());
+        service.RemovePlayerFromRoom(Integer.parseInt(roomid), player);
 
         // Trả về Map để có định dạng JSON chuẩn: {"message": "Thanh Joined 1"}
         Map<String, String> response = new HashMap<>();

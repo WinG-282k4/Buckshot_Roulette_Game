@@ -20,6 +20,9 @@ public class CorsConfig {
         // Allow frontend origin
         config.addAllowedOriginPattern("http://localhost:5173");
         config.addAllowedOriginPattern("http://localhost:*");
+        config.addAllowedOriginPattern("http://192.168.153.1:*");
+        config.addAllowedOriginPattern("http://192.168.31.86:*");
+        config.addAllowedOriginPattern("http://*.168.*.1:*"); // Cho phép bất kỳ IP 192.168.*.1
 
         // Allow all headers
         config.addAllowedHeader("*");
