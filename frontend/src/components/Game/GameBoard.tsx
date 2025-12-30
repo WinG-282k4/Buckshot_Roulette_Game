@@ -1,12 +1,14 @@
 import { useGameStore } from '../../stores/gameStore';
 import { wsService } from '../../services/websocket.service';
 import { useNavigate } from 'react-router-dom';
+import { useState } from 'react';
 import GameLayout from './GameLayout';
 
 export default function GameBoard() {
   const { roomStatus, isMyTurn, myPlayer } = useGameStore();
   const currentPlayer = myPlayer();
   const navigate = useNavigate();
+  const [localSelectedTarget, setLocalSelectedTarget] = useState<string | null>(null);
 
   console.log('🎮 GameBoard render - roomStatus:', roomStatus);
 
@@ -167,6 +169,28 @@ export default function GameBoard() {
   const isMyTurnFlag = isMyTurn();
   const messageText = roomStatus.message?.trim();
 
+  const handleSelectTarget = (targetId: string) => {
+    // Update local state immediately for UI responsiveness
+    console.log('📤 handleSelectTarget called with:', targetId);
+    if (targetId) {
+      setLocalSelectedTarget(targetId);
+      console.log('📤 Sending selectTarget to server:', targetId);
+      wsService.selectTarget(targetId);
+    } else {
+      console.log('📤 Clearing selected target');
+      setLocalSelectedTarget(null);
+    }
+  };
+
+  const getSelectedTargetId = (): string | null => {
+    // Priority: Server response > Local state
+    if (roomStatus?.actionResponse?.action === 'TARGET' && roomStatus.actionResponse.targetid) {
+      console.log('📥 Using server TARGET response:', roomStatus.actionResponse.targetid);
+      return roomStatus.actionResponse.targetid;
+    }
+    console.log('📥 Using local selected target:', localSelectedTarget);
+    return localSelectedTarget;
+  };
 
   const handleFire = (targetId: string) => {
     if (!isMyTurnFlag) {
@@ -188,6 +212,8 @@ export default function GameBoard() {
         actionResponse={roomStatus.actionResponse}
         isMyTurn={isMyTurnFlag}
         onFire={handleFire}
+        onSelectTarget={handleSelectTarget}
+        selectedTargetId={getSelectedTargetId()}
         notifyMessage={messageText}
       />
     );
@@ -203,6 +229,8 @@ export default function GameBoard() {
       actionResponse={roomStatus.actionResponse}
       isMyTurn={isMyTurnFlag}
       onFire={handleFire}
+      onSelectTarget={handleSelectTarget}
+      selectedTargetId={getSelectedTargetId()}
       notifyMessage={messageText}
     />
   );

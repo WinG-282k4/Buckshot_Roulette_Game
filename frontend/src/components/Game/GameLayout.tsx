@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import './GameLayout.css';
 
 interface Player {
@@ -22,6 +21,8 @@ interface GameLayoutProps {
   actionResponse?: ActionResponse | null;
   isMyTurn: boolean;
   onFire: (targetId: string) => void;
+  onSelectTarget?: (targetId: string) => void;  // NEW: Callback when selecting target
+  selectedTargetId?: string | null;  // NEW: Target selected by current player (from server)
   notifyMessage?: string;
 }
 
@@ -90,9 +91,12 @@ function GameLayout({
   actionResponse,
   isMyTurn,
   onFire,
+  onSelectTarget,
+  selectedTargetId,
   notifyMessage
 }: GameLayoutProps) {
-  const [selectedTarget, setSelectedTarget] = useState<string | null>(null);
+  // Use selectedTargetId from props instead of local state
+  const selectedTarget = selectedTargetId || null;
 
   // Find "me" - người đang chơi game này
   // Use currentPlayerId (từ gameStore's currentPlayer.ID) - đây là player ID của bạn
@@ -155,7 +159,50 @@ function GameLayout({
   const handleFireClick = () => {
     if (!isMyTurn || !selectedTarget) return;
     onFire(selectedTarget);
-    setSelectedTarget(null);
+    // Clear target after firing by calling onSelectTarget with empty string
+    onSelectTarget?.('');
+  };
+
+  // Vị trí các player trong main-ui (1920x1080)
+  const playerPositions: Record<string, { x: number; y: number }> = {};
+  playerPositions[currentPlayer?.ID || ''] = { x: 1029, y: 960 }; // player-me bottom center: left:560px + width:938px/2 = 1029, top:850px + height:220px/2 = 960
+  if (player3) playerPositions[player3.ID] = { x: 1031, y: 117 }; // player-3 top center: left:562px + width:938px/2 = 1031, top:7px + height:220px/2 = 117
+  if (player4) playerPositions[player4.ID] = { x: 160, y: 350 }; // player-4 left: left:10px + width:300px/2 = 160, top:250px + ~100px = 350
+  if (player2) playerPositions[player2.ID] = { x: 1760, y: 350 }; // player-2 right: right:10px means left:1610px, 1610+150 = 1760, top:250px + ~100px = 350
+
+  // Vị trí súng (center của main-ui)
+  // gun-display: left: 50% = 960px, top: calc(50% - 30px) = 540 - 30 = 510px
+  const gunX = 960;
+  const gunY = 510;
+
+  // Tính angle từ súng tới target
+  const calculateGunAngle = (targetId: string | null): number => {
+    if (!targetId) {
+      return -165; // Default angle khi không có target
+    }
+
+    const targetPos = playerPositions[targetId];
+    if (!targetPos) {
+      console.warn('🎯 Target position not found for:', targetId, 'Available positions:', Object.keys(playerPositions));
+      return -165; // Default nếu không tìm được position
+    }
+
+    const dx = targetPos.x - gunX;
+    const dy = targetPos.y - gunY;
+
+    // Tính angle từ hướng trên (0°), phù hợp với scaleY(-1)
+    // 0° = up, 90° = right, -90° = left, 180° = down
+    let angle = Math.atan2(dy, dx) * (180 / Math.PI);
+
+    console.log('🔫 Gun angle for target', targetId, ':', angle, 'dx:', dx, 'dy:', dy, 'target pos:', targetPos);
+    return angle;
+  };
+
+  const getGunStyle = (): React.CSSProperties => {
+    const angle = calculateGunAngle(selectedTarget);
+    return {
+      transform: `translate(-50%, -50%) rotate(${angle}deg) scaleY(-1)`,
+    };
   };
 
   // Tính ammo từ [fakeCount, realCount]
@@ -181,7 +228,7 @@ function GameLayout({
         )}
 
         {/* Gun Display */}
-        <img className="gun-display" src={gunImg} alt="gun" />
+        <img className="gun-display" src={gunImg} alt="gun" style={getGunStyle()} />
 
         {/* Player Me - Bottom Center */}
         {currentPlayer && (
@@ -189,7 +236,9 @@ function GameLayout({
             className={`player-me ${isMyTurn ? 'is-my-turn' : ''} ${selectedTarget === currentPlayer.ID ? 'selected' : ''}`}
             onClick={() => {
               if (isMyTurn && currentPlayer.health > 0) {
-                setSelectedTarget(selectedTarget === currentPlayer.ID ? null : currentPlayer.ID);
+                const newTarget = selectedTarget === currentPlayer.ID ? '' : currentPlayer.ID;
+                console.log('👤 Click player-me, newTarget:', newTarget, 'previousTarget:', selectedTarget);
+                onSelectTarget?.(newTarget);
               }
             }}
             style={{ cursor: isMyTurn && currentPlayer.health > 0 ? 'pointer' : 'default' }}
@@ -250,7 +299,9 @@ function GameLayout({
             className={`player-3 ${selectedTarget === player3.ID ? 'selected' : ''} ${nextPlayerId === player3.ID ? 'is-my-turn' : ''}`}
             onClick={() => {
               if (isMyTurn && player3.health > 0) {
-                setSelectedTarget(selectedTarget === player3.ID ? null : player3.ID);
+                const newTarget = selectedTarget === player3.ID ? '' : player3.ID;
+                console.log('🎯 Click player-3 (' + player3.name + '), newTarget:', newTarget, 'previousTarget:', selectedTarget);
+                onSelectTarget?.(newTarget);
               }
             }}
             style={{ cursor: isMyTurn && player3.health > 0 ? 'pointer' : 'default' }}
@@ -296,7 +347,9 @@ function GameLayout({
             className={`player-4 ${selectedTarget === player4.ID ? 'selected' : ''} ${nextPlayerId === player4.ID ? 'is-my-turn' : ''}`}
             onClick={() => {
               if (isMyTurn && player4.health > 0) {
-                setSelectedTarget(selectedTarget === player4.ID ? null : player4.ID);
+                const newTarget = selectedTarget === player4.ID ? '' : player4.ID;
+                console.log('🎯 Click player-4 (' + player4.name + '), newTarget:', newTarget, 'previousTarget:', selectedTarget);
+                onSelectTarget?.(newTarget);
               }
             }}
             style={{ cursor: isMyTurn && player4.health > 0 ? 'pointer' : 'default' }}
@@ -350,7 +403,9 @@ function GameLayout({
             className={`player-2 ${selectedTarget === player2.ID ? 'selected' : ''} ${nextPlayerId === player2.ID ? 'is-my-turn' : ''}`}
             onClick={() => {
               if (isMyTurn && player2.health > 0) {
-                setSelectedTarget(selectedTarget === player2.ID ? null : player2.ID);
+                const newTarget = selectedTarget === player2.ID ? '' : player2.ID;
+                console.log('🎯 Click player-2 (' + player2.name + '), newTarget:', newTarget, 'previousTarget:', selectedTarget);
+                onSelectTarget?.(newTarget);
               }
             }}
             style={{ cursor: isMyTurn && player2.health > 0 ? 'pointer' : 'default' }}
