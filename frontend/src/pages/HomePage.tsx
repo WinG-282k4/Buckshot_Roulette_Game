@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import backgroundImage from '../assets/img/background/background main v2.png';
 
 export default function HomePage() {
   const [playerName, setPlayerName] = useState('');
@@ -45,12 +46,23 @@ export default function HomePage() {
   return (
     <div style={{
       minHeight: '100vh',
-      background: 'linear-gradient(to bottom right, #7f1d1d, #000000)',
+      backgroundImage: `url(${backgroundImage})`,
+      backgroundSize: 'cover',
+      backgroundPosition: 'center',
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
-      padding: '20px'
+      padding: '20px',
+      position: 'relative'
     }}>
+      {/* Overlay */}
+      <div style={{
+        position: 'absolute',
+        inset: 0,
+        backgroundColor: 'rgba(0, 0, 0, 0.5)',
+        zIndex: 1
+      }}></div>
+
       <div style={{
         background: '#111827',
         padding: '60px 40px',
@@ -58,7 +70,9 @@ export default function HomePage() {
         maxWidth: '500px',
         width: '100%',
         border: '2px solid #991b1b',
-        textAlign: 'center'
+        textAlign: 'center',
+        position: 'relative',
+        zIndex: 2
       }}>
         {/* Logo/Title */}
         <div style={{ marginBottom: '50px' }}>

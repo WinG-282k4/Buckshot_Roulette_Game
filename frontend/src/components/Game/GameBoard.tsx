@@ -1,10 +1,7 @@
 import { useGameStore } from '../../stores/gameStore';
 import { wsService } from '../../services/websocket.service';
 import { useNavigate } from 'react-router-dom';
-import PlayerList from './PlayerList';
-import GunDisplay from './GunDisplay';
-import ActionButtons from './ActionButtons';
-import ItemSlots from './ItemSlots';
+import GameLayout from './GameLayout';
 
 export default function GameBoard() {
   const { roomStatus, isMyTurn, myPlayer } = useGameStore();
@@ -168,12 +165,8 @@ export default function GameBoard() {
   }
 
   const isMyTurnFlag = isMyTurn();
-  const nextPlayer = roomStatus.nextPlayer;
   const messageText = roomStatus.message?.trim();
 
-  const handleStartGame = () => {
-    wsService.startGame();
-  };
 
   const handleFire = (targetId: string) => {
     if (!isMyTurnFlag) {
@@ -184,129 +177,31 @@ export default function GameBoard() {
     wsService.fire(targetId);
   };
 
-  const handleUseItem = (itemType: number, targetId?: string) => {
-    if (!isMyTurnFlag) {
-      console.warn('Attempted to use item outside your turn');
-      return;
-    }
+  // Game Playing state - Use GameLayout
+  if (roomStatus.status === 'Playing') {
+    return (
+      <GameLayout
+        players={roomStatus.players}
+        currentPlayerId={currentPlayer?.ID}
+        gun={roomStatus.gun}
+        actionResponse={roomStatus.actionResponse}
+        isMyTurn={isMyTurnFlag}
+        onFire={handleFire}
+        notifyMessage={messageText}
+      />
+    );
+  }
 
-    wsService.useItem(itemType, targetId);
-  };
-
+  // Waiting state - Also use GameLayout with same layout
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-red-950 to-black p-8">
-      {/* Header */}
-      <div className="text-center mb-8">
-        <h1 className="text-4xl font-bold text-red-500">ROOM #{roomStatus.roomid}</h1>
-        <p className="text-gray-400 mt-2">
-          {roomStatus.status === 'Playing' ? 'Đang chơi' : 'Đang chờ...'}
-        </p>
-        {roomStatus.isSoloMode && (
-          <p className="text-yellow-500 font-semibold mt-2">⚔️ SOLO MODE ACTIVE</p>
-        )}
-
-        {/* Message Notification */}
-        {messageText && (
-          <div className="mt-3 flex justify-center">
-            <div className="inline-block bg-blue-900 border-2 border-blue-500 px-6 py-2 rounded-lg max-w-2xl text-left">
-              <p className="text-blue-300 font-medium">
-                📢 {messageText}
-              </p>
-            </div>
-          </div>
-        )}
-
-        {/* Turn Indicator */}
-        {nextPlayer && currentPlayer && (
-          <div className="mt-4 flex justify-center">
-            {nextPlayer.ID === currentPlayer.ID ? (
-              <div className="bg-green-900 border-2 border-green-500 px-6 py-3 rounded-lg">
-                <p className="text-green-400 font-bold text-xl">
-                  🎯 LƯỢT CỦA BẠN!
-                </p>
-              </div>
-            ) : (
-              <div className="bg-gray-800 border-2 border-gray-600 px-6 py-3 rounded-lg">
-                <p className="text-gray-300 font-bold text-lg">
-                  ⏳ Lượt của: <span className="text-yellow-400">{nextPlayer.name}</span>
-                </p>
-              </div>
-            )}
-          </div>
-        )}
-      </div>
-
-      {/* Main Game Area */}
-      <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Left: Players List */}
-        <div className="lg:col-span-1">
-          <PlayerList
-            players={roomStatus.players}
-            nextPlayer={nextPlayer}
-            currentPlayerId={currentPlayer?.ID}
-          />
-        </div>
-
-        {/* Center: Gun & Actions */}
-        <div className="lg:col-span-2 space-y-6">
-          {/* Gun Display */}
-          <GunDisplay
-            gun={roomStatus.gun}
-            actionResponse={roomStatus.actionResponse}
-          />
-
-          {/* Items */}
-          {currentPlayer && (
-            <ItemSlots
-              items={currentPlayer.items}
-              onUseItem={handleUseItem}
-              canUse={isMyTurnFlag}
-              players={roomStatus.players}
-            />
-          )}
-
-          {/* Action Buttons */}
-          {roomStatus.status === 'Waiting' ? (
-            <button
-              onClick={handleStartGame}
-              className="w-full py-4 bg-green-600 hover:bg-green-700 text-white text-xl font-bold rounded-lg transition-colors"
-            >
-              🎮 BẮT ĐẦU GAME
-            </button>
-          ) : (
-            <ActionButtons
-              players={roomStatus.players}
-              currentPlayerId={currentPlayer?.ID}
-              isMyTurn={isMyTurnFlag}
-              onFire={handleFire}
-            />
-          )}
-        </div>
-      </div>
-
-      {/* Turn Indicator */}
-      {nextPlayer && (
-        <div className="fixed bottom-8 left-1/2 transform -translate-x-1/2 bg-gray-900 px-6 py-3 rounded-full border-2 border-yellow-500">
-          <p className="text-yellow-500 font-bold">
-            🎯 Lượt: {nextPlayer.name}
-            {isMyTurnFlag && ' (Bạn!)'}
-          </p>
-        </div>
-      )}
-
-      {/* Back to Lobby Button */}
-      <div className="fixed bottom-8 right-8">
-        <button
-          onClick={() => {
-            const roomId = roomStatus?.roomid;
-            wsService.leaveRoom(Number(roomId));
-            navigate('/lobby');
-          }}
-          className="px-6 py-3 bg-gray-700 hover:bg-gray-600 text-white font-bold rounded-lg transition-colors"
-        >
-          ← LOBBY
-        </button>
-      </div>
-    </div>
+    <GameLayout
+      players={roomStatus.players}
+      currentPlayerId={currentPlayer?.ID}
+      gun={roomStatus.gun}
+      actionResponse={roomStatus.actionResponse}
+      isMyTurn={isMyTurnFlag}
+      onFire={handleFire}
+      notifyMessage={messageText}
+    />
   );
 }

@@ -7,5 +7,6 @@ export interface Player {
   isHandcuffed: boolean;
   items: Item[];
   isSoloing: boolean;
+  avatar?: string; // Avatar image path or color
 }
 

@@ -187,14 +187,15 @@ public class Room implements IRoomAction {
 
         String status = this.checkStatus();
 
-        return RoomStatusResponse.builder()
-                .status(status)
-                .message(message)  // Thêm message
-                .roomid(this.getID())
-                .gun(this.getGun().getInfoBullets())
-                .players(this.getPlayers())
-                .nextPlayer(nextPlayer)
-                .isSoloMode(this.getIsSoloMode())
-                .build();
+        return RoomStatusResponse.fromGameRoom(
+                status,
+                message,
+                this.getID(),
+                this.getGun().getInfoBullets(),
+                this.getPlayers(),
+                nextPlayer,
+                this.getIsSoloMode(),
+                null
+        );
     }
 }
