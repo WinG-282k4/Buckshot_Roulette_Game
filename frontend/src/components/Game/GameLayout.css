@@ -106,10 +106,10 @@
   width: 738.06px;
   height: 352.18px;
   position: absolute;
-  left: 1269.91px;
-  top: 757.21px;
-  transform: rotate(-165deg);
-  transform-origin: top left;
+  left: 50%;
+  top: calc(50% - 30px);
+  transform: translate(-50%, -50%) rotate(-165deg) scaleY(-1);
+  transform-origin: center;
   box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
   pointer-events: none;
   z-index: 10;
