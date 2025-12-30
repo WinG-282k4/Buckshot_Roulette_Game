@@ -1,4 +1,4 @@
-import { Client, IMessage } from '@stomp/stompjs';
+import { Client, IMessage, IFrame } from '@stomp/stompjs';
 import SockJS from 'sockjs-client';
 import { RoomStatusResponse } from '../types/room.types';
 
@@ -13,7 +13,7 @@ export class WebSocketService {
   // Callbacks
   private onRoomUpdateCallback: ((data: RoomStatusResponse) => void) | null = null;
   private onConnectCallback: (() => void) | null = null;
-  private onErrorCallback: ((error: Record<string, unknown>) => void) | null = null;
+  private onErrorCallback: ((error: IFrame) => void) | null = null;
 
   constructor(serverUrl?: string) {
     // Auto-detect backend URL từ frontend hostname
@@ -51,7 +51,7 @@ export class WebSocketService {
       this.onConnectCallback?.();
     };
 
-    this.client.onStompError = (frame) => {
+    this.client.onStompError = (frame: IFrame) => {
       console.error('❌ STOMP error:', frame);
       this.onErrorCallback?.(frame);
     };
@@ -167,6 +167,18 @@ export class WebSocketService {
     });
   }
 
+  // Select target
+  selectTarget(targetId: string, gunAngle: number) {
+    if (!this.roomId || !this.client?.connected) return;
+
+    console.log('🎯 Selecting target:', { targetId, gunAngle });
+    // Gửi targetId lên server, frontend tự tính góc
+    this.client.publish({
+      destination: `/app/room/${this.roomId}/target/${targetId}`,
+      body: JSON.stringify({})
+    });
+  }
+
   // Use item
   useItem(itemType: number, targetId?: string) {
     if (!this.roomId || !this.client?.connected) return;
@@ -201,7 +213,7 @@ export class WebSocketService {
     this.onConnectCallback = callback;
   }
 
-  onError(callback: (error: Record<string, unknown>) => void) {
+  onError(callback: (error: IFrame) => void) {
     this.onErrorCallback = callback;
   }
 

@@ -169,16 +169,17 @@ export default function GameBoard() {
   const isMyTurnFlag = isMyTurn();
   const messageText = roomStatus.message?.trim();
 
-  const handleSelectTarget = (targetId: string) => {
+  const handleSelectTarget = (targetId: string, gunAngle: number) => {
     // Update local state immediately for UI responsiveness
-    console.log('📤 handleSelectTarget called with:', targetId);
+    console.log('📤 handleSelectTarget called with:', { targetId, gunAngle });
     if (targetId) {
       setLocalSelectedTarget(targetId);
-      console.log('📤 Sending selectTarget to server:', targetId);
-      wsService.selectTarget(targetId);
+      console.log('📤 Sending selectTarget to server:', { targetId, gunAngle });
+      wsService.selectTarget(targetId, gunAngle);
     } else {
       console.log('📤 Clearing selected target');
       setLocalSelectedTarget(null);
+      wsService.selectTarget('', gunAngle);
     }
   };
 
