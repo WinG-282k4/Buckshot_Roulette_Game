@@ -181,8 +181,12 @@ public class Service {
         }
 
         //Check turn can action
-        if(!checkCurrentTurn(roomid, playeridActor) && !tempPlayerActor.canAction()){
-            throw new IllegalArgumentException("You have handcuffed and cannot perform actions this turn.");
+        if(!checkCurrentTurn(roomid, playeridActor)){
+            throw new IllegalArgumentException("It's not your turn to act.");
+        }
+
+        if(!tempPlayerActor.canAction()){
+            throw new IllegalArgumentException("You have handcuffed or die, so u cannot perform actions this turn.");
         }
 
         //Check solomode
