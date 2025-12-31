@@ -193,6 +193,15 @@ export default function GameBoard() {
     return localSelectedTarget;
   };
 
+  const handleUseItem = (itemType: number, targetId?: string) => {
+    if (!isMyTurnFlag) {
+      console.warn('Attempted to use item outside your turn');
+      return;
+    }
+    console.log('🎒 GameBoard handleUseItem:', { itemType, targetId });
+    wsService.useItem(itemType, targetId);
+  };
+
   const handleFire = (targetId: string) => {
     if (!isMyTurnFlag) {
       console.warn('Attempted to fire outside your turn');
@@ -200,6 +209,21 @@ export default function GameBoard() {
     }
 
     wsService.fire(targetId);
+  };
+
+  const handleBack = () => {
+    // Leave room and go back to lobby
+    console.log('👋 Leaving room...');
+    const roomId = roomStatus?.roomid;
+    if (roomId) {
+      wsService.leaveRoom(roomId);
+      // Wait a bit for websocket message to be processed, then navigate
+      setTimeout(() => {
+        navigate('/lobby');
+      }, 500);
+    } else {
+      navigate('/lobby');
+    }
   };
 
   // Game Playing state - Use GameLayout
@@ -214,6 +238,8 @@ export default function GameBoard() {
         isMyTurn={isMyTurnFlag}
         onFire={handleFire}
         onSelectTarget={handleSelectTarget}
+        onUseItem={handleUseItem}
+        onBack={handleBack}
         selectedTargetId={getSelectedTargetId()}
         notifyMessage={messageText}
       />
@@ -231,6 +257,8 @@ export default function GameBoard() {
       isMyTurn={isMyTurnFlag}
       onFire={handleFire}
       onSelectTarget={handleSelectTarget}
+      onUseItem={handleUseItem}
+      onBack={handleBack}
       selectedTargetId={getSelectedTargetId()}
       notifyMessage={messageText}
     />

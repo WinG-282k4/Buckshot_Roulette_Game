@@ -9,6 +9,7 @@ export class WebSocketService {
   private pendingRoomRejoin: { roomId: number; playerName: string } | null = null;
   private lastJoinRoomId: number | null = null;  // Track last join to prevent duplicates
   private lastJoinPlayerName: string | null = null;
+  private roomSubscription: any = null;  // Track current room subscription
 
   // Callbacks
   private onRoomUpdateCallback: ((data: RoomStatusResponse) => void) | null = null;
@@ -198,6 +199,18 @@ export class WebSocketService {
     if (!this.client?.connected) return;
 
     console.log('👋 Leaving room:', roomId);
+
+    // Unsubscribe from room topic
+    if (this.roomSubscription) {
+      console.log('🔕 Unsubscribing from room:', roomId);
+      this.roomSubscription.unsubscribe();
+      this.roomSubscription = null;
+    }
+
+    this.roomId = null;
+    this.lastJoinRoomId = null;
+    this.lastJoinPlayerName = null;
+
     this.client.publish({
       destination: `/app/leave/${roomId}`,
       body: JSON.stringify({})

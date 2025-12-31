@@ -14,7 +14,8 @@ export interface RoomStatusResponse {
 export interface ActionResponse {
   action: string;
   actor?: Player;
-  target?: Player;
+  actorId?: string;
+  targetid?: string;
   message?: string;
   result?: any;
 }

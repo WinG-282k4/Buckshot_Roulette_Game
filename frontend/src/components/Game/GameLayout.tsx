@@ -22,6 +22,7 @@ interface GameLayoutProps {
   isMyTurn: boolean;
   onFire: (targetId: string) => void;
   onSelectTarget?: (targetId: string, gunAngle: number) => void;  // NEW: Callback with gunAngle
+  onUseItem?: (itemType: number, targetId?: string) => void;  // NEW: Use item callback
   selectedTargetId?: string | null;  // NEW: Target selected by current player (from server)
   notifyMessage?: string;
 }
@@ -92,6 +93,7 @@ function GameLayout({
   isMyTurn,
   onFire,
   onSelectTarget,
+  onUseItem,
   selectedTargetId,
   notifyMessage
 }: GameLayoutProps) {
@@ -140,8 +142,39 @@ function GameLayout({
   };
 
   const getItemSlots = (items: Array<{ name: string }> | undefined) => {
+    const handleItemClick = (itemIndex: number, itemName: string) => {
+      if (!isMyTurn) {
+        console.log('⏸️ Not your turn yet');
+        return;
+      }
+      console.log('🎒 Using item:', { itemIndex, itemName });
+      // Map item name to type number (based on backend ItemFactory)
+      const itemTypeMap: Record<string, number> = {
+        'Beer': 1,
+        'bullet': 2,
+        'Bullet': 2,
+        'chainsaw': 3,
+        'Chainsaw': 3,
+        'cigarette': 4,
+        'Cigarette': 4,
+        'glass': 5,
+        'Glass': 5,
+        'handcuffs': 6,
+        'Handcuffs': 6,
+        'viewfinder': 7,
+        'Viewfinder': 7
+      };
+      const itemType = itemTypeMap[itemName] ?? 0;
+      onUseItem?.(itemType, selectedTarget || undefined);
+    };
+
     return Array.from({ length: 7 }).map((_, i) => (
-      <div key={i} className="item-slot">
+      <div
+        key={i}
+        className={`item-slot ${items?.[i] ? 'has-item' : ''}`}
+        onClick={() => items?.[i] && handleItemClick(i, items[i].name)}
+        style={{ cursor: items?.[i] ? 'pointer' : 'default' }}
+      >
         {items?.[i] && (
           <img
             src={getItemImage(items[i].name)}
@@ -461,7 +494,7 @@ function GameLayout({
         )}
 
         {/* Back Button */}
-        <button className="back-button" title="Quay lại">
+        <button className="back-button" title="Quay lại" onClick={onBack}>
           ←
         </button>
 

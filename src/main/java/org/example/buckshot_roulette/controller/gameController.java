@@ -124,8 +124,7 @@ public class gameController {
         sRoom.setActionResponse(ActionResponse.builder()
                 .actorId(actorPlayer.getId())
                 .action("TARGET")
-                .targetid(targetplayerid
-                )
+                .targetid(targetplayerid)
                 .build()
         );
 
