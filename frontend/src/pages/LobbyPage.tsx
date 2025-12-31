@@ -31,9 +31,13 @@ export default function LobbyPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [roomIdInput, setRoomIdInput] = useState('');
   const [selectedAvatar, setSelectedAvatar] = useState('purple');
+  const [tempSelectedAvatar, setTempSelectedAvatar] = useState('purple');
+  const [isUpdatingAvatar, setIsUpdatingAvatar] = useState(false);
 
   useEffect(() => {
     fetchRooms();
+    // Initialize tempSelectedAvatar with selectedAvatar
+    setTempSelectedAvatar(selectedAvatar);
   }, []);
 
   const fetchRooms = async () => {
@@ -82,22 +86,31 @@ export default function LobbyPage() {
     navigate(`/room/${roomId}?name=${encodeURIComponent(playerName)}`);
   };
 
-  const handleAvatarSelect = async (avatarKey: string) => {
+  const handleAvatarSelect = (avatarKey: string) => {
+    setTempSelectedAvatar(avatarKey);
+  };
+
+  const handleUpdateAvatar = async () => {
     try {
+      setIsUpdatingAvatar(true);
       const backendUrl = `http://${window.location.hostname}:8080`;
-      const response = await fetch(`${backendUrl}/user/updateavatar/${avatarKey}`, {
+      const response = await fetch(`${backendUrl}/user/updateavatar/${tempSelectedAvatar}`, {
         method: 'POST',
         credentials: 'include'
       });
 
       if (response.ok) {
-        console.log('✅ Avatar updated to:', avatarKey);
-        setSelectedAvatar(avatarKey);
+        console.log('✅ Avatar updated to:', tempSelectedAvatar);
+        setSelectedAvatar(tempSelectedAvatar);
       } else {
         console.error('Failed to update avatar');
+        alert('Cập nhật avatar thất bại!');
       }
     } catch (error) {
       console.error('Error updating avatar:', error);
+      alert('Lỗi khi cập nhật avatar!');
+    } finally {
+      setIsUpdatingAvatar(false);
     }
   };
 
@@ -468,8 +481,8 @@ export default function LobbyPage() {
                       key={avatar.key}
                       onClick={() => handleAvatarSelect(avatar.key)}
                       style={{
-                        background: selectedAvatar === avatar.key ? '#3b82f6' : '#1f2937',
-                        border: `2px solid ${selectedAvatar === avatar.key ? '#60a5fa' : '#374151'}`,
+                        background: tempSelectedAvatar === avatar.key ? '#3b82f6' : '#1f2937',
+                        border: `2px solid ${tempSelectedAvatar === avatar.key ? '#60a5fa' : '#374151'}`,
                         borderRadius: '8px',
                         padding: '8px',
                         cursor: 'pointer',
@@ -480,11 +493,11 @@ export default function LobbyPage() {
                         transition: 'all 0.2s'
                       }}
                       onMouseEnter={(e) => {
-                        e.currentTarget.style.background = selectedAvatar === avatar.key ? '#3b82f6' : '#374151';
+                        e.currentTarget.style.background = tempSelectedAvatar === avatar.key ? '#3b82f6' : '#374151';
                         e.currentTarget.style.transform = 'scale(1.05)';
                       }}
                       onMouseLeave={(e) => {
-                        e.currentTarget.style.background = selectedAvatar === avatar.key ? '#3b82f6' : '#1f2937';
+                        e.currentTarget.style.background = tempSelectedAvatar === avatar.key ? '#3b82f6' : '#1f2937';
                         e.currentTarget.style.transform = 'scale(1)';
                       }}
                     >
@@ -510,6 +523,38 @@ export default function LobbyPage() {
                     </button>
                   ))}
                 </div>
+
+                {/* Update Avatar Button */}
+                <button
+                  onClick={handleUpdateAvatar}
+                  disabled={isUpdatingAvatar || tempSelectedAvatar === selectedAvatar}
+                  style={{
+                    width: '100%',
+                    padding: '12px',
+                    background: tempSelectedAvatar === selectedAvatar ? '#6b7280' : '#10b981',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '8px',
+                    fontSize: '14px',
+                    fontWeight: 'bold',
+                    cursor: tempSelectedAvatar === selectedAvatar ? 'not-allowed' : 'pointer',
+                    marginTop: '12px',
+                    opacity: tempSelectedAvatar === selectedAvatar ? 0.6 : 1,
+                    transition: 'all 0.2s'
+                  }}
+                  onMouseEnter={(e) => {
+                    if (tempSelectedAvatar !== selectedAvatar && !isUpdatingAvatar) {
+                      e.currentTarget.style.background = '#059669';
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    if (tempSelectedAvatar !== selectedAvatar) {
+                      e.currentTarget.style.background = '#10b981';
+                    }
+                  }}
+                >
+                  {isUpdatingAvatar ? '⏳ Đang cập nhật...' : '✓ Cập nhật Avatar'}
+                </button>
               </div>
 
               {/* Back button */}
