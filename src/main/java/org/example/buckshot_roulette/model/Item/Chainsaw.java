@@ -1,7 +1,7 @@
 package org.example.buckshot_roulette.model.Item;
 
 import org.example.buckshot_roulette.dto.GameActionContext;
-import org.example.buckshot_roulette.dto.UseItemRessult;
+import org.example.buckshot_roulette.dto.ActionResult;
 
 public class Chainsaw extends Item {
 
@@ -12,7 +12,7 @@ public class Chainsaw extends Item {
     @Override
     public Object use(GameActionContext context) {
         context.getGun().setdoubledmg();
-        return UseItemRessult.builder()
+        return ActionResult.builder()
                 .isSuccess(true)
                 .message("You used a Chainsaw. Your next shot will deal double damage.")
                 .build();

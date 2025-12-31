@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useGameStore } from '../stores/gameStore';
 import backgroundImage from '../assets/img/background/background main v2.png';
 
@@ -9,24 +9,8 @@ export default function HomePage() {
   const navigate = useNavigate();
   const { setCurrentPlayer } = useGameStore();
 
-  // Clear previous session khi về HomePage
-  useEffect(() => {
-    const clearPreviousSession = async () => {
-      try {
-        const response = await fetch('http://localhost:8080/user/off', {
-          method: 'POST',
-          credentials: 'include'
-        });
-        if (response.ok) {
-          console.log('✅ Previous session cleared');
-        }
-      } catch (error) {
-        console.error('Error clearing session:', error);
-      }
-    };
-
-    clearPreviousSession();
-  }, []);
+  // Note: We don't clear player session here because player might just be browsing back
+  // Player session is only cleared when user explicitly logs out or when creating a new player
 
   const handleCreatePlayer = async () => {
     if (!playerName.trim()) {
@@ -36,7 +20,8 @@ export default function HomePage() {
 
     setIsLoading(true);
     try {
-      const response = await fetch(`http://localhost:8080/user/create/${encodeURIComponent(playerName)}`, {
+      const backendUrl = `http://${window.location.hostname}:8080`;
+      const response = await fetch(`${backendUrl}/user/create/${encodeURIComponent(playerName)}`, {
         method: 'POST',
         credentials: 'include'
       });
@@ -48,7 +33,7 @@ export default function HomePage() {
       const player = await response.json();
       console.log('✅ Player created/verified:', player);
 
-      // Lưu player vào gameStore (nếu server gửi lại player đã tạo từ session)
+      // Lưu player vào gameStore
       setCurrentPlayer(player);
       console.log('💾 Saved player to gameStore:', player);
 

@@ -1,7 +1,7 @@
 package org.example.buckshot_roulette.model.Item;
 
 import org.example.buckshot_roulette.dto.GameActionContext;
-import org.example.buckshot_roulette.dto.UseItemRessult;
+import org.example.buckshot_roulette.dto.ActionResult;
 
 import java.util.Objects;
 
@@ -16,7 +16,7 @@ public class Viewfinder extends Item{
     @Override
     public Object use(GameActionContext context) {
         if(Objects.equals(context.getArtor().getId(), context.getTarget().getId())){
-            return UseItemRessult.builder()
+            return ActionResult.builder()
                     .isSuccess(false)
                     .message("You cannot activate solo mode with yourself.")
                     .build();
@@ -24,7 +24,7 @@ public class Viewfinder extends Item{
         context.getRoom().setSoloMode(true, context.getArtor().getId(), context.getTarget().getId());
         System.out.println("<UNK> <UNK> <UNK> <UNK> <UNK> <UNK> <UNK> <UNK> <UNK>");
         System.out.println("You have activated solo mode between " + context.getArtor().getName() + " and " + context.getTarget().getName() + ".");
-        return UseItemRessult.builder()
+        return ActionResult.builder()
                 .isSuccess(true)
                 .message("You used Viewfinder to activate solo mode between " + context.getArtor().getName() + " and " + context.getTarget().getName() + ".")
                 .build();

@@ -164,6 +164,8 @@ public class Room implements IRoomAction {
 
         if(aliveCount <= 1){
             status = "Ended";
+            //Thread to reset room after game ended
+
             return status;
         }
 
@@ -198,5 +200,15 @@ public class Room implements IRoomAction {
                 this.getIsSoloMode(),
                 null
         );
+    }
+
+    //Check exist player
+    public Boolean isExistPlayer(String playerId){
+        for (Player p : this.players) {
+            if (Objects.equals(p.getId(), playerId)) {
+                return true;
+            }
+        }
+        return false;
     }
 }

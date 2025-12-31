@@ -22,7 +22,8 @@ export default function LobbyPage() {
 
   const fetchRooms = async () => {
     try {
-      const response = await fetch('http://localhost:8080/api/rooms/list/0', {
+      const backendUrl = `http://${window.location.hostname}:8080`;
+      const response = await fetch(`${backendUrl}/api/rooms/list/0`, {
         credentials: 'include'
       });
 
@@ -44,7 +45,8 @@ export default function LobbyPage() {
 
   const handleCreateRoom = async () => {
     try {
-      const response = await fetch('http://localhost:8080/api/createroom', {
+      const backendUrl = `http://${window.location.hostname}:8080`;
+      const response = await fetch(`${backendUrl}/api/createroom`, {
         method: 'POST',
         credentials: 'include'
       });

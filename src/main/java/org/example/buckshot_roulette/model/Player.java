@@ -18,18 +18,22 @@ public class Player implements IPlayerAction {
     @JsonProperty("ID")
     private String ID;
     private String name;
+    private String URLavatar;
     private int health;
     private boolean isHandcuffed;
     private List<Item> items;
     private Boolean isSoloing;
+    private Boolean isInRoom;
 
     public Player(String name) {
         this.ID = createID();
         this.name = name;
+        this.URLavatar = "/assets/avatar/black.png";
         this.health = 5;
         this.isHandcuffed = false;
         this.items = new ArrayList<>();
         this.isSoloing = false;
+        this.isInRoom = false;
     }
 
     private String createID() {

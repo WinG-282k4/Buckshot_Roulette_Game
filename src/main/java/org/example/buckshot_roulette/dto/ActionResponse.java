@@ -7,6 +7,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @Builder
+//Action messsage for wwebsocket
 public class ActionResponse {
     private String actorId;
     private String action;

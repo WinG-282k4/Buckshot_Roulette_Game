@@ -85,13 +85,20 @@ export class WebSocketService {
       return;
     }
 
+    // Unsubscribe from previous room if joining new room
+    if (this.roomSubscription && this.roomId !== roomId) {
+      console.log('🔕 Unsubscribing from previous room:', this.roomId);
+      this.roomSubscription.unsubscribe();
+      this.roomSubscription = null;
+    }
+
     this.lastJoinRoomId = roomId;
     this.lastJoinPlayerName = playerName;
 
     this.roomId = roomId;
 
     // Subscribe to room updates
-    this.client.subscribe(`/topic/room/${roomId}`, (message: IMessage) => {
+    this.roomSubscription = this.client.subscribe(`/topic/room/${roomId}`, (message: IMessage) => {
       const data = JSON.parse(message.body);
       console.log('📨 Room update received:', data);
 

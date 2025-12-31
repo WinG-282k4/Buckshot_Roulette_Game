@@ -1,13 +1,14 @@
 package org.example.buckshot_roulette.service;
 
+import org.example.buckshot_roulette.dto.ActionResult;
 import org.example.buckshot_roulette.dto.GameActionContext;
 import org.example.buckshot_roulette.dto.RoomStatusResponse;
-import org.example.buckshot_roulette.dto.UseItemRessult;
 import org.example.buckshot_roulette.model.Item.Item;
 import org.example.buckshot_roulette.model.ItemFactory;
 import org.example.buckshot_roulette.model.Player;
 import org.example.buckshot_roulette.model.Room;
 import org.example.buckshot_roulette.model.RoomLoby;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -16,7 +17,9 @@ import java.util.Objects;
 @org.springframework.stereotype.Service
 public class Service {
     public List<Room> rooms;
-    public List<Player> players;
+
+    @Autowired
+    private playerService playerservice;
 
     public Service() {
         rooms = new java.util.ArrayList<Room>();
@@ -65,22 +68,41 @@ public class Service {
     }
 
     //Player join Room
-    public void AddPlayerToRoom(int roomid, Player player){
+    public ActionResult AddPlayerToRoom(int roomid, Player player) {
         Room tempRoom = getRoom(roomid);
 
-        if(tempRoom == null){
+        if (tempRoom == null) {
             throw new IllegalArgumentException("Room not found");
         }
 
+        //Check player valid
+        Player validPlayer = playerservice.getPlayerById(player.getId());
+        if (validPlayer == null) {
+            return ActionResult.builder()
+                    .isSuccess(false)
+                    .message("Player not found in server")
+                    .data(null)
+                    .build();
+        }
+
+        //Chekc player already in another room
+        if(validPlayer.getIsInRoom()){
+            return ActionResult.builder()
+                    .isSuccess(false)
+                    .message("Cannot join this room since player is already in another room")
+                    .data(null)
+                    .build();
+        }
+
         // Check if player with same ID already in room (important for reload scenario)
-        Player existingPlayer = tempRoom.getPlayer(player.getId());
-        if (existingPlayer != null) {
-            // Player with same ID already exists - replace the old object with new one
-            // This handles the reload case where new Player object is created with same ID
+        if (tempRoom.isExistPlayer(player.getId())) {
+
             System.out.println("Player " + player.getName() + " (ID: " + player.getId() + ") already in room, updating reference");
-            tempRoom.getPlayers().remove(existingPlayer);
-            tempRoom.getPlayers().add(player);
-            return;
+
+            return ActionResult.builder()
+                    .isSuccess(false)
+                    .message("Player joined the room before")
+                    .build();
         }
 
         // Check if room is full
@@ -93,12 +115,18 @@ public class Service {
             throw new IllegalArgumentException("Game has already started, cannot join");
         }
 
-        tempRoom.getPlayers().add(player);
+        tempRoom.getPlayers().add(validPlayer);
+        validPlayer.setIsInRoom(true);
         System.out.println("Player " + player.getName() + " (ID: " + player.getId() + ") joined room " + roomid);
+        return ActionResult.builder()
+                .isSuccess(true)
+                .message("Player joined the room successfully")
+                .data(validPlayer)
+                .build();
     }
 
     //Player leave Room
-    public RoomStatusResponse RemovePlayerFromRoom(int roomid, Player player){
+    public ActionResult RemovePlayerFromRoom(int roomid, Player player){
         Room tempRoom = getRoom(roomid);
 
         if(tempRoom == null){
@@ -109,11 +137,18 @@ public class Service {
         Player playerToRemove = tempRoom.getPlayer(player.getId());
         if (playerToRemove != null) {
             tempRoom.getPlayers().remove(playerToRemove);
-            System.out.println("✅ Player " + player.getName() + " (ID: " + player.getId() + ") left room " + roomid);
+            playerToRemove.setIsInRoom(false);
+            System.out.println("Player " + player.getName() + " (ID: " + player.getId() + ") left room " + roomid);
         } else {
-            System.out.println("⚠️ Player " + player.getName() + " (ID: " + player.getId() + ") not found in room " + roomid);
+            System.out.println("Player " + player.getName() + " (ID: " + player.getId() + ") not found in room " + roomid);
         }
-        return tempRoom.toRoomStatus("Player " + player.getName() + " has left the room.");
+
+        checkRoomEmpty(roomid);
+        return ActionResult.builder()
+                .isSuccess(true)
+                .message("Player" + player.getName() + "left the room")
+                .data(null)
+                .build();
     }
 
     //Player use item
@@ -149,7 +184,8 @@ public class Service {
                 throw new IllegalArgumentException("Target is not solo.");
         }
 
-        UseItemRessult ressult = (UseItemRessult) useItem.use(new GameActionContext(tempRoom.getGun(), tempPlayerActor, tempPlayerTarget, tempRoom));
+        //Use item after checked
+        ActionResult ressult = (ActionResult) useItem.use(new GameActionContext(tempRoom.getGun(), tempPlayerActor, tempPlayerTarget, tempRoom));
         if(ressult.getIsSuccess()) {
             tempPlayerActor.getItems().remove(useItem);
             System.out.println("Item " + useItem.getName() + " used by player " + tempPlayerActor.getName());
@@ -270,6 +306,16 @@ public class Service {
 
 
         return listroom;
+    }
+
+    //Check room have player, if not, remove room
+    public void checkRoomEmpty(int roomid){
+        Room room = getRoom(roomid);
+
+        if (room.getPlayers().isEmpty()){
+            rooms.remove(room);
+            System.out.println("Room " + roomid + " is empty and has been removed.");
+        }
     }
 }
 

@@ -88,6 +88,9 @@ export default function RoomPage() {
     // Chỉ connect WebSocket khi player đã được tạo
     if (!isPlayerCreated) return;
 
+    // Reset ref khi roomId thay đổi (user joins different room)
+    wsConnectionSetupRef.current = false;
+
     // Prevent duplicate setup due to React StrictMode in development
     if (wsConnectionSetupRef.current) {
       console.log('⚠️ WebSocket setup already in progress, skipping duplicate setup');
@@ -116,33 +119,32 @@ export default function RoomPage() {
       console.log('👥 Players in room:', data.players.map(p => ({ id: p.ID, name: p.name })));
       setRoomStatus(data);
 
-      // Tìm player hiện tại trong danh sách
-      let myPlayerId = wsService.getPlayerId();
-      console.log('🔍 Looking for myPlayerId:', myPlayerId, 'or playerName:', playerName);
+      // Priority 1: Try to find by playerName (for multi-room scenarios where ID might differ)
+      let myPlayer = data.players.find(p => p.name === playerName);
 
-      // Nếu chưa có playerId, tìm bằng tên
-      if (!myPlayerId) {
-        const myPlayer = data.players.find(p => p.name === playerName);
-        if (myPlayer) {
-          myPlayerId = myPlayer.ID;
-          console.log('✅ Found player by name:', { id: myPlayer.ID, name: myPlayer.name });
-          wsService.setPlayerId(myPlayerId);
-          setCurrentPlayer(myPlayer);
-          setIsViewer(false);
-        } else {
-          // Không tìm thấy player → là viewer
-          console.log('📺 Bạn đang xem như viewer (player name not found in room)');
-          setIsViewer(true);
-        }
+      if (myPlayer) {
+        // Found by name - this is our player
+        console.log('✅ Found player by name:', { id: myPlayer.ID, name: myPlayer.name });
+        wsService.setPlayerId(myPlayer.ID);  // Update playerId to current room's player ID
+        setCurrentPlayer(myPlayer);
+        setIsViewer(false);
       } else {
-        // Nếu có playerId, tìm bằng ID
-        const myPlayer = data.players.find(p => p.ID === myPlayerId);
-        if (myPlayer) {
-          console.log('✅ Found player by ID:', { id: myPlayer.ID, name: myPlayer.name });
-          setCurrentPlayer(myPlayer);
-          setIsViewer(false);
+        // Priority 2: Try to find by playerId (for single room scenarios)
+        const myPlayerId = wsService.getPlayerId();
+        console.log('🔍 Player name not found, looking for playerId:', myPlayerId);
+
+        if (myPlayerId) {
+          myPlayer = data.players.find(p => p.ID === myPlayerId);
+          if (myPlayer) {
+            console.log('✅ Found player by ID:', { id: myPlayer.ID, name: myPlayer.name });
+            setCurrentPlayer(myPlayer);
+            setIsViewer(false);
+          } else {
+            console.log('⚠️ Player ID not found in room:', myPlayerId, ' - treating as VIEWER');
+            setIsViewer(true);
+          }
         } else {
-          console.log('⚠️ Player ID not found in room:', myPlayerId);
+          console.log('⚠️ No playerId or playerName found - treating as VIEWER');
           setIsViewer(true);
         }
       }
@@ -151,8 +153,13 @@ export default function RoomPage() {
     // Connect
     wsService.connect();
 
-    // Cleanup
+    // Cleanup: Send leave API when unmounting or changing rooms
     return () => {
+      console.log('🚪 Cleaning up - leaving room:', roomId);
+      if (roomId) {
+        // Send leave API to remove player from this room
+        wsService.leaveRoom(Number(roomId));
+      }
       wsConnectionSetupRef.current = false;
       wsService.disconnect();
     };

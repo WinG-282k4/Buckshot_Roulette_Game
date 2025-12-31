@@ -1,7 +1,7 @@
 package org.example.buckshot_roulette.model.Item;
 
 import org.example.buckshot_roulette.dto.GameActionContext;
-import org.example.buckshot_roulette.dto.UseItemRessult;
+import org.example.buckshot_roulette.dto.ActionResult;
 
 public class Glass extends  Item {
 
@@ -14,7 +14,7 @@ public class Glass extends  Item {
         boolean bullet = context.getGun().peek();
         String result = bullet ? "The bullet is real" : "The Bullet is fake";
         System.out.println(bullet? "The bullet is real." : "The bullet is fake.");
-        return UseItemRessult.builder()
+        return ActionResult.builder()
                 .isSuccess(true)
                 .message(result)
                 .build();

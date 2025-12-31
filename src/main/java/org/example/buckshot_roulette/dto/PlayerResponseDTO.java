@@ -16,6 +16,7 @@ public class PlayerResponseDTO {
     @JsonProperty("ID")
     private String ID;
     private String name;
+    private String URLavatar;
     private int health;
     private List<Item> items;
     private List<String> effects;
@@ -38,6 +39,7 @@ public class PlayerResponseDTO {
         return PlayerResponseDTO.builder()
                 .ID(player.getId())
                 .name(player.getName())
+                .URLavatar(player.getURLavatar())
                 .health(player.getHealth())
                 .items(player.getItems())
                 .effects(effects)

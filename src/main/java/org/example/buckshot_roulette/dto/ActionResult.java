@@ -7,7 +7,8 @@ import lombok.Setter;
 @Getter
 @Setter
 @Builder
-public class UseItemRessult {
+public class ActionResult {
     private Boolean isSuccess;
     private String message;
+    private Object data;
 }

@@ -5,6 +5,7 @@ interface Player {
   name: string;
   health: number;
   color?: string;
+  URLavatar?: string;
   effects?: string[];
   items?: Array<{ name: string }>;
 }
@@ -123,10 +124,19 @@ function GameLayout({
   console.log('🎯 Next Turn (nextPlayer):', currentPlayerId, 'isMyTurn:', isMyTurn);
   console.log('⚔️ Opponents - Top:', player3?.ID, '| Left:', player4?.ID, '| Right:', player2?.ID);
 
-  const getAvatarImage = (color?: string): string => {
-    if (!color) return purpleAvatar;
-    const colorLower = color.toLowerCase();
-    return avatarMap[colorLower] || purpleAvatar;
+  const getAvatarImage = (avatarUrl?: string, color?: string): string => {
+    // Priority 1: Use URLavatar from backend
+    if (avatarUrl) {
+      console.log('Using avatar URL from backend:', avatarUrl);
+      return avatarUrl;
+    }
+    // Priority 2: Fall back to color-based mapping
+    if (color) {
+      const colorLower = color.toLowerCase();
+      return avatarMap[colorLower] || purpleAvatar;
+    }
+    // Priority 3: Default avatar
+    return purpleAvatar;
   };
 
   const getItemImage = (itemName?: string): string => {
@@ -295,8 +305,12 @@ function GameLayout({
             <div className="player-avatar-circle" />
             <img
               className="player-avatar"
-              src={getAvatarImage(currentPlayer.color)}
+              src={getAvatarImage(currentPlayer?.URLavatar, currentPlayer?.color)}
               alt={currentPlayer.name}
+              onError={(e) => {
+                console.error('❌ Failed to load avatar for', currentPlayer.name, '- using fallback');
+                (e.target as HTMLImageElement).src = purpleAvatar;
+              }}
             />
 
             {/* HP Bar - Column 2, Row 1 */}
@@ -355,8 +369,12 @@ function GameLayout({
             <div className="player-avatar-circle" />
             <img
               className="player-avatar"
-              src={getAvatarImage(player3.color)}
+              src={getAvatarImage(player3?.URLavatar, player3?.color)}
               alt={player3.name}
+              onError={(e) => {
+                console.error('❌ Failed to load avatar for', player3.name, '- using fallback');
+                (e.target as HTMLImageElement).src = purpleAvatar;
+              }}
             />
 
             <div className="player-hp-bar">
@@ -403,8 +421,12 @@ function GameLayout({
               {/* Column 1: Avatar */}
               <img
                 className="player-avatar"
-                src={getAvatarImage(player4.color)}
+                src={getAvatarImage(player4?.URLavatar, player4?.color)}
                 alt={player4.name}
+                onError={(e) => {
+                  console.error('❌ Failed to load avatar for', player4.name, '- using fallback');
+                  (e.target as HTMLImageElement).src = purpleAvatar;
+                }}
               />
 
               {/* Column 2: Name + HP */}
@@ -469,8 +491,12 @@ function GameLayout({
               {/* Column 2: Avatar */}
               <img
                 className="player-avatar"
-                src={getAvatarImage(player2.color)}
+                src={getAvatarImage(player2?.URLavatar, player2?.color)}
                 alt={player2.name}
+                onError={(e) => {
+                  console.error('❌ Failed to load avatar for', player2.name, '- using fallback');
+                  (e.target as HTMLImageElement).src = purpleAvatar;
+                }}
               />
             </div>
 
