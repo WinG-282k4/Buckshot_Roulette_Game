@@ -17,10 +17,12 @@ export default function RoomPage() {
   const [isPlayerCreated, setIsPlayerCreated] = useState(false);
   const [isViewer, setIsViewer] = useState(false);
   const [selectedAvatar, setSelectedAvatar] = useState('purple');
+  const [isLeavingRoom, setIsLeavingRoom] = useState(false);
   const { roomStatus, setRoomStatus, setCurrentPlayer, clearRoom } = useGameStore();
 
   // Ref to prevent duplicate WebSocket connections
   const wsConnectionSetupRef = useRef(false);
+  const hasRequestedLeaveRef = useRef(false);
 
   // Initialize playerName - run only once on mount
   useEffect(() => {
@@ -152,13 +154,16 @@ export default function RoomPage() {
       }
     });
 
+
     // Connect
     wsService.connect();
 
     // Cleanup: Send leave API when unmounting or changing rooms
     return () => {
       console.log('🚪 Cleaning up - leaving room:', roomId);
-      if (roomId) {
+      // Only send leave if user didn't explicitly click "leave" button
+      // (handleLeaveRoom sets hasRequestedLeaveRef.current = true)
+      if (roomId && !hasRequestedLeaveRef.current) {
         // Send leave API to remove player from this room
         wsService.leaveRoom(Number(roomId));
       }
@@ -170,6 +175,48 @@ export default function RoomPage() {
   // Function to get avatar color from URL or color name
   const getAvatarKeyFromUrl = (url?: string): string => {
     return getColorFromAvatarUrl(url);
+  };
+
+  // Handle leave room
+  const handleLeaveRoom = () => {
+    setIsLeavingRoom(true);
+    hasRequestedLeaveRef.current = true; // Mark that user explicitly requested leave
+    console.log('👋 Requesting to leave room:', roomId);
+    (window as any).__lastLeaveResult = null; // Clear any previous result
+    wsService.leaveRoom(Number(roomId));
+
+    // Check leave result after a moment
+    const timeoutId = setTimeout(() => {
+      const leaveResult = (window as any).__lastLeaveResult;
+      console.log('🔍 Leave result received:', leaveResult);
+      console.log('  - isSuccess type:', typeof leaveResult?.isSuccess, 'value:', leaveResult?.isSuccess);
+
+      // Only navigate if isSuccess is explicitly true
+      if (leaveResult && leaveResult.isSuccess === true) {
+        // Leave successful - ONLY navigate here
+        console.log('✅ Left room successfully');
+        localStorage.removeItem('playerId');
+        clearRoom();
+        navigate(`/lobby?name=${encodeURIComponent(playerName)}`);
+      } else {
+        // Leave failed or no result
+        if (leaveResult) {
+          console.log('⚠️ Cannot leave room:', leaveResult.message);
+          alert(leaveResult.message || 'Không thể rời phòng lúc này!');
+        } else {
+          console.log('⚠️ No leave result received - timeout');
+          alert('Không thể rời phòng lúc này!');
+        }
+        // Reset flag so cleanup can handle it if needed
+        hasRequestedLeaveRef.current = false;
+        setIsLeavingRoom(false);
+      }
+      // Clear the result
+      (window as any).__lastLeaveResult = null;
+    }, 500);
+
+    // Cleanup function (not actually used in this case)
+    return () => clearTimeout(timeoutId);
   };
 
   // Loading state
@@ -418,32 +465,33 @@ export default function RoomPage() {
 
           {/* Back button */}
           <button
-            onClick={() => {
-              // Gửi API leave trước khi quay lại
-              wsService.leaveRoom(Number(roomId));
-              clearRoom();  // Clear room state but keep currentPlayer
-              navigate('/lobby?name=' + encodeURIComponent(playerName));
-            }}
+            onClick={handleLeaveRoom}
+            disabled={isLeavingRoom || (roomStatus && roomStatus.status === 'Playing')}
             style={{
               width: '100%',
               padding: '14px',
-              background: '#374151',
-              color: '#9ca3af',
+              background: (roomStatus && roomStatus.status === 'Playing') ? '#6b7280' : '#374151',
+              color: (roomStatus && roomStatus.status === 'Playing') ? '#9ca3af' : '#9ca3af',
               border: 'none',
               borderRadius: '8px',
               fontSize: '16px',
-              cursor: 'pointer'
+              cursor: (roomStatus && roomStatus.status === 'Playing') || isLeavingRoom ? 'not-allowed' : 'pointer',
+              opacity: (roomStatus && roomStatus.status === 'Playing') ? 0.6 : 1
             }}
             onMouseEnter={(e) => {
-              e.currentTarget.style.background = '#4b5563';
-              e.currentTarget.style.color = 'white';
+              if (!((roomStatus && roomStatus.status === 'Playing') || isLeavingRoom)) {
+                e.currentTarget.style.background = '#4b5563';
+                e.currentTarget.style.color = 'white';
+              }
             }}
             onMouseLeave={(e) => {
-              e.currentTarget.style.background = '#374151';
-              e.currentTarget.style.color = '#9ca3af';
+              if (!((roomStatus && roomStatus.status === 'Playing') || isLeavingRoom)) {
+                e.currentTarget.style.background = '#374151';
+                e.currentTarget.style.color = '#9ca3af';
+              }
             }}
           >
-            ← Quay lại Lobby
+            {isLeavingRoom ? '⏳ Đang rời...' : (roomStatus && roomStatus.status === 'Playing') ? '🎮 Game đang chơi...' : '← Quay lại Lobby'}
           </button>
         </div>
       </div>

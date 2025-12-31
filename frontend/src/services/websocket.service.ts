@@ -39,6 +39,13 @@ export class WebSocketService {
     this.client.onConnect = () => {
       console.log('✅ WebSocket connected!');
 
+      // Subscribe to leave result (ActionResult from leave request)
+      this.client.subscribe('/user/topic/leave-result', (message: IMessage) => {
+        const data = JSON.parse(message.body);
+        console.log('🚪 Leave result:', data);
+        (window as any).__lastLeaveResult = data;
+      });
+
       // Auto-rejoin phòng nếu có pending rejoin (from page reload)
       if (this.pendingRoomRejoin) {
         console.log('🔄 Auto-rejoin phòng after reconnection:', this.pendingRoomRejoin);
@@ -102,18 +109,14 @@ export class WebSocketService {
       const data = JSON.parse(message.body);
       console.log('📨 Room update received:', data);
 
-      // Backend trả về Map {message: "..."} cho join/leave
-      // Backend trả về RoomStatusResponse cho game actions
-
-      if (data.message && typeof data.message === 'string' && !data.status && !data.roomid) {
-        // Map message từ join/leave
-        console.log('📬 Join/Leave event:', data.message);
-        // Fetch room status để update UI
-        this.fetchRoomStatus(roomId);
-      } else if (data.status || data.roomid !== undefined || data.players) {
-        // RoomStatusResponse từ game actions
-        console.log('🎮 Game update:', data);
+      // Handle RoomStatusResponse (from join success or game actions)
+      if (data.status || data.roomid !== undefined || data.players) {
+        console.log('🎮 Room update:', data);
         this.onRoomUpdateCallback?.(data);
+      } else if (data.message && typeof data.message === 'string') {
+        // Handle message from other actions
+        console.log('📬 Action event:', data.message);
+        this.fetchRoomStatus(roomId);
       } else {
         // Unknown format - fetch to be safe
         console.log('⚠️ Unknown format, fetching...');
@@ -236,6 +239,7 @@ export class WebSocketService {
   onError(callback: (error: IFrame) => void) {
     this.onErrorCallback = callback;
   }
+
 
   setPlayerId(id: string) {
     this.playerId = id;
