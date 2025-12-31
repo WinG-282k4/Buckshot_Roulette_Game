@@ -12,6 +12,7 @@ interface GameState {
   setRoomStatus: (status: RoomStatusResponse) => void;
   setCurrentPlayer: (player: Player) => void;
   setMaxAmmo: (max: number) => void;
+  clearRoom: () => void;  // Clear room state but keep currentPlayer
 
   // Computed
   isMyTurn: () => boolean;
@@ -37,6 +38,7 @@ export const useGameStore = create<GameState>((set, get) => ({
   },
   setCurrentPlayer: (player) => set({ currentPlayer: player }),
   setMaxAmmo: (max) => set({ maxAmmo: max }),
+  clearRoom: () => set({ roomStatus: null, maxAmmo: 0 }),  // Clear room but keep currentPlayer
 
   isMyTurn: () => {
     const { roomStatus, currentPlayer } = get();

@@ -34,7 +34,7 @@ export default function RoomPage() {
   const [isConnected, setIsConnected] = useState(false);
   const [isPlayerCreated, setIsPlayerCreated] = useState(false);
   const [isViewer, setIsViewer] = useState(false);
-  const { roomStatus, setRoomStatus, setCurrentPlayer } = useGameStore();
+  const { roomStatus, setRoomStatus, setCurrentPlayer, clearRoom } = useGameStore();
 
   // Ref to prevent duplicate player creation (React StrictMode calls effect twice in dev)
   const playerCreationInProgressRef = useRef(false);
@@ -396,6 +396,7 @@ export default function RoomPage() {
             onClick={() => {
               // Gửi API leave trước khi quay lại
               wsService.leaveRoom(Number(roomId));
+              clearRoom();  // Clear room state but keep currentPlayer
               navigate('/lobby?name=' + encodeURIComponent(playerName));
             }}
             style={{

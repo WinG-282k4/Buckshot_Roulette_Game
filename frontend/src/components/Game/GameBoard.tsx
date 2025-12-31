@@ -5,7 +5,7 @@ import { useState } from 'react';
 import GameLayout from './GameLayout';
 
 export default function GameBoard() {
-  const { roomStatus, isMyTurn, myPlayer } = useGameStore();
+  const { roomStatus, isMyTurn, myPlayer, clearRoom } = useGameStore();
   const currentPlayer = myPlayer();
   const navigate = useNavigate();
   const [localSelectedTarget, setLocalSelectedTarget] = useState<string | null>(null);
@@ -217,6 +217,8 @@ export default function GameBoard() {
     const roomId = roomStatus?.roomid;
     if (roomId) {
       wsService.leaveRoom(roomId);
+      // Clear room state but keep currentPlayer
+      clearRoom();
       // Wait a bit for websocket message to be processed, then navigate
       setTimeout(() => {
         navigate('/lobby');

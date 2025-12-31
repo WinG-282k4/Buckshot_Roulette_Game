@@ -1,6 +1,7 @@
 package org.example.buckshot_roulette.model.Item;
 
 import org.example.buckshot_roulette.dto.GameActionContext;
+import org.example.buckshot_roulette.dto.UseItemRessult;
 
 public class Cigarette extends Item {
 
@@ -12,6 +13,9 @@ public class Cigarette extends Item {
     @Override
     public Object use(GameActionContext context) {
         context.getArtor().heal();
-        return "You light up the cigarette and take a deep drag.";
+        return UseItemRessult.builder()
+                .isSuccess(true)
+                .message("You used a Cigarette. Your health has been increased by 1.")
+                .build();
     }
 }

@@ -22,6 +22,11 @@ public class playerController {
             @PathVariable String name,
             HttpSession session
     ){
+        Player player = (Player) session.getAttribute("player");
+        if (player != null) {
+            session.removeAttribute("player");
+            logger.info("Player already exists in session: {}", player.getName());
+        }
         logger.info("Received API: POST /user/create/{}", name);
         Player newPlayer = new Player(name);
         session.setAttribute("player", newPlayer);
@@ -29,11 +34,11 @@ public class playerController {
     }
 
     @PostMapping("/off")
-    public void OffPlayer(
+    public ResponseEntity<String> OffPlayer(
             HttpSession session
     ){
         logger.info("Received API: POST /user/off (removing player from session)");
-        //
         session.removeAttribute("player");
+        return ResponseEntity.ok("Player session cleared");
     }
 }

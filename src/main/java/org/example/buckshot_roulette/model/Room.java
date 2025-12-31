@@ -39,6 +39,7 @@ public class Room implements IRoomAction {
         if (Objects.equals(playerIdActor, playerTargetId)) {
             throw new IllegalArgumentException("Can not solo against yourself");
         }
+
         this.isSoloMode = isSolo;
         this.SoloTurnOrder = new LinkedList<Player>();
         for (Player p : this.turnOrder) {

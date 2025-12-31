@@ -2,6 +2,7 @@ package org.example.buckshot_roulette.service;
 
 import org.example.buckshot_roulette.dto.GameActionContext;
 import org.example.buckshot_roulette.dto.RoomStatusResponse;
+import org.example.buckshot_roulette.dto.UseItemRessult;
 import org.example.buckshot_roulette.model.Item.Item;
 import org.example.buckshot_roulette.model.ItemFactory;
 import org.example.buckshot_roulette.model.Player;
@@ -148,10 +149,15 @@ public class Service {
                 throw new IllegalArgumentException("Target is not solo.");
         }
 
-        String message = (String) useItem.use(new GameActionContext(tempRoom.getGun(), tempPlayerActor, tempPlayerTarget, tempRoom));
-        tempPlayerActor.getItems().remove(useItem);
-        System.out.println("Player " + useItem.getName() + " has been used");
-        return tempRoom.toRoomStatus(message);
+        UseItemRessult ressult = (UseItemRessult) useItem.use(new GameActionContext(tempRoom.getGun(), tempPlayerActor, tempPlayerTarget, tempRoom));
+        if(ressult.getIsSuccess()) {
+            tempPlayerActor.getItems().remove(useItem);
+            System.out.println("Item " + useItem.getName() + " used by player " + tempPlayerActor.getName());
+        } else {
+            System.out.println("ERROR using item " + useItem.getName() + " by player " + tempPlayerActor.getName() + ": " + ressult.getMessage());
+        }
+
+        return tempRoom.toRoomStatus(ressult.getMessage());
     }
 
     //Player fire target
@@ -198,11 +204,10 @@ public class Service {
         System.out.println(dmg);
         tempPlayerTarget.setHealth(tempPlayerTarget.getHealth() - dmg);
 
-        if(!Objects.equals(playeridActor, playeridTarget)){
+        if(!Objects.equals(playeridActor, playeridTarget) || dmg != 0){
             tempRoom.endAction();
             System.out.println("END ACTION");
         }
-        else if (dmg != 0) tempRoom.endAction();
 
         nextRound(tempRoom);
 

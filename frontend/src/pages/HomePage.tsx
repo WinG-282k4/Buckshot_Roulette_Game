@@ -1,11 +1,32 @@
-import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { useGameStore } from '../stores/gameStore';
 import backgroundImage from '../assets/img/background/background main v2.png';
 
 export default function HomePage() {
   const [playerName, setPlayerName] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
+  const { setCurrentPlayer } = useGameStore();
+
+  // Clear previous session khi về HomePage
+  useEffect(() => {
+    const clearPreviousSession = async () => {
+      try {
+        const response = await fetch('http://localhost:8080/user/off', {
+          method: 'POST',
+          credentials: 'include'
+        });
+        if (response.ok) {
+          console.log('✅ Previous session cleared');
+        }
+      } catch (error) {
+        console.error('Error clearing session:', error);
+      }
+    };
+
+    clearPreviousSession();
+  }, []);
 
   const handleCreatePlayer = async () => {
     if (!playerName.trim()) {
@@ -25,7 +46,11 @@ export default function HomePage() {
       }
 
       const player = await response.json();
-      console.log('✅ Player created:', player);
+      console.log('✅ Player created/verified:', player);
+
+      // Lưu player vào gameStore (nếu server gửi lại player đã tạo từ session)
+      setCurrentPlayer(player);
+      console.log('💾 Saved player to gameStore:', player);
 
       // Chuyển sang trang Lobby
       navigate(`/lobby?name=${encodeURIComponent(playerName)}`);

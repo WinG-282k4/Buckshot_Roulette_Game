@@ -23,6 +23,7 @@ interface GameLayoutProps {
   onFire: (targetId: string) => void;
   onSelectTarget?: (targetId: string, gunAngle: number) => void;  // NEW: Callback with gunAngle
   onUseItem?: (itemType: number, targetId?: string) => void;  // NEW: Use item callback
+  onBack?: () => void;  // NEW: Back button callback
   selectedTargetId?: string | null;  // NEW: Target selected by current player (from server)
   notifyMessage?: string;
 }
@@ -64,7 +65,7 @@ const itemImageMap: Record<string, string> = {
   'Beer': beerImg,
   'Bullet': bulletImg,
   'Chainsaw': chainsawImg,
-  'Cigarette': glassImg, // Use glass as placeholder
+  'Cigarette': vegerateImg,  // Cigarette = Vigor/Bình thuốc
   'Glass': glassImg,
   'Handcuffs': handcuffsImg,
   'Viewfinder': viewfinderImg,
@@ -94,6 +95,7 @@ function GameLayout({
   onFire,
   onSelectTarget,
   onUseItem,
+  onBack,
   selectedTargetId,
   notifyMessage
 }: GameLayoutProps) {

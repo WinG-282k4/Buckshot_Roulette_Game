@@ -1,6 +1,9 @@
 package org.example.buckshot_roulette.model.Item;
 
 import org.example.buckshot_roulette.dto.GameActionContext;
+import org.example.buckshot_roulette.dto.UseItemRessult;
+
+import java.util.Objects;
 
 public class Handcuffs extends Item {
 
@@ -11,7 +14,16 @@ public class Handcuffs extends Item {
     //Su dung de cam tay ai do
     @Override
     public Object use(GameActionContext context) {
+        if (Objects.equals(context.getArtor().getId(), context.getTarget().getId())) {
+            return UseItemRessult.builder()
+                    .isSuccess(false)
+                    .message("You cannot handcuff yourself.")
+                    .build();
+        }
         context.getTarget().setHandcuffed(true);
-        return "You secure the handcuffs around the target's wrists, restricting their movement.";
+        return UseItemRessult.builder()
+                .isSuccess(true)
+                .message("You used Handcuffs on " + context.getTarget().getName() + ". They are now handcuffed.")
+                .build();
     }
 }

@@ -1,6 +1,7 @@
 package org.example.buckshot_roulette.model.Item;
 
 import org.example.buckshot_roulette.dto.GameActionContext;
+import org.example.buckshot_roulette.dto.UseItemRessult;
 
 public class Bullet extends  Item {
 
@@ -11,6 +12,9 @@ public class Bullet extends  Item {
     @Override
     public Object use(GameActionContext context) {
         context.getGun().Randomadd();
-        return "You load the bullet into your gun.";
+        return UseItemRessult.builder()
+                .isSuccess(true)
+                .message("You used a Bullet. A random bullet has been added to the gun.")
+                .build();
     }
 }
