@@ -2,6 +2,42 @@ import { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import backgroundImage from '../assets/img/background/background main v2.png';
 
+// Avatar images
+import blackAvatar from '../assets/img/avatar/black.png';
+import blueAvatar from '../assets/img/avatar/blue.png';
+import browAvatar from '../assets/img/avatar/brow.png';
+import grayAvatar from '../assets/img/avatar/gray.png';
+import greenAvatar from '../assets/img/avatar/green.png';
+import purpleAvatar from '../assets/img/avatar/purple.png';
+import redAvatar from '../assets/img/avatar/red.png';
+import timAvatar from '../assets/img/avatar/tim.png';
+import yellowAvatar from '../assets/img/avatar/yellow.png';
+
+const avatarMap: Record<string, string> = {
+  'black': blackAvatar,
+  'blue': blueAvatar,
+  'brown': browAvatar,
+  'brow': browAvatar,
+  'gray': grayAvatar,
+  'green': greenAvatar,
+  'purple': purpleAvatar,
+  'red': redAvatar,
+  'tim': timAvatar,
+  'yellow': yellowAvatar
+};
+
+const avatarOptions = [
+  { key: 'black', name: 'Black' },
+  { key: 'blue', name: 'Blue' },
+  { key: 'brown', name: 'Brown' },
+  { key: 'gray', name: 'Gray' },
+  { key: 'green', name: 'Green' },
+  { key: 'purple', name: 'Purple' },
+  { key: 'red', name: 'Red' },
+  { key: 'tim', name: 'Tim' },
+  { key: 'yellow', name: 'Yellow' }
+];
+
 interface Room {
   roomid: number;
   status: string;
@@ -15,6 +51,7 @@ export default function LobbyPage() {
   const [rooms, setRooms] = useState<Room[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [roomIdInput, setRoomIdInput] = useState('');
+  const [selectedAvatar, setSelectedAvatar] = useState('purple');
 
   useEffect(() => {
     fetchRooms();
@@ -64,6 +101,25 @@ export default function LobbyPage() {
 
   const handleJoinRoom = (roomId: number | string) => {
     navigate(`/room/${roomId}?name=${encodeURIComponent(playerName)}`);
+  };
+
+  const handleAvatarSelect = async (avatarKey: string) => {
+    try {
+      const backendUrl = `http://${window.location.hostname}:8080`;
+      const response = await fetch(`${backendUrl}/user/updateavatar/${avatarKey}`, {
+        method: 'POST',
+        credentials: 'include'
+      });
+
+      if (response.ok) {
+        console.log('✅ Avatar updated to:', avatarKey);
+        setSelectedAvatar(avatarKey);
+      } else {
+        console.error('Failed to update avatar');
+      }
+    } catch (error) {
+      console.error('Error updating avatar:', error);
+    }
   };
 
   return (
@@ -376,6 +432,84 @@ export default function LobbyPage() {
                 </button>
               </div>
 
+              {/* Avatar Selection */}
+              <div
+                style={{
+                  background: '#111827',
+                  borderRadius: '12px',
+                  border: '2px solid #374151',
+                  padding: '30px'
+                }}
+              >
+                <h3
+                  style={{
+                    color: 'white',
+                    fontSize: '20px',
+                    marginBottom: '15px',
+                    fontWeight: 'bold'
+                  }}
+                >
+                  🎨 Chọn Avatar
+                </h3>
+                <p style={{ color: '#9ca3af', fontSize: '14px', marginBottom: '20px' }}>
+                  Lựa chọn avatar trước khi vào phòng
+                </p>
+                <div
+                  style={{
+                    display: 'grid',
+                    gridTemplateColumns: 'repeat(3, 1fr)',
+                    gap: '10px'
+                  }}
+                >
+                  {avatarOptions.map((avatar) => (
+                    <button
+                      key={avatar.key}
+                      onClick={() => handleAvatarSelect(avatar.key)}
+                      style={{
+                        background: selectedAvatar === avatar.key ? '#3b82f6' : '#1f2937',
+                        border: `2px solid ${selectedAvatar === avatar.key ? '#60a5fa' : '#374151'}`,
+                        borderRadius: '8px',
+                        padding: '8px',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        gap: '4px',
+                        transition: 'all 0.2s'
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.background = selectedAvatar === avatar.key ? '#3b82f6' : '#374151';
+                        e.currentTarget.style.transform = 'scale(1.05)';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.background = selectedAvatar === avatar.key ? '#3b82f6' : '#1f2937';
+                        e.currentTarget.style.transform = 'scale(1)';
+                      }}
+                    >
+                      <img
+                        src={avatarMap[avatar.key]}
+                        alt={avatar.name}
+                        style={{
+                          width: '30px',
+                          height: '30px',
+                          borderRadius: '50%'
+                        }}
+                      />
+                      <span
+                        style={{
+                          color: 'white',
+                          fontSize: '10px',
+                          fontWeight: 'bold',
+                          textAlign: 'center'
+                        }}
+                      >
+                        {avatar.name}
+                      </span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
               {/* Back button */}
               <button
                 onClick={() => navigate('/')}
@@ -407,4 +541,3 @@ export default function LobbyPage() {
     </div>
   );
 }
-

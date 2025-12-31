@@ -2,6 +2,7 @@ package org.example.buckshot_roulette.controller;
 
 import jakarta.servlet.http.HttpSession;
 import org.example.buckshot_roulette.dto.ActionResult;
+import org.example.buckshot_roulette.dto.PlayerResponseDTO;
 import org.example.buckshot_roulette.model.Player;
 import org.example.buckshot_roulette.service.playerService;
 import org.slf4j.Logger;
@@ -27,7 +28,7 @@ public class playerController {
     }
 
     @PostMapping("/create/{name}")
-    public ResponseEntity<Player> CreatePlayer(
+    public ResponseEntity<PlayerResponseDTO> CreatePlayer(
             @PathVariable String name,
             HttpSession session
     ){
@@ -42,8 +43,9 @@ public class playerController {
         if(!newPlayer.getIsSuccess()){
             return ResponseEntity.badRequest().build();
         }
-        session.setAttribute("player", newPlayer.getData());
-        return ResponseEntity.ok((Player) newPlayer.getData());
+        Player createdPlayer = (Player) newPlayer.getData();
+        session.setAttribute("player", createdPlayer);
+        return ResponseEntity.ok(PlayerResponseDTO.fromPlayer(createdPlayer));
     }
 
     @PostMapping("/off")
@@ -58,7 +60,7 @@ public class playerController {
     }
 
     @PostMapping("/updateavatar/{avatar}")
-    public ResponseEntity<Player> UpdateAvatar(
+    public ResponseEntity<PlayerResponseDTO> UpdateAvatar(
             @PathVariable String avatar,
             HttpSession session
     ) {
@@ -73,8 +75,9 @@ public class playerController {
         if (!updatedPlayer.getIsSuccess()) {
             return ResponseEntity.badRequest().build();
         }else  {
-            session.setAttribute("player", updatedPlayer.getData());
-            return ResponseEntity.ok((Player) updatedPlayer.getData());
+            Player updatedPlayerObj = (Player) updatedPlayer.getData();
+            session.setAttribute("player", updatedPlayerObj);
+            return ResponseEntity.ok(PlayerResponseDTO.fromPlayer(updatedPlayerObj));
         }
     }
 }

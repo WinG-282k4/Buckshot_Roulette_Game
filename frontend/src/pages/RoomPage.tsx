@@ -4,11 +4,19 @@ import { wsService } from '../services/websocket.service';
 import { useGameStore } from '../stores/gameStore';
 import GameBoard from '../components/Game/GameBoard';
 
+// Avatar images - only keeping for display
+import purpleAvatar from '../assets/img/avatar/purple.png';
+
+const avatarMap: Record<string, string> = {
+  'purple': purpleAvatar
+};
+
 export default function RoomPage() {
   const { roomId } = useParams<{ roomId: string }>();
   const [searchParams] = useSearchParams();
-  const playerName = searchParams.get('name') || 'Anonymous';
+  const playerName = searchParams.get('name') || localStorage.getItem('lastPlayerName') || 'Anonymous';
   const navigate = useNavigate();
+
 
   // Lưu roomId và playerName vào localStorage (cho reload)
   useEffect(() => {
@@ -34,6 +42,7 @@ export default function RoomPage() {
   const [isConnected, setIsConnected] = useState(false);
   const [isPlayerCreated, setIsPlayerCreated] = useState(false);
   const [isViewer, setIsViewer] = useState(false);
+  const [selectedAvatar, setSelectedAvatar] = useState('purple');
   const { roomStatus, setRoomStatus, setCurrentPlayer, clearRoom } = useGameStore();
 
   // Ref to prevent duplicate player creation (React StrictMode calls effect twice in dev)
@@ -127,6 +136,7 @@ export default function RoomPage() {
         console.log('✅ Found player by name:', { id: myPlayer.ID, name: myPlayer.name });
         wsService.setPlayerId(myPlayer.ID);  // Update playerId to current room's player ID
         setCurrentPlayer(myPlayer);
+        setSelectedAvatar(getAvatarKeyFromUrl(myPlayer.URLavatar));
         setIsViewer(false);
       } else {
         // Priority 2: Try to find by playerId (for single room scenarios)
@@ -138,6 +148,7 @@ export default function RoomPage() {
           if (myPlayer) {
             console.log('✅ Found player by ID:', { id: myPlayer.ID, name: myPlayer.name });
             setCurrentPlayer(myPlayer);
+            setSelectedAvatar(getAvatarKeyFromUrl(myPlayer.URLavatar));
             setIsViewer(false);
           } else {
             console.log('⚠️ Player ID not found in room:', myPlayerId, ' - treating as VIEWER');
@@ -164,6 +175,13 @@ export default function RoomPage() {
       wsService.disconnect();
     };
   }, [isPlayerCreated, roomId, playerName, setRoomStatus, setCurrentPlayer]);
+
+  // Function to get avatar key from URL
+  const getAvatarKeyFromUrl = (url?: string): string => {
+    if (!url) return 'purple';
+    const match = url.match(/\/assets\/avatar\/(\w+)\.png/);
+    return match ? match[1] : 'purple';
+  };
 
   // Loading state
   if (!isPlayerCreated || !isConnected) {
@@ -277,18 +295,31 @@ export default function RoomPage() {
                     gap: '15px'
                   }}
                 >
-                  <div style={{
-                    width: '50px',
-                    height: '50px',
-                    background: '#374151',
-                    borderRadius: '50%',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    fontSize: '24px'
-                  }}>
-                    {index === 0 ? '👑' : '👤'}
-                  </div>
+                  {player.name === playerName ? (
+                    <img
+                      src={avatarMap[selectedAvatar]}
+                      alt="Avatar"
+                      style={{
+                        width: '50px',
+                        height: '50px',
+                        borderRadius: '50%',
+                        border: '2px solid #3b82f6'
+                      }}
+                    />
+                  ) : (
+                    <div style={{
+                      width: '50px',
+                      height: '50px',
+                      background: '#374151',
+                      borderRadius: '50%',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      fontSize: '24px'
+                    }}>
+                      {index === 0 ? '👑' : '👤'}
+                    </div>
+                  )}
                   <div style={{ flex: 1 }}>
                     <div style={{
                       color: 'white',
@@ -435,4 +466,3 @@ export default function RoomPage() {
   // Game Board - Khi đã có nextPlayer (game đã start)
   return <GameBoard />;
 }
-

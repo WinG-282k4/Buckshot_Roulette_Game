@@ -28,7 +28,7 @@ public class Player implements IPlayerAction {
     public Player(String name) {
         this.ID = createID();
         this.name = name;
-        this.URLavatar = "/assets/avatar/black.png";
+        this.URLavatar = "/assets/img/avatar/black.png";
         this.health = 5;
         this.isHandcuffed = false;
         this.items = new ArrayList<>();

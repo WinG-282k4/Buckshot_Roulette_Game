@@ -120,9 +120,9 @@ function GameLayout({
   const currentPlayer = fallbackPlayer; // Người chơi hiện tại ở dưới
 
   // Debug log
-  console.log('👤 Current Player (me):', currentPlayer?.ID, currentPlayer?.name);
+  console.log('👤 Current Player (me):', currentPlayer?.ID, currentPlayer?.name, 'URLavatar:', currentPlayer?.URLavatar);
   console.log('🎯 Next Turn (nextPlayer):', currentPlayerId, 'isMyTurn:', isMyTurn);
-  console.log('⚔️ Opponents - Top:', player3?.ID, '| Left:', player4?.ID, '| Right:', player2?.ID);
+  console.log('⚔️ Opponents - Top:', player3?.ID, player3?.name, 'URLavatar:', player3?.URLavatar, '| Left:', player4?.ID, player4?.name, 'URLavatar:', player4?.URLavatar, '| Right:', player2?.ID, player2?.name, 'URLavatar:', player2?.URLavatar);
 
   const getAvatarImage = (avatarUrl?: string, color?: string): string => {
     // Priority 1: Use URLavatar from backend
