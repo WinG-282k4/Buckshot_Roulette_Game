@@ -3,41 +3,15 @@ import { useParams, useSearchParams, useNavigate } from 'react-router-dom';
 import { wsService } from '../services/websocket.service';
 import { useGameStore } from '../stores/gameStore';
 import GameBoard from '../components/Game/GameBoard';
-
-// Avatar images - only keeping for display
-import purpleAvatar from '../assets/img/avatar/purple.png';
-
-const avatarMap: Record<string, string> = {
-  'purple': purpleAvatar
-};
+import { getColorFromAvatarUrl, AVATAR_MAP } from '../utils/avatarMap';
 
 export default function RoomPage() {
   const { roomId } = useParams<{ roomId: string }>();
   const [searchParams] = useSearchParams();
-  const playerName = searchParams.get('name') || localStorage.getItem('lastPlayerName') || 'Anonymous';
   const navigate = useNavigate();
 
-
-  // Lưu roomId và playerName vào localStorage (cho reload)
-  useEffect(() => {
-    if (roomId && playerName !== 'Anonymous') {
-      localStorage.setItem('lastRoomId', roomId);
-      localStorage.setItem('lastPlayerName', playerName);
-      console.log('💾 Saved room info to localStorage:', { roomId, playerName });
-    }
-  }, [roomId, playerName]);
-
-  // Nếu không có roomId từ URL, thử lấy từ localStorage
-  useEffect(() => {
-    if (!roomId) {
-      const savedRoomId = localStorage.getItem('lastRoomId');
-      if (savedRoomId) {
-        console.log('🔄 Khôi phục roomId từ localStorage:', savedRoomId);
-        // Redirect đến phòng cũ
-        navigate(`/room/${savedRoomId}?name=${encodeURIComponent(playerName)}`);
-      }
-    }
-  }, [roomId, playerName, navigate]);
+  // Initialize playerName from URL or localStorage
+  const [playerName, setPlayerName] = useState('');
 
   const [isConnected, setIsConnected] = useState(false);
   const [isPlayerCreated, setIsPlayerCreated] = useState(false);
@@ -45,56 +19,73 @@ export default function RoomPage() {
   const [selectedAvatar, setSelectedAvatar] = useState('purple');
   const { roomStatus, setRoomStatus, setCurrentPlayer, clearRoom } = useGameStore();
 
-  // Ref to prevent duplicate player creation (React StrictMode calls effect twice in dev)
-  const playerCreationInProgressRef = useRef(false);
-
   // Ref to prevent duplicate WebSocket connections
   const wsConnectionSetupRef = useRef(false);
 
-  // Tạo player trước khi connect WebSocket
+  // Initialize playerName - run only once on mount
   useEffect(() => {
-    // Prevent duplicate calls due to React StrictMode in development
-    if (playerCreationInProgressRef.current) {
-      console.log('⚠️ Player creation already in progress, skipping duplicate call');
-      return;
+    const name = searchParams.get('name') || localStorage.getItem('lastPlayerName') || 'Anonymous';
+
+    // If playerName is still 'Anonymous', try to fetch from backend (incognito mode scenario)
+    if (name === 'Anonymous') {
+      const fetchPlayerName = async () => {
+        try {
+          const backendUrl = `http://${window.location.hostname}:8080`;
+          const response = await fetch(`${backendUrl}/user/me`, {
+            method: 'POST',
+            credentials: 'include'
+          });
+
+          if (response.ok) {
+            const player = await response.json();
+            console.log('✅ Got player from backend:', player.name);
+            setPlayerName(player.name);
+          } else {
+            // Backend returned error, use Anonymous
+            setPlayerName('Anonymous');
+          }
+        } catch (error) {
+          console.error('Error fetching player from backend:', error);
+          setPlayerName('Anonymous');
+        }
+      };
+
+      fetchPlayerName();
+    } else {
+      setPlayerName(name);
     }
 
-    const createPlayer = async () => {
-      try {
-        playerCreationInProgressRef.current = true;
-        const backendUrl = `http://${window.location.hostname}:8080`;
-        const response = await fetch(`${backendUrl}/user/create/${encodeURIComponent(playerName)}`, {
-          method: 'POST',
-          credentials: 'include'
-        });
+    if (roomId) {
+      localStorage.setItem('lastRoomId', roomId);
+      localStorage.setItem('lastPlayerName', name);
+      console.log('💾 Saved room info to localStorage:', { roomId, playerName: name });
+    }
+  }, []); // Empty dependency - run only once
 
-        if (response.ok) {
-          const player = await response.json();
-          console.log('✅ Player created/verified:', player);
-
-          // Lưu playerId vào localStorage để WebSocket có thể dùng
-          const playerId = player.ID || player.id;
-          if (playerId) {
-            localStorage.setItem('playerId', String(playerId));
-            console.log('💾 Saved playerId to localStorage:', playerId);
-          }
-
-          setIsPlayerCreated(true);
-        } else {
-          throw new Error('Failed to create player');
-        }
-      } catch (error) {
-        console.error('❌ Error creating player:', error);
-        alert('Không thể tạo người chơi. Vui lòng quay lại trang chủ!');
-        navigate('/');
-      }
-    };
-
-    createPlayer();
-  }, [playerName, navigate]);
-
+  // Nếu không có roomId từ URL, thử lấy từ localStorage
   useEffect(() => {
-    // Chỉ connect WebSocket khi player đã được tạo
+    if (!roomId && playerName) {
+      const savedRoomId = localStorage.getItem('lastRoomId');
+      if (savedRoomId) {
+        console.log('🔄 Khôi phục roomId từ localStorage:', savedRoomId);
+        navigate(`/room/${savedRoomId}?name=${encodeURIComponent(playerName)}`);
+      }
+    }
+  }, [roomId, playerName, navigate]);
+
+  // Initialize player creation and setup WebSocket
+  useEffect(() => {
+    // Only proceed if we have roomId and playerName
+    if (!roomId || !playerName) return;
+
+    // Set player as created - backend will handle creation if needed
+    // This ensures WebSocket setup proceeds even if localStorage is empty (e.g., incognito mode)
+    setIsPlayerCreated(true);
+  }, [roomId, playerName]);
+
+  // Setup WebSocket connection when player is ready
+  useEffect(() => {
+    // Only connect when player is marked as created
     if (!isPlayerCreated) return;
 
     // Reset ref khi roomId thay đổi (user joins different room)
@@ -176,11 +167,9 @@ export default function RoomPage() {
     };
   }, [isPlayerCreated, roomId, playerName, setRoomStatus, setCurrentPlayer]);
 
-  // Function to get avatar key from URL
+  // Function to get avatar color from URL or color name
   const getAvatarKeyFromUrl = (url?: string): string => {
-    if (!url) return 'purple';
-    const match = url.match(/\/assets\/avatar\/(\w+)\.png/);
-    return match ? match[1] : 'purple';
+    return getColorFromAvatarUrl(url);
   };
 
   // Loading state
@@ -297,7 +286,7 @@ export default function RoomPage() {
                 >
                   {player.name === playerName ? (
                     <img
-                      src={avatarMap[selectedAvatar]}
+                      src={AVATAR_MAP[selectedAvatar]}
                       alt="Avatar"
                       style={{
                         width: '50px',
@@ -307,18 +296,16 @@ export default function RoomPage() {
                       }}
                     />
                   ) : (
-                    <div style={{
-                      width: '50px',
-                      height: '50px',
-                      background: '#374151',
-                      borderRadius: '50%',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      fontSize: '24px'
-                    }}>
-                      {index === 0 ? '👑' : '👤'}
-                    </div>
+                    <img
+                      src={AVATAR_MAP[getColorFromAvatarUrl(player.URLavatar)] || AVATAR_MAP['purple']}
+                      alt={`${player.name}'s Avatar`}
+                      style={{
+                        width: '50px',
+                        height: '50px',
+                        borderRadius: '50%',
+                        border: '2px solid #374151'
+                      }}
+                    />
                   )}
                   <div style={{ flex: 1 }}>
                     <div style={{

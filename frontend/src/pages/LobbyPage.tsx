@@ -2,29 +2,8 @@ import { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import backgroundImage from '../assets/img/background/background main v2.png';
 
-// Avatar images
-import blackAvatar from '../assets/img/avatar/black.png';
-import blueAvatar from '../assets/img/avatar/blue.png';
-import browAvatar from '../assets/img/avatar/brow.png';
-import grayAvatar from '../assets/img/avatar/gray.png';
-import greenAvatar from '../assets/img/avatar/green.png';
-import purpleAvatar from '../assets/img/avatar/purple.png';
-import redAvatar from '../assets/img/avatar/red.png';
-import timAvatar from '../assets/img/avatar/tim.png';
-import yellowAvatar from '../assets/img/avatar/yellow.png';
-
-const avatarMap: Record<string, string> = {
-  'black': blackAvatar,
-  'blue': blueAvatar,
-  'brown': browAvatar,
-  'brow': browAvatar,
-  'gray': grayAvatar,
-  'green': greenAvatar,
-  'purple': purpleAvatar,
-  'red': redAvatar,
-  'tim': timAvatar,
-  'yellow': yellowAvatar
-};
+// Avatar map for display
+import { AVATAR_MAP } from '../utils/avatarMap';
 
 const avatarOptions = [
   { key: 'black', name: 'Black' },
@@ -486,9 +465,9 @@ export default function LobbyPage() {
                         e.currentTarget.style.transform = 'scale(1)';
                       }}
                     >
-                      <img
-                        src={avatarMap[avatar.key]}
-                        alt={avatar.name}
+                  <img
+                      src={AVATAR_MAP[avatar.key]}
+                      alt={avatar.name}
                         style={{
                           width: '30px',
                           height: '30px',
