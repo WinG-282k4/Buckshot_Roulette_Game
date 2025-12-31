@@ -28,17 +28,8 @@ interface GameLayoutProps {
   selectedTargetId?: string | null;  // NEW: Target selected by current player (from server)
   notifyMessage?: string;
 }
-
-// Avatar images
-import blackAvatar from '../../assets/img/avatar/black.png';
-import blueAvatar from '../../assets/img/avatar/blue.png';
-import browAvatar from '../../assets/img/avatar/brow.png';
-import grayAvatar from '../../assets/img/avatar/gray.png';
-import greenAvatar from '../../assets/img/avatar/green.png';
 import purpleAvatar from '../../assets/img/avatar/purple.png';
-import redAvatar from '../../assets/img/avatar/red.png';
-import timAvatar from '../../assets/img/avatar/tim.png';
-import yellowAvatar from '../../assets/img/avatar/yellow.png';
+import { AVATAR_MAP, getColorFromAvatarUrl } from '../../utils/avatarMap';
 
 // Action images
 import hitImg from '../../assets/img/Action/Hit.png';
@@ -73,18 +64,12 @@ const itemImageMap: Record<string, string> = {
   'Vigerate': vegerateImg,
 };
 
-const avatarMap: Record<string, string> = {
-  'black': blackAvatar,
-  'blue': blueAvatar,
-  'brown': browAvatar,
-  'brow': browAvatar,
-  'gray': grayAvatar,
-  'green': greenAvatar,
-  'purple': purpleAvatar,
-  'red': redAvatar,
-  'tim': timAvatar,
-  'yellow': yellowAvatar
-};
+// ...existing code...
+
+// Avatar mapping is now done via utility functions
+// const avatarMap - removed, use AVATAR_MAP from utility instead
+
+// ...existing code...
 
 function GameLayout({
   players,
@@ -125,16 +110,19 @@ function GameLayout({
   console.log('⚔️ Opponents - Top:', player3?.ID, player3?.name, 'URLavatar:', player3?.URLavatar, '| Left:', player4?.ID, player4?.name, 'URLavatar:', player4?.URLavatar, '| Right:', player2?.ID, player2?.name, 'URLavatar:', player2?.URLavatar);
 
   const getAvatarImage = (avatarUrl?: string, color?: string): string => {
-    // Priority 1: Use URLavatar from backend
+    // Priority 1: Parse color name from backend (can be plain color name like "blue" or URL)
     if (avatarUrl) {
-      console.log('Using avatar URL from backend:', avatarUrl);
-      return avatarUrl;
+      const colorName = getColorFromAvatarUrl(avatarUrl);
+      console.log('Using avatar from backend:', avatarUrl, '-> color:', colorName);
+      return AVATAR_MAP[colorName] || purpleAvatar;
     }
-    // Priority 2: Fall back to color-based mapping
+
+    // Priority 2: Fall back to color parameter
     if (color) {
       const colorLower = color.toLowerCase();
-      return avatarMap[colorLower] || purpleAvatar;
+      return AVATAR_MAP[colorLower] || purpleAvatar;
     }
+
     // Priority 3: Default avatar
     return purpleAvatar;
   };

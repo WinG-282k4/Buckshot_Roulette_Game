@@ -101,6 +101,29 @@ export default function LobbyPage() {
     }
   };
 
+  const handleBack = async () => {
+    try {
+      const backendUrl = `http://${window.location.hostname}:8080`;
+      const response = await fetch(`${backendUrl}/user/off`, {
+        method: 'POST',
+        credentials: 'include'
+      });
+
+      if (response.ok) {
+        console.log('✅ Player removed from session');
+        localStorage.removeItem('playerId');
+        localStorage.removeItem('lastPlayerName');
+        navigate('/');
+      } else {
+        console.error('Failed to remove player');
+        navigate('/');
+      }
+    } catch (error) {
+      console.error('Error removing player:', error);
+      navigate('/');
+    }
+  };
+
   return (
     <div
       style={{
@@ -491,7 +514,7 @@ export default function LobbyPage() {
 
               {/* Back button */}
               <button
-                onClick={() => navigate('/')}
+                onClick={handleBack}
                 style={{
                   width: '100%',
                   padding: '12px',
