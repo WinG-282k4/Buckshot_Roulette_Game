@@ -165,7 +165,7 @@ public class Room implements IRoomAction {
         if(aliveCount <= 1){
             status = "Ended";
             //Thread to reset room after game ended
-
+            this.resetRoom();
             return status;
         }
 
@@ -210,5 +210,34 @@ public class Room implements IRoomAction {
             }
         }
         return false;
+    }
+
+    //Reset room after game ended
+    public void resetRoom() {
+        // Tạo một luồng mới chạy song song ngay tại đây
+        new Thread(() -> {
+            try {
+                System.out.println("Đợi 5s sau reset room...");
+                Thread.sleep(5000);
+
+
+                this.gun.resetGun();
+
+                for (Player p : this.players) {
+                    p.setHealth(6);
+                    p.setIsSoloing(false);
+                    p.getItems().clear();
+                }
+
+                this.isSoloMode = false;
+                this.SoloTurnOrder.clear();
+                this.turnOrder.clear();
+
+                System.out.println("Đã reset room xong!");
+
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }).start();
     }
 }

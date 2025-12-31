@@ -7,16 +7,18 @@ import org.example.buckshot_roulette.model.Item.Item;
 import org.example.buckshot_roulette.model.ItemFactory;
 import org.example.buckshot_roulette.model.Player;
 import org.example.buckshot_roulette.model.Room;
-import org.example.buckshot_roulette.model.RoomLoby;
+import org.example.buckshot_roulette.dto.RoomLoby;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.ThreadLocalRandom;
 
 @org.springframework.stereotype.Service
 public class Service {
-    public List<Room> rooms;
+
+    public static List<Room> rooms;
 
     @Autowired
     private playerService playerservice;
@@ -61,7 +63,8 @@ public class Service {
 
     //Create new Room
     public int CreaterRoom(){
-        int NewRoomID = rooms.size() + 1;
+        int random = ThreadLocalRandom.current().nextInt(0,9999);
+        int NewRoomID = rooms.size()*1000 + random; //RandomID
         Room room = new Room(NewRoomID);
         rooms.add(room);
         return room.getID();
@@ -115,9 +118,12 @@ public class Service {
             throw new IllegalArgumentException("Game has already started, cannot join");
         }
 
+        System.out.println("Player " + validPlayer.getName() + " (ID: " + validPlayer.getId() + ") joining room");
+        System.out.println("Player " + validPlayer.getName() + " have avatar: " + validPlayer.getURLavatar());
+
         tempRoom.getPlayers().add(validPlayer);
         validPlayer.setIsInRoom(true);
-        System.out.println("Player " + player.getName() + " (ID: " + player.getId() + ") joined room " + roomid);
+        System.out.println("Player " + validPlayer.getName() + " (ID: " + validPlayer.getId() + ") joined room " + roomid);
         return ActionResult.builder()
                 .isSuccess(true)
                 .message("Player joined the room successfully")
@@ -133,6 +139,14 @@ public class Service {
             throw new IllegalArgumentException("Room not found");
         }
 
+        if (tempRoom.checkStatus().equals("Playing")) {
+            return ActionResult.builder()
+                    .isSuccess(false)
+                    .message("Cannot leave room while game is in progress")
+                    .data(null)
+                    .build();
+        }
+
         // Remove player by ID instead of object reference
         Player playerToRemove = tempRoom.getPlayer(player.getId());
         if (playerToRemove != null) {
@@ -143,7 +157,9 @@ public class Service {
             System.out.println("Player " + player.getName() + " (ID: " + player.getId() + ") not found in room " + roomid);
         }
 
+        //If room empty, remove room
         checkRoomEmpty(roomid);
+
         return ActionResult.builder()
                 .isSuccess(true)
                 .message("Player" + player.getName() + "left the room")
@@ -317,5 +333,7 @@ public class Service {
             System.out.println("Room " + roomid + " is empty and has been removed.");
         }
     }
+
+    //
 }
 

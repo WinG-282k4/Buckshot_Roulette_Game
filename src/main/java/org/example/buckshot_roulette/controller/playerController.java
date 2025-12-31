@@ -24,23 +24,22 @@ public class playerController {
     @Autowired
     private playerService playerservice;
 
-    public playerController() {
-    }
-
     @PostMapping("/create/{name}")
     public ResponseEntity<PlayerResponseDTO> CreatePlayer(
             @PathVariable String name,
             HttpSession session
     ){
-        Player player = (Player) session.getAttribute("player");
-        if (player != null) {
-            session.removeAttribute("player");
-            playerservice.removePlayer(player.getId());
-            logger.info("Player already exists in session: {}", player.getName());
+        Player existingPlayer = (Player) session.getAttribute("player");
+
+        if(existingPlayer != null){
+            logger.info("Player already in session: {}", existingPlayer.getName());
+            return ResponseEntity.ok(PlayerResponseDTO.fromPlayer(existingPlayer));
         }
+
         logger.info("Received API: POST /user/create/{}", name);
         ActionResult newPlayer = playerservice.createPlayer(name);
         if(!newPlayer.getIsSuccess()){
+            logger.info("Create player not success: {}", newPlayer.getMessage());
             return ResponseEntity.badRequest().build();
         }
         Player createdPlayer = (Player) newPlayer.getData();
@@ -79,5 +78,21 @@ public class playerController {
             session.setAttribute("player", updatedPlayerObj);
             return ResponseEntity.ok(PlayerResponseDTO.fromPlayer(updatedPlayerObj));
         }
+    }
+
+    @PostMapping("/me")
+    public ResponseEntity<PlayerResponseDTO> GetCurrentPlayer(
+            HttpSession session
+    ) {
+        Player player = (Player) session.getAttribute("player");
+        logger.info("Received API: POST /user/me");
+
+        if (player == null) {
+            logger.warn("No player in session");
+            return ResponseEntity.status(401).build();
+        }
+
+        logger.info("Returning current player: {}", player.getName());
+        return ResponseEntity.ok(PlayerResponseDTO.fromPlayer(player));
     }
 }

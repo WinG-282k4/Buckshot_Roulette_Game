@@ -9,7 +9,8 @@ import java.util.List;
 
 @Service
 public class playerService {
-    private List<Player> playerList;
+
+    private static List<Player> playerList;
 
     public playerService() {this.playerList = new ArrayList<Player>();}
 
@@ -28,6 +29,8 @@ public class playerService {
         Player player = getPlayerById(id);
         if (player != null) {
             player.setURLavatar(avatar);
+//            System.out.println("<UNK> <UNK> <UNK> <UNK> <UNK> <UNK> <UNK> <UNK>");
+//            System.out.println("Avatar current: "+ player.getURLavatar());
             return ActionResult.builder()
                     .isSuccess(true)
                     .message("Avatar updated successfully")

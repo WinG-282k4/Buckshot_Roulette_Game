@@ -1,20 +1,22 @@
 package org.example.buckshot_roulette.controller;
 
+import jakarta.servlet.http.HttpSession;
 import org.example.buckshot_roulette.dto.ActionResult;
 import org.example.buckshot_roulette.dto.RoomStatusResponse;
 import org.example.buckshot_roulette.model.Player;
 import org.example.buckshot_roulette.model.Room;
-import org.example.buckshot_roulette.model.RoomLoby;
+import org.example.buckshot_roulette.dto.RoomLoby;
 import org.example.buckshot_roulette.service.Service;
+import org.example.buckshot_roulette.service.playerService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
-import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -32,8 +34,27 @@ public class roomController {
     @Autowired
     private Service service;
 
+    @Autowired
+    private playerService playerservice;
+
+    @Autowired
+    private SimpMessagingTemplate messagingTemplate;
+
     @PostMapping("/api/createroom")
-    public ResponseEntity<String> createRoom() {
+    public ResponseEntity<String> createRoom(
+            HttpSession session
+    ) {
+
+        Player player =(Player) session.getAttribute("player");
+
+        player = playerservice.getPlayerById(player.getId());
+        if(player == null){
+            return ResponseEntity.badRequest().body("Player not found in session");
+        }
+
+        if(player.getIsInRoom()){
+            return ResponseEntity.badRequest().body("Player is already in a room");
+        }
         logger.info("Received API: POST /api/createroom");
         int roomid = service.CreaterRoom();
         return ResponseEntity.ok("Room created with ID: " + roomid);
@@ -41,7 +62,7 @@ public class roomController {
 
     @MessageMapping("join/{roomid}")
     @SendTo("/topic/room/{roomid}")
-    public ActionResult join(
+    public RoomStatusResponse join(
             @DestinationVariable String roomid,
             SimpMessageHeaderAccessor headerAccessor
     ) {
@@ -54,45 +75,73 @@ public class roomController {
         }
 
         if(player == null){
-            return ActionResult.builder()
-                    .isSuccess(false)
-                    .message("Player not found in session")
-                    .data(null)
-                    .build();
+            return null;
         }
 
-
         logger.info("Received API: WebSocket /app/join/{} by player {} (name={})", roomid, player.getId(), player.getName());
-        return service.AddPlayerToRoom(Integer.parseInt(roomid), player);
+        ActionResult result = service.AddPlayerToRoom(Integer.parseInt(roomid), player);
+
+        // If join successful, broadcast room status
+        if (result.getIsSuccess()) {
+            Room room = service.getRoom(Integer.parseInt(roomid));
+            if (room != null) {
+                return room.toRoomStatus("");
+            }
+        }
+
+        return null;
     }
 
     @MessageMapping("leave/{roomid}")
-    @SendTo("/topic/room/{roomid}")
-    public ActionResult leave(
+    public void leave(
             @DestinationVariable String roomid,
-            @Payload Map<String, String> payload,
             SimpMessageHeaderAccessor headerAccessor
     ){
         Player player = null;
 
-        //Lấy player từ session trước
+        // Lấy player từ session
         Map<String, Object> sessionAttributes = headerAccessor.getSessionAttributes();
         if (sessionAttributes != null) {
             player = (Player) sessionAttributes.get("player");
         }
 
-
         if (player == null) {
             logger.error("Cannot determine player for leave request");
-            return ActionResult.builder()
-                    .isSuccess(false)
-                    .message("Player not found in session")
+            return;
+        }
+
+        logger.info("Received API: WebSocket /app/leave/{} by player {} (name={})", roomid, player.getId(), player.getName());
+
+        ActionResult result;
+        try {
+            result = service.RemovePlayerFromRoom(Integer.parseInt(roomid), player);
+        } catch (IllegalArgumentException e) {
+            // Room not found (already deleted)
+            logger.warn("Room {} already deleted or not found", roomid);
+            result = ActionResult.builder()
+                    .isSuccess(true) // Still consider it success since player is not in room anyway
+                    .message("Room already deleted")
                     .data(null)
                     .build();
         }
 
-        logger.info("Received API: WebSocket /app/leave/{} by player {} (name={})", roomid, player.getId(), player.getName());
-        return service.RemovePlayerFromRoom(Integer.parseInt(roomid), player);
+        // Send ActionResult trực tiếp tới player (để xác nhận thành công/thất bại)
+        messagingTemplate.convertAndSendToUser(
+                player.getId(),
+                "/topic/leave-result",
+                result
+        );
+
+        // Nếu rời thành công, broadcast room status mới cho những player khác còn lại
+        if (result.getIsSuccess()) {
+            Room room = service.getRoom(Integer.parseInt(roomid));
+            if (room != null) {
+                messagingTemplate.convertAndSend(
+                        "/topic/room/" + roomid,
+                        room.toRoomStatus("")
+                );
+            }
+        }
     }
 
     @GetMapping("/api/rooms/{roomid}")
@@ -101,15 +150,23 @@ public class roomController {
     ) {
         logger.info("Received API: GET /api/rooms/{} (get room by ID)", roomid);
         Room room = service.getRoom(roomid);
+
+        if (room == null) {
+            logger.warn("Room {} not found", roomid);
+            return ResponseEntity.notFound().build();
+        }
+
         return ResponseEntity.ok(room.toRoomStatus(""));
     }
 
     @GetMapping("/api/rooms/list/{page}")
     public ResponseEntity<List<RoomLoby>> getAllRooms(
-            @PathVariable int page
+            @PathVariable int page,
+            HttpSession session
     ) {
+        if (session == null) { return ResponseEntity.notFound().build(); }
         logger.info("Received API: GET /api/rooms/list/{} (get room list)", page);
-        List<RoomLoby> room = service.getAnyRoom(page);
-        return ResponseEntity.ok(room);
+        List<RoomLoby> rooms = service.getAnyRoom(page);
+        return ResponseEntity.ok(rooms);
     }
 }

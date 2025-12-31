@@ -1,4 +1,4 @@
-package org.example.buckshot_roulette.model;
+package org.example.buckshot_roulette.dto;
 
 import lombok.Getter;
 import lombok.Setter;

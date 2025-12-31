@@ -28,14 +28,6 @@ public class Gun implements IGunAction {
         realCount = 0;
     }
 
-    public Boolean getDoubledmg() {
-        return isDoubledmg;
-    }
-
-    public void setDoubledmg(Boolean doubledmg) {
-        isDoubledmg = doubledmg;
-    }
-
     // Additional methods related to Gun behavior can be added here
     //Get dmg
     public int fire(){
@@ -125,5 +117,13 @@ public class Gun implements IGunAction {
     //Get info bullets
     public int[] getInfoBullets() {
         return new int[]{this.fakeCount, this.realCount};
+    }
+
+    //Reset gun
+    public void resetGun(){
+        this.bullets.clear();
+        this.isDoubledmg = false;
+        this.fakeCount = 0;
+        this.realCount = 0;
     }
 }
