@@ -1,13 +1,10 @@
 package org.example.buckshot_roulette.service;
 
-import org.example.buckshot_roulette.dto.ActionResult;
-import org.example.buckshot_roulette.dto.GameActionContext;
-import org.example.buckshot_roulette.dto.RoomStatusResponse;
+import org.example.buckshot_roulette.dto.*;
 import org.example.buckshot_roulette.model.Item.Item;
 import org.example.buckshot_roulette.model.ItemFactory;
 import org.example.buckshot_roulette.model.Player;
 import org.example.buckshot_roulette.model.Room;
-import org.example.buckshot_roulette.dto.RoomLoby;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.ArrayList;
@@ -209,7 +206,16 @@ public class Service {
             System.out.println("ERROR using item " + useItem.getName() + " by player " + tempPlayerActor.getName() + ": " + ressult.getMessage());
         }
 
-        return tempRoom.toRoomStatus(ressult.getMessage());
+        //Build item response
+        RoomStatusResponse roomresponse =  tempRoom.toRoomStatus(ressult.getMessage());
+
+        //Buil action response
+        roomresponse.setActionResponse(ActionResponse.builder()
+                .actorId(playeridActor)
+                .action("USE_ITEM_" + useItem.getTypeItem())
+                .targetid(playerIDtarget)
+                .build());
+        return roomresponse;
     }
 
     //Player fire target
@@ -269,13 +275,24 @@ public class Service {
 
         System.out.println("Room infor after:");
         tempRoom.Print();
-        return tempRoom.toRoomStatus("Player " + tempPlayerActor.getName() + " fired " + tempPlayerTarget.getName() + " for " + dmg + " damage.");
+
+        //Build response message
+        RoomStatusResponse roomResponse = tempRoom.toRoomStatus("Player " + tempPlayerActor.getName() + " fired " + tempPlayerTarget.getName() + " for " + dmg + " damage.");
+
+        //Build action response
+        roomResponse.setActionResponse(ActionResponse.builder()
+                .actorId(playeridActor)
+                .action(dmg == 0 ? "FIRE_FAKE" : "FIRE_REAL")
+                .targetid(playeridTarget)
+                .build());
+
+        return  roomResponse;
     }
 
     //End round when gun empty
     public void nextRound(Room room){
 
-        // Kiểm tra xem gun còn đạn không
+        // Check gun has bullets, if yes, do nothing
         int[] gunInfo = room.getGun().getInfoBullets();
         int totalBullets = gunInfo[0] + gunInfo[1]; // fakeCount + realCount
 

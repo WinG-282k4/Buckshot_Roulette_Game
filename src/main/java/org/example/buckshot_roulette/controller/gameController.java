@@ -65,12 +65,6 @@ public class gameController {
                 targetplayerid
         );
 
-        //Build action response to notify
-        room.setActionResponse(ActionResponse.builder()
-                        .actorId(actorPlayer.getId())
-                        .targetid(targetplayerid)
-                        .action("FIRE")
-                        .build());
         sendResults(room);
     }
 
@@ -93,13 +87,6 @@ public class gameController {
                 actorPlayer.getId(),
                 payload.getTargetid(),
                 payload.getTypeitem());
-
-        //Build action response to notify
-        room.setActionResponse(ActionResponse.builder()
-                .actorId(actorPlayer.getId())
-                .action("USE-ITEM")
-                .targetid(payload.getTargetid())
-                .build());
 
         //Send result
         sendResults(room);
