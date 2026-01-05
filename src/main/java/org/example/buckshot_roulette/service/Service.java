@@ -63,7 +63,7 @@ public class Service {
 
     //Create new Room
     public int CreaterRoom(){
-        int random = ThreadLocalRandom.current().nextInt(0,9999);
+        int random = ThreadLocalRandom.current().nextInt(0,999);
         int NewRoomID = rooms.size()*1000 + random; //RandomID
         Room room = new Room(NewRoomID);
         rooms.add(room);
