@@ -1,16 +1,47 @@
-import { useGameStore } from '../../stores/gameStore';
+import React, { useGameStore } from '../../stores/gameStore';
 import { wsService } from '../../services/websocket.service';
 import { useNavigate } from 'react-router-dom';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import GameLayout from './GameLayout';
+import ActionOverlay from './ActionOverlay';
 
 export default function GameBoard() {
   const { roomStatus, isMyTurn, myPlayer, clearRoom } = useGameStore();
   const currentPlayer = myPlayer();
   const navigate = useNavigate();
   const [localSelectedTarget, setLocalSelectedTarget] = useState<string | null>(null);
+  const [showActionOverlay, setShowActionOverlay] = useState(false);
+  const [overlayData, setOverlayData] = useState<{
+    actionType: string;
+    actor: any;
+    target: any;
+  } | null>(null);
 
   console.log('🎮 GameBoard render - roomStatus:', roomStatus);
+  console.log('📊 Room status value:', roomStatus?.status);
+  console.log('🔍 ActionResponse:', roomStatus?.actionResponse);
+  console.log('📌 Overlay state:', { showActionOverlay, overlayData });
+
+  // Watch for action responses
+  useEffect(() => {
+    if (roomStatus?.actionResponse?.action) {
+      const { action, actor, targetid } = roomStatus.actionResponse;
+      const targetPlayer = roomStatus.players.find(p => p.ID === targetid);
+
+      setOverlayData({
+        actionType: action,
+        actor,
+        target: targetPlayer || null,
+      });
+      setShowActionOverlay(true);
+
+      console.log('⚔️ Action triggered:', action, { actor, target: targetPlayer });
+    } else {
+      // Reset overlay when actionResponse is cleared
+      setShowActionOverlay(false);
+      setOverlayData(null);
+    }
+  }, [roomStatus?.actionResponse?.action, roomStatus?.players]);
 
   // Game Ended - Hiển thị thông báo kết thúc
   if (roomStatus && roomStatus.status === 'Ended') {
@@ -169,6 +200,14 @@ export default function GameBoard() {
   const isMyTurnFlag = isMyTurn();
   const messageText = roomStatus.message?.trim();
 
+  // Debug: Log the status and what we're going to render
+  console.log('🎯 Status check:', {
+    status: roomStatus?.status,
+    isPlaying: roomStatus?.status === 'Playing',
+    hasPlayers: !!roomStatus?.players,
+    fallbackCheck: roomStatus ? true : false,
+  });
+
   const handleSelectTarget = (targetId: string, gunAngle: number) => {
     // Update local state immediately for UI responsiveness
     console.log('📤 handleSelectTarget called with:', { targetId, gunAngle });
@@ -229,14 +268,50 @@ export default function GameBoard() {
   };
 
   // Game Playing state - Use GameLayout
-  if (roomStatus.status === 'Playing') {
+  if (roomStatus?.status === 'Playing') {
     return (
+      <div style={{ position: 'relative' }}>
+        <GameLayout
+          players={roomStatus.players}
+          currentPlayerId={currentPlayer?.ID}  // ✓ Current player (me)
+          nextPlayerId={roomStatus.nextPlayer?.ID}  // ✓ Whose turn it is (for highlight)
+          gun={roomStatus.gun}
+          actionResponse={roomStatus.actionResponse}
+          isMyTurn={isMyTurnFlag}
+          onFire={handleFire}
+          onSelectTarget={handleSelectTarget}
+          onUseItem={handleUseItem}
+          onBack={handleBack}
+          selectedTargetId={getSelectedTargetId()}
+          notifyMessage={messageText}
+        />
+
+        {/* ActionOverlay - Displays action animations */}
+        {overlayData && (
+          <ActionOverlay
+            actionType={overlayData.actionType}
+            actor={overlayData.actor}
+            target={overlayData.target}
+            isVisible={showActionOverlay}
+            onAnimationComplete={() => {
+              setShowActionOverlay(false);
+              setOverlayData(null);
+            }}
+          />
+        )}
+      </div>
+    );
+  }
+
+  // Waiting state or fallback - Show GameLayout
+  return (
+    <div style={{ position: 'relative' }}>
       <GameLayout
-        players={roomStatus.players}
-        currentPlayerId={currentPlayer?.ID}  // ✓ Current player (me)
-        nextPlayerId={roomStatus.nextPlayer?.ID}  // ✓ Whose turn it is (for highlight)
-        gun={roomStatus.gun}
-        actionResponse={roomStatus.actionResponse}
+        players={roomStatus?.players || []}
+        currentPlayerId={currentPlayer?.ID}
+        nextPlayerId={roomStatus?.nextPlayer?.ID}
+        gun={roomStatus?.gun || []}
+        actionResponse={roomStatus?.actionResponse || null}
         isMyTurn={isMyTurnFlag}
         onFire={handleFire}
         onSelectTarget={handleSelectTarget}
@@ -245,24 +320,23 @@ export default function GameBoard() {
         selectedTargetId={getSelectedTargetId()}
         notifyMessage={messageText}
       />
-    );
-  }
 
-  // Waiting state - Also use GameLayout with same layout
-  return (
-    <GameLayout
-      players={roomStatus.players}
-      currentPlayerId={currentPlayer?.ID}  // ✓ Current player (me)
-      nextPlayerId={roomStatus.nextPlayer?.ID}  // ✓ Whose turn it is (for highlight)
-      gun={roomStatus.gun}
-      actionResponse={roomStatus.actionResponse}
-      isMyTurn={isMyTurnFlag}
-      onFire={handleFire}
-      onSelectTarget={handleSelectTarget}
-      onUseItem={handleUseItem}
-      onBack={handleBack}
-      selectedTargetId={getSelectedTargetId()}
-      notifyMessage={messageText}
-    />
+      {/* ActionOverlay - Displays action animations */}
+      {overlayData && (
+        <ActionOverlay
+          actionType={overlayData.actionType}
+          actor={overlayData.actor}
+          target={overlayData.target}
+          isVisible={showActionOverlay}
+          onAnimationComplete={() => {
+            setShowActionOverlay(false);
+            setOverlayData(null);
+          }}
+        />
+      )}
+
+      {/* Test Panel - Remove before production */}
+      <ActionOverlayTestPanel />
+    </div>
   );
 }
