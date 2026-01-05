@@ -37,8 +37,8 @@ export default function HomePage() {
       setCurrentPlayer(player);
       console.log('💾 Saved player to gameStore:', player);
 
-      // Chuyển sang trang Lobby
-      navigate(`/lobby?name=${encodeURIComponent(playerName)}`);
+      // Chuyển sang trang Guide
+      navigate(`/guide?name=${encodeURIComponent(playerName)}`);
     } catch (error) {
       console.error('Error creating player:', error);
       alert('Không thể tạo người chơi. Vui lòng kiểm tra backend!');
@@ -189,8 +189,8 @@ export default function HomePage() {
           fontSize: '13px',
           lineHeight: '1.6'
         }}>
-          💡 Sau khi nhập tên, bạn sẽ vào lobby để<br/>
-          xem danh sách phòng hoặc tạo phòng mới
+          💡 Sau khi nhập tên, bạn sẽ vào trang<br/>
+          hướng dẫn để tìm hiểu cách chơi
         </p>
       </div>
     </div>

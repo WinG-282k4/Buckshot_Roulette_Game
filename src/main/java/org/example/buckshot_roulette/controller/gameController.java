@@ -16,8 +16,6 @@ import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Controller;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Objects;
 
 @Controller
@@ -144,22 +142,22 @@ public class gameController {
         // A. Send payload to all players in the room
         messagingTemplate.convertAndSend(destination, result);
 
-        // B. Send payload to notify a victim
-        String targetId = result.getActionResponse().getTargetid();
-
-        // if NULL or empty, skip sending victim notification
-        if (targetId == null || targetId.isEmpty()) {
-            System.out.println("ID target không tồn tại! (Bỏ qua vì không cần thiết thông báo");
-            return;
-        }
-        String victimid = result.getActionResponse().getTargetid();
-        String action2 = result.getActionResponse().getAction();
-
-        Map<String, String> alert = new HashMap<>();
-        alert.put("type", action2);
-        alert.put("msg", "You were hit by " + result.getActionResponse().getActorId());
-
-        // Only victim sees efect
-        messagingTemplate.convertAndSendToUser(victimid, "/topic/event", alert);
+//        // B. Send payload to notify a victim
+//        String targetId = result.getActionResponse().getTargetid();
+//
+//        // if NULL or empty, skip sending victim notification
+//        if (targetId == null || targetId.isEmpty()) {
+//            System.out.println("ID target không tồn tại! (Bỏ qua vì không cần thiết thông báo");
+//            return;
+//        }
+//        String victimid = result.getActionResponse().getTargetid();
+//        String action2 = result.getActionResponse().getAction();
+//
+//        Map<String, String> alert = new HashMap<>();
+//        alert.put("type", action2);
+//        alert.put("msg", "You were hit by " + result.getActionResponse().getActorId());
+//
+//        // Only victim sees efect
+//        messagingTemplate.convertAndSendToUser(victimid, "/topic/event", alert);
     }
 }

@@ -1,4 +1,5 @@
 import './GameLayout.css';
+import { useState, useEffect } from 'react';
 
 interface Player {
   ID: string;
@@ -12,6 +13,12 @@ interface Player {
 
 interface ActionResponse {
   action: string;
+}
+
+interface ActionMessage {
+  id: string;
+  text: string;
+  timestamp: number;
 }
 
 interface GameLayoutProps {
@@ -64,6 +71,18 @@ const itemImageMap: Record<string, string> = {
   'Vigerate': vegerateImg,
 };
 
+// Item description map
+const itemDescriptionMap: Record<string, string> = {
+  'Beer': 'Rút viên đạn tiếp theo ra khỏi súng',
+  'Bullet': 'Thêm 1 viên đạn ngẫu nhiên vào súng',
+  'Chainsaw': 'Sát thương x2 cho lần bắn tiếp theo',
+  'Cigarette': 'Hồi phục 1 điểm máu',
+  'Glass': 'Xem viên đạn tiếp theo là thật hay giả',
+  'Handcuffs': 'Khóa 1 đối thủ được chọn',
+  'Viewfinder': 'Kéo 1 người vào solo',
+  'Vigerate': 'Hồi phục 1 điểm máu',
+};
+
 // ...existing code...
 
 // Avatar mapping is now done via utility functions
@@ -85,6 +104,26 @@ function GameLayout({
   selectedTargetId,
   notifyMessage
 }: GameLayoutProps) {
+  // State for message history
+  const [messageHistory, setMessageHistory] = useState<ActionMessage[]>([]);
+  const [isMessageExpanded, setIsMessageExpanded] = useState(false);
+  const [hoveredItemId, setHoveredItemId] = useState<string | null>(null);
+
+  // Update message history when notifyMessage changes
+  useEffect(() => {
+    if (notifyMessage && notifyMessage.trim()) {
+      setMessageHistory(prev => {
+        const newMessage: ActionMessage = {
+          id: Date.now().toString(),
+          text: notifyMessage,
+          timestamp: Date.now()
+        };
+        // Keep only last 20 messages
+        return [newMessage, ...prev].slice(0, 20);
+      });
+    }
+  }, [notifyMessage]);
+
   // Use selectedTargetId from props instead of local state
   const selectedTarget = selectedTargetId || null;
 
@@ -141,7 +180,7 @@ function GameLayout({
     ));
   };
 
-  const getItemSlots = (items: Array<{ name: string }> | undefined) => {
+  const getItemSlots = (items: Array<{ name: string }> | undefined, playerId?: string) => {
     const handleItemClick = (itemIndex: number, itemName: string) => {
       if (!isMyTurn) {
         console.log('⏸️ Not your turn yet');
@@ -168,25 +207,59 @@ function GameLayout({
       onUseItem?.(itemType, selectedTarget || undefined);
     };
 
-    return Array.from({ length: 7 }).map((_, i) => (
-      <div
-        key={i}
-        className={`item-slot ${items?.[i] ? 'has-item' : ''}`}
-        onClick={() => items?.[i] && handleItemClick(i, items[i].name)}
-        style={{ cursor: items?.[i] ? 'pointer' : 'default' }}
-      >
-        {items?.[i] && (
-          <img
-            src={getItemImage(items[i].name)}
-            alt={items[i].name}
-            className="item-image"
-            onError={(e) => {
-              (e.target as HTMLImageElement).style.display = 'none';
-            }}
-          />
-        )}
-      </div>
-    ));
+    return Array.from({ length: 7 }).map((_, i) => {
+      const itemId = playerId ? `${playerId}-item-${i}` : `item-${i}`;
+      const isHovered = hoveredItemId === itemId;
+
+      return (
+        <div
+          key={i}
+          className={`item-slot ${items?.[i] ? 'has-item' : ''}`}
+          onClick={() => items?.[i] && handleItemClick(i, items[i].name)}
+          onMouseEnter={() => items?.[i] && setHoveredItemId(itemId)}
+          onMouseLeave={() => setHoveredItemId(null)}
+          style={{ cursor: items?.[i] ? 'pointer' : 'default', position: 'relative' }}
+        >
+          {items?.[i] && (
+            <>
+              <img
+                src={getItemImage(items[i].name)}
+                alt={items[i].name}
+                className="item-image"
+                onError={(e) => {
+                  (e.target as HTMLImageElement).style.display = 'none';
+                }}
+              />
+              {isHovered && (
+                <div style={{
+                  position: 'absolute',
+                  bottom: '110%',
+                  left: '50%',
+                  transform: 'translateX(-50%)',
+                  backgroundColor: 'rgba(0, 0, 0, 0.95)',
+                  color: '#fbbf24',
+                  padding: '10px 15px',
+                  borderRadius: '8px',
+                  fontSize: '13px',
+                  width: '180px',
+                  textAlign: 'center',
+                  zIndex: 10000,
+                  border: '2px solid #fbbf24',
+                  marginBottom: '10px',
+                  fontWeight: 'bold',
+                  pointerEvents: 'none',
+                  wordWrap: 'break-word',
+                  lineHeight: '1.4',
+                  boxShadow: '0 0 10px rgba(251, 191, 36, 0.5)'
+                }}>
+                  {itemDescriptionMap[items[i].name] || items[i].name}
+                </div>
+              )}
+            </>
+          )}
+        </div>
+      );
+    });
   };
 
   const handleFireClick = () => {
@@ -313,7 +386,7 @@ function GameLayout({
 
             {/* Items - Column 2, Row 2 */}
             <div className="player-items">
-              {getItemSlots(currentPlayer.items)}
+              {getItemSlots(currentPlayer.items, currentPlayer.ID)}
             </div>
 
             {/* Effect - Column 3, Row 1-2 */}
@@ -384,7 +457,7 @@ function GameLayout({
             </div>
 
             <div className="player-items">
-              {getItemSlots(player3.items)}
+              {getItemSlots(player3.items, player3.ID)}
             </div>
 
             {selectedTarget === player3.ID && (
@@ -442,7 +515,7 @@ function GameLayout({
 
             {/* Row 3: Items 4x2 */}
             <div className="player-items">
-              {getItemSlots(player4.items)}
+              {getItemSlots(player4.items, player4.ID)}
             </div>
 
             {selectedTarget === player4.ID && (
@@ -500,7 +573,7 @@ function GameLayout({
 
             {/* Row 3: Items 4x2 */}
             <div className="player-items">
-              {getItemSlots(player2.items)}
+              {getItemSlots(player2.items, player2.ID)}
             </div>
 
             {selectedTarget === player2.ID && (
@@ -515,14 +588,39 @@ function GameLayout({
         </button>
 
         {/* Rule Button */}
-        <button className="rule-button" title="Luật chơi">
+        <button
+          className="rule-button"
+          title="Hướng dẫn"
+          onClick={() => window.open('/guide', '_blank')}
+        >
           ?
         </button>
-        {notifyMessage && (
-          <div className="notify">
-            {notifyMessage}
-          </div>
-        )}
+
+        {/* Action Message Display with History */}
+        <div
+          className={`action-message-container ${isMessageExpanded ? 'expanded' : 'collapsed'}`}
+          onMouseEnter={() => messageHistory.length > 0 && setIsMessageExpanded(true)}
+          onMouseLeave={() => setIsMessageExpanded(false)}
+        >
+          {/* Latest Message (always shown) */}
+          {messageHistory.length > 0 && (
+            <div className="latest-message">
+              <div className="message-text">{messageHistory[0].text}</div>
+            </div>
+          )}
+
+          {/* Message History (shown when expanded) */}
+          {isMessageExpanded && messageHistory.length > 1 && (
+            <div className="message-history">
+              {messageHistory.slice(1).map((msg, index) => (
+                <div key={msg.id} className={`history-message ${index === 0 ? 'latest' : ''}`}>
+                  <div className="history-index">{messageHistory.length - index}</div>
+                  <div className="history-text">{msg.text}</div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
