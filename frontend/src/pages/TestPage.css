@@ -1,0 +1,269 @@
+/* ========== MAIN PAGE CONTAINER ==========
+   Điều chỉnh nền chính của trang test
+*/
+.test-page {
+  /* 👈 Thay đổi màu nền: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%) */
+  width: 100%;
+  height: 100vh;
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+}
+
+/* ========== TEST CONTAINER (Panel chính) ==========
+   Điều chỉnh hình dáng và màu của panel test
+*/
+.test-container {
+  /* 👈 Thay đổi màu nền: rgba(30, 30, 50, 0.95) - nền bán trong suốt */
+  /* 👈 Thay đổi độ bo góc: border-radius: 12px */
+  /* 👈 Thay đổi padding (khoảng cách): padding: 40px */
+  /* 👈 Thay đổi border: 2px solid rgba(138, 56, 245, 0.3) */
+  /* 👈 Thay đổi shadow: 0 8px 32px rgba(0, 0, 0, 0.5) */
+  background: rgba(30, 30, 50, 0.95);
+  border-radius: 12px;
+  padding: 40px;
+  max-width: 1200px;
+  width: 100%;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+  border: 2px solid rgba(138, 56, 245, 0.3);
+}
+
+/* ========== TITLE H1 ==========
+   Điều chỉnh tiêu đề "Action Overlay Test"
+*/
+.test-container h1 {
+  /* 👈 Thay đổi màu chữ: color: #fff */
+  /* 👈 Thay đổi kích thước: font-size: 2.5rem */
+  /* 👈 Thay đổi shadow: text-shadow: 0 2px 10px rgba(138, 56, 245, 0.5) */
+  color: #fff;
+  text-align: center;
+  margin-bottom: 30px;
+  font-size: 2.5rem;
+  text-shadow: 0 2px 10px rgba(138, 56, 245, 0.5);
+}
+
+/* ========== TEST PANEL (Khung chứa các nút) ==========
+   Điều chỉnh khung bên trong panel
+*/
+.test-panel {
+  /* 👈 Thay đổi màu nền: rgba(20, 20, 40, 0.8) */
+  /* 👈 Thay đổi border: 1px solid rgba(138, 56, 245, 0.2) */
+  background: rgba(20, 20, 40, 0.8);
+  border-radius: 10px;
+  padding: 30px;
+  border: 1px solid rgba(138, 56, 245, 0.2);
+}
+
+/* ========== PANEL HEADING ==========
+   Điều chỉnh tiêu đề "Select an action to test:"
+*/
+.test-panel h2 {
+  /* 👈 Thay đổi màu chữ: color: #8a38f5 (màu tím) */
+  /* 👈 Thay đổi kích thước: font-size: 1.3rem */
+  color: #8a38f5;
+  margin-bottom: 20px;
+  font-size: 1.3rem;
+}
+
+/* ========== ACTION BUTTONS GRID ==========
+   Điều chỉnh lưới sắp xếp các nút hành động
+*/
+.action-buttons {
+  /* 👈 Thay đổi số cột: grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)) */
+  /* 👈 Thay đổi khoảng cách giữa các nút: gap: 12px */
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 12px;
+  margin-bottom: 30px;
+}
+
+/* ========== ACTION BUTTONS (Nút bấm hành động) ==========
+   Điều chỉnh kiểu dáng các nút test
+*/
+.action-btn {
+  /* 👈 Thay đổi màu gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%) */
+  /* 👈 Thay đổi padding: padding: 12px 16px */
+  /* 👈 Thay đổi border-radius: border-radius: 8px */
+  /* 👈 Thay đổi kích thước chữ: font-size: 0.9rem */
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: 2px solid transparent;
+  border-radius: 8px;
+  padding: 12px 16px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.9rem;
+  transition: all 0.3s ease;
+}
+
+/* Khi hover (chỉ chuột vào nút) - Điều chỉnh hiệu ứng */
+.action-btn:hover {
+  /* 👈 Thay đổi hiệu ứng nâng lên: transform: translateY(-2px) */
+  /* 👈 Thay đổi shadow: box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4) */
+  /* 👈 Thay đổi border hover: border-color: #8a38f5 */
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+  border-color: #8a38f5;
+}
+
+/* Khi nút được chọn/bấm (active) - Điều chỉnh màu đã chọn */
+.action-btn.active {
+  /* 👈 Thay đổi gradient active: linear-gradient(135deg, #8a38f5 0%, #c44569 100%) */
+  /* 👈 Thay đổi border color: border-color: #fff */
+  /* 👈 Thay đổi shadow active: box-shadow: 0 0 20px rgba(138, 56, 245, 0.6) */
+  background: linear-gradient(135deg, #8a38f5 0%, #c44569 100%);
+  border-color: #fff;
+  box-shadow: 0 0 20px rgba(138, 56, 245, 0.6);
+}
+
+/* ========== INFO BOX (Hiển thị hành động đã chọn) ==========
+   Điều chỉnh khung thông tin hành động
+*/
+.info-box {
+  /* 👈 Thay đổi màu nền: rgba(10, 10, 25, 0.8) */
+  /* 👈 Thay đổi border: 1px solid rgba(138, 56, 245, 0.3) */
+  background: rgba(10, 10, 25, 0.8);
+  border: 1px solid rgba(138, 56, 245, 0.3);
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 20px;
+}
+
+/* Info box heading */
+.info-box h3 {
+  /* 👈 Thay đổi màu chữ: color: #8a38f5 */
+  /* 👈 Thay đổi kích thước: font-size: 1rem */
+  color: #8a38f5;
+  margin-bottom: 10px;
+  font-size: 1rem;
+}
+
+/* Info box text content */
+.info-box p {
+  /* 👈 Thay đổi màu chữ: color: #ccc */
+  /* 👈 Thay đổi kích thước: font-size: 0.95rem */
+  color: #ccc;
+  font-family: 'Courier New', monospace;
+  font-size: 0.95rem;
+}
+
+/* ========== CLOSE OVERLAY BUTTON (Nút đóng overlay) ==========
+   Điều chỉnh nút đóng hiệu ứng
+*/
+.close-btn {
+  /* 👈 Thay đổi gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%) */
+  /* 👈 Thay đổi padding: padding: 12px 20px */
+  width: 100%;
+  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 12px 20px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+  margin-bottom: 10px;
+}
+
+/* Close button hover state */
+.close-btn:hover:not(:disabled) {
+  /* 👈 Thay đổi animation: transform: translateY(-2px) */
+  /* 👈 Thay đổi shadow: box-shadow: 0 5px 15px rgba(245, 87, 108, 0.4) */
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(245, 87, 108, 0.4);
+}
+
+/* Close button disabled state (khi chưa chọn action) */
+.close-btn:disabled {
+  /* 👈 Thay đổi opacity khi disabled: opacity: 0.5 */
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ========== HIDE PANEL BUTTON (Nút ẩn panel) ==========
+   Điều chỉnh nút ẩn panel test
+*/
+.hide-btn {
+  /* 👈 Thay đổi gradient: linear-gradient(135deg, #4c63d2 0%, #bc83d8 100%) */
+  /* 👈 Thay đổi padding: padding: 12px 20px */
+  width: 100%;
+  background: linear-gradient(135deg, #4c63d2 0%, #bc83d8 100%);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 12px 20px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+}
+
+/* Hide button hover state */
+.hide-btn:hover {
+  /* 👈 Thay đổi animation: transform: translateY(-2px) */
+  /* 👈 Thay đổi shadow: box-shadow: 0 5px 15px rgba(76, 99, 210, 0.4) */
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(76, 99, 210, 0.4);
+}
+
+/* ========== SHOW PANEL BUTTON (Nút hiện lại panel) ==========
+   Điều chỉnh nút hiện panel test khi đã ẩn
+*/
+.show-btn {
+  /* 👈 Thay đổi gradient: linear-gradient(135deg, #4c63d2 0%, #bc83d8 100%) */
+  /* 👈 Thay đổi padding: padding: 16px 40px */
+  /* 👈 Thay đổi font-size: font-size: 1.2rem */
+  background: linear-gradient(135deg, #4c63d2 0%, #bc83d8 100%);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 16px 40px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 1.2rem;
+  transition: all 0.3s ease;
+  box-shadow: 0 8px 32px rgba(76, 99, 210, 0.4);
+}
+
+/* Show button hover state */
+.show-btn:hover {
+  /* 👈 Thay đổi animation: transform: translateY(-2px) */
+  /* 👈 Thay đổi shadow: box-shadow: 0 12px 40px rgba(76, 99, 210, 0.6) */
+  transform: translateY(-2px);
+  box-shadow: 0 12px 40px rgba(76, 99, 210, 0.6);
+}
+
+/* ========== RESPONSIVE DESIGN (Trên màn hình di động) ==========
+   Điều chỉnh CSS cho những thiết bị có màn hình nhỏ hơn 768px
+*/
+@media (max-width: 768px) {
+  .test-container {
+    /* 👈 Thay đổi padding: padding: 20px */
+    padding: 20px;
+  }
+
+  .test-container h1 {
+    /* 👈 Thay đổi kích thước h1 trên mobile: font-size: 1.8rem */
+    font-size: 1.8rem;
+  }
+
+  .action-buttons {
+    /* 👈 Thay đổi số cột trên mobile: grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)) */
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 10px;
+  }
+
+  .action-btn {
+    padding: 10px 12px;
+    font-size: 0.85rem;
+  }
+
+  .show-btn {
+    padding: 12px 30px;
+    font-size: 1rem;
+  }
+}
+

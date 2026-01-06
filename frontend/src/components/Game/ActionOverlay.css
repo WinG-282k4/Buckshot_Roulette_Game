@@ -1,0 +1,225 @@
+/* ===== ACTION OVERLAY STYLES - Complete & Accurate ===== */
+
+/* ========== WRAPPER - Full screen fixed container ========== */
+.overlay-wrapper {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: auto;
+  opacity: 1;
+  transition: opacity 0.3s ease-out;
+}
+
+.overlay-wrapper.fade-out {
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* ========== CONTAINER - Main 1920x1080 box ========== */
+.overlay-container {
+  width: 1920px;
+  height: 1080px;
+  position: relative;
+  background: rgba(37, 37, 37, 0.65);
+  overflow: hidden;
+}
+
+/* ========== BACKGROUND LAYER - Event background image ========== */
+.background-layer {
+  width: 2218px;
+  height: 1070px;
+  left: -180px;
+  top: -49px;
+  position: absolute;
+  overflow: hidden;
+  background-size: cover;
+  background-position: center;
+}
+
+/* ========== NOTIFY ACTION TEXT - Action title text ========== */
+.notify-action-text {
+  left: 50%;
+  transform: translateX(-50%);
+  top: 140px;
+  position: absolute;
+  color: white;
+  font-size: 60px;
+  font-family: Inter;
+  font-weight: 400;
+  word-wrap: break-word;
+  animation: fadeIn 0.6s ease-out;
+}
+
+/* ========== DYNAMIC ACTION STRUCTURE - Main content container ========== */
+.dynamic-action-structure {
+  width: 1299px;
+  height: 621px;
+  left: 280px;
+  top: 230px;
+  position: absolute;
+  background: transparent;
+  overflow: visible;
+  animation: slideIn 0.4s ease-out;
+}
+
+/* ========== AVATAR LEFT - Pattern 1 left side avatar ========== */
+.avatar-left {
+  width: 281px;
+  height: 369px;
+  left: 50px;
+  top: 49px;
+  position: absolute;
+}
+
+/* ========== AVATAR RIGHT - Pattern 1 right side avatar (default) ========== */
+.avatar-right {
+  width: 356px;
+  height: 474px;
+  left: 931px;
+  top: 0px;
+  position: absolute;
+  transform: scaleX(-1);
+}
+
+/* ========== AVATAR RIGHT PATTERN 2/3 - Rotated avatar for self-only & fire ========== */
+.avatar-right.pattern-2,
+.avatar-right.pattern-3 {
+  left: 530px;
+  top: 30px;
+  transform: scaleX(-1);
+  transform-origin: center center;
+}
+
+/* ========== ACTOR NAME - Pattern 1 actor name (left bottom) ========== */
+.actor-name {
+  width: 526px;
+  height: 204.01px;
+  left: 850px;
+  top: 500px;
+  position: absolute;
+  color: white;
+  font-size: 98px;
+  font-family: Inter;
+  font-weight: 400;
+  text-align: center;
+  word-wrap: break-word;
+  text-shadow:
+    -2px -2px 0 #000,
+    2px -2px 0 #000,
+    -2px 2px 0 #000,
+    2px 2px 0 #000,
+    -2px 0px 0 #000,
+    2px 0px 0 #000,
+    0px -2px 0 #000,
+    0px 2px 0 #000;
+  animation: fadeIn 0.6s ease-out 0.1s backwards;
+}
+
+/* ========== ACTOR NAME PATTERN 2/3 - Centered actor name ========== */
+.actor-name.pattern-2,
+.actor-name.pattern-3 {
+  width: 526px;
+  height: 204.01px;
+  left: 437px;
+  top: 500px;
+}
+
+/* ========== TARGET NAME - Pattern 1 target name (left side) ========== */
+.target-name {
+  width: 526px;
+  height: 204.01px;
+  left: -50px;
+  top: 456.99px;
+  position: absolute;
+  color: white;
+  font-size: 98px;
+  font-family: Inter;
+  font-weight: 400;
+  text-align: center;
+  word-wrap: break-word;
+  text-shadow:
+    -2px -2px 0 #000,
+    2px -2px 0 #000,
+    -2px 2px 0 #000,
+    2px 2px 0 #000,
+    -2px 0px 0 #000,
+    2px 0px 0 #000,
+    0px -2px 0 #000,
+    0px 2px 0 #000;
+  animation: fadeIn 0.6s ease-out 0.2s backwards;
+}
+
+/* ========== EFFECT IMAGE - Dynamic positioned effect ========== */
+.effect-image {
+  position: absolute;
+  animation: fadeIn 0.6s ease-out 0.15s backwards;
+}
+
+/* ========== GUN IMAGE - Dynamic positioned gun ========== */
+.gun-image {
+  position: absolute;
+  transform-origin: center center;
+  animation: fadeIn 0.6s ease-out 0.25s backwards;
+}
+
+/* Gun for Pattern 2/3 - Different animation delay */
+.gun-image.pattern-2,
+.gun-image.pattern-3 {
+  animation: fadeIn 0.6s ease-out 0.15s backwards;
+}
+
+/* ========== ITEM IMAGE - Dynamic positioned item (beer, glass, chainsaw, etc) ========== */
+.item-image {
+  position: absolute;
+  animation: fadeIn 0.6s ease-out 0.15s backwards;
+}
+
+/* ========== CLOSE BUTTON - Fixed position close button ========== */
+.overlay-close-button {
+  position: fixed;
+  bottom: 40px;
+  right: 40px;
+  padding: 12px 30px;
+  background: linear-gradient(135deg, #f5576c 0%, #f093fb 100%);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  z-index: 10000;
+  transition: all 0.3s ease;
+  box-shadow: 0 5px 15px rgba(245, 87, 108, 0.4);
+}
+
+.overlay-close-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(245, 87, 108, 0.6);
+}
+
+/* ========== ANIMATIONS ========== */
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}

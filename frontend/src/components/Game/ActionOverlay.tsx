@@ -1,4 +1,5 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
+import './ActionOverlay.css';
 
 // Import all images with correct paths
 import backgroundEventImg from '../../assets/img/background/background event.png';
@@ -23,6 +24,9 @@ import khoiImg from '../../assets/img/Action/khói.png';
 
 // Pattern 3 - Gun & Attack effects
 import gun2dImg from '../../assets/img/Gun/gun2d(no bg).png';
+
+// Avatars
+import purpleAvatarImg from '../../assets/img/avatar/purple.png';
 
 interface Player {
   ID: string;
@@ -50,6 +54,8 @@ interface ActionConfig {
     left: number;
     top: number;
     rotation?: number;
+    flipX?: boolean;
+    flipY?: boolean;
   };
   gun?: {
     image: string;
@@ -58,6 +64,8 @@ interface ActionConfig {
     left: number;
     top: number;
     rotation: number;
+    flipX?: boolean;
+    flipY?: boolean;
   };
   item?: {
     image: string;
@@ -71,15 +79,25 @@ interface ActionConfig {
 
 // Action configuration based on design
 const actionConfig: Record<string, ActionConfig> = {
-  'use chainsaw': {
-    notifyText: 'Use Chainsaw',
+  'attack real': {
+    notifyText: 'Attack Real',
     pattern: 'two-sided',
+    gun: {
+      image: gun2dImg,
+      width: 650,
+      height: 518.99,
+      left: 450,
+      top: 0,
+      rotation: 0,
+      flipX: true,
+    },
     effect: {
-      image: chainsawGunImg,
-      width: 703,
-      height: 689.38,
-      left: -106,
-      top: -108.73,
+      image: gunHitImg,
+      width: 788,
+      height: 741,
+      left: -138,
+      top: -138,
+      flipX: true,
     },
   },
   'use solo': {
@@ -109,18 +127,19 @@ const actionConfig: Record<string, ActionConfig> = {
     pattern: 'two-sided',
     effect: {
       image: hitFakeImg,
-      width: 703,
-      height: 689.38,
-      left: -106,
-      top: -108.73,
+      width: 671,
+      height: 647,
+      left: 53,
+      top: -229,
     },
     gun: {
-      image: gunHitImg,
-      width: 455,
+      image: gun2dImg,
+      width: 650,
       height: 518.99,
-      left: 951,
-      top: 531.32,
-      rotation: 180,
+      left: 450,
+      top: 0,
+      rotation: 0,
+      flipX: true,
     },
   },
   'use beer': {
@@ -130,7 +149,7 @@ const actionConfig: Record<string, ActionConfig> = {
       image: beerImg,
       width: 313,
       height: 313,
-      left: 381,
+      left: 291,
       top: 154,
     },
   },
@@ -141,7 +160,7 @@ const actionConfig: Record<string, ActionConfig> = {
       image: bulletImg,
       width: 313,
       height: 313,
-      left: 381,
+      left: 291,
       top: 154,
     },
   },
@@ -152,20 +171,20 @@ const actionConfig: Record<string, ActionConfig> = {
       image: glassImg,
       width: 313,
       height: 313,
-      left: 396,
+      left: 306,
       top: 81,
     },
   },
-  'use chainsaw (self)': {
+  'use chainsaw': {
     notifyText: 'Prepare Chainsaw',
     pattern: 'self-only',
     item: {
       image: chainsawItemImg,
       width: 453.26,
       height: 453.26,
-      left: 319.48,
+      left: 127,
       top: 128,
-      rotation: 13,
+      rotation: 13.07,
     },
   },
   'use medicine': {
@@ -173,51 +192,55 @@ const actionConfig: Record<string, ActionConfig> = {
     pattern: 'self-only',
     item: {
       image: vigerateImg,
-      width: 453.26,
-      height: 453.26,
-      left: 325.12,
+      width: 453,
+      height: 453,
+      left: 251,
       top: 104,
-      rotation: 1,
     },
   },
-  'fire yourself real': {
+  'fire yourseft real': {
     notifyText: 'Fire Yourself Real',
     pattern: 'fire',
     gun: {
       image: gun2dImg,
       width: 385.44,
       height: 385.44,
-      left: 206,
-      top: 402.1,
+      left: 200,
+      top: 132,
       rotation: -44,
+      flipX: false,
     },
     effect: {
       image: hit3Img,
       width: 453.53,
       height: 388.19,
-      left: 1049.71,
-      top: 170.37,
-      rotation: 141,
+      left: 453,
+      top: -82,
+      rotation: -141,
+      flipY: true,
     },
   },
-  'fire yourself fake': {
+  'fire yourseft fake': {
     notifyText: 'Fire Yourself Fake',
     pattern: 'fire',
     gun: {
       image: gun2dImg,
-      width: 407.04,
-      height: 407.04,
-      left: 227,
-      top: 391.24,
+      width: 385.44,
+      height: 385.44,
+      left: 200,
+      top: 132,
       rotation: -44,
+      flipX: false,
     },
     effect: {
       image: khoiImg,
       width: 605.9,
-      height: 464.67,
-      left: 1064.58,
-      top: 400.51,
-      rotation: 179,
+      height: 504.67,
+      left: 397,
+      top: -84,
+      rotation: -179,
+      flipX: false,
+      flipY: true
     },
   },
 };
@@ -236,19 +259,12 @@ const ActionOverlay: React.FC<ActionOverlayProps> = ({
     setFadeOut(false);
   }, [isVisible]);
 
-  // Auto-hide overlay after 5 seconds
-  useEffect(() => {
-    if (isVisible) {
-      const timer = setTimeout(() => {
-        setFadeOut(true);
-        setTimeout(() => {
-          onAnimationComplete?.();
-        }, 300);
-      }, 5000);
-
-      return () => clearTimeout(timer);
-    }
-  }, [isVisible, onAnimationComplete]);
+  const handleClose = () => {
+    setFadeOut(true);
+    setTimeout(() => {
+      onAnimationComplete?.();
+    }, 300);
+  };
 
   if (!isVisible || !actionType) {
     console.log('❌ ActionOverlay: Not rendering -', { isVisible, actionType });
@@ -261,144 +277,84 @@ const ActionOverlay: React.FC<ActionOverlayProps> = ({
     return null;
   }
 
+  // --- New helper: compute image style with proper flip handling ---
+  const computeImageStyle = (
+    obj?: { width: number; height: number; left: number; top: number; rotation?: number; flipX?: boolean; flipY?: boolean },
+    animDelay = '0.15s'
+  ): React.CSSProperties | undefined => {
+    if (!obj) return undefined;
+    const { width, height, left, top, rotation = 0, flipX, flipY } = obj;
+    const transforms: string[] = [];
+
+    if (rotation) transforms.push(`rotate(${rotation}deg)`);
+    if (flipX) {
+      // scaleX(-1) = lật ngang (flip horizontally)
+      transforms.push('scaleX(-1)');
+    }
+    if (flipY) {
+      // scaleY(-1) = lật dọc (flip vertically)
+      transforms.push('scaleY(-1)');
+    }
+
+    return {
+      width: `${width}px`,
+      height: `${height}px`,
+      left: `${left}px`,
+      top: `${top}px`,
+      position: 'absolute',
+      transform: transforms.length ? transforms.join(' ') : undefined,
+      transformOrigin: 'center center',
+      animation: `fadeIn 0.6s ease-out ${animDelay} backwards`,
+    };
+  };
+  // --- end helper ---
+
   console.log('✅ ActionOverlay: Rendering -', { isVisible, actionType, pattern: config.pattern });
 
   return (
-    <div
-      style={{
-        position: 'fixed',
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        zIndex: 9999,
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        pointerEvents: fadeOut ? 'none' : 'auto',
-        opacity: fadeOut ? 0 : 1,
-        transition: 'opacity 0.3s ease-out',
-      }}
-    >
-      {/* Overlay Container - Based on overlay.html */}
-      <div
-        style={{
-          width: '1920px',
-          height: '1080px',
-          position: 'relative',
-          background: 'rgba(55.17, 55.17, 55.17, 0.65)',
-          overflow: 'hidden',
-        }}
-      >
+    <div className={`overlay-wrapper ${fadeOut ? 'fade-out' : ''}`}>
+      {/* Overlay Container */}
+      <div className="overlay-container">
         {/* Background Layer */}
         <div
+          className="background-layer"
           style={{
-            width: '2218px',
-            height: '1070px',
-            left: '-180px',
-            top: '-49px',
-            position: 'absolute',
-            overflow: 'hidden',
             backgroundImage: `url(${backgroundEventImg})`,
-            backgroundSize: 'cover',
-            backgroundPosition: 'center',
           }}
         >
           {/* Notify Action Text */}
-          <div
-            style={{
-              left: '927px',
-              top: '140px',
-              position: 'absolute',
-              color: 'white',
-              fontSize: '60px',
-              fontFamily: 'Inter',
-              fontWeight: '400',
-              animation: 'fadeIn 0.6s ease-out',
-            }}
-          >
+          <div className="notify-action-text">
             {config.notifyText}
           </div>
         </div>
 
-        {/* Dynamic Action Structure - Based on dynamic-event.html */}
-        <div
-          style={{
-            width: '1299px',
-            height: '621px',
-            left: '280px',
-            top: '230px',
-            position: 'absolute',
-            background: 'rgba(255, 255, 255, 0)',
-            overflow: 'hidden',
-            animation: 'slideIn 0.4s ease-out',
-          }}
-        >
+        {/* Dynamic Action Structure */}
+        <div className="dynamic-action-structure">
           {/* Pattern 1: Two-Sided */}
           {config.pattern === 'two-sided' && (
             <>
               {/* Left Avatar */}
               <img
-                style={{
-                  width: '281px',
-                  height: '369px',
-                  left: '50px',
-                  top: '49px',
-                  position: 'absolute',
-                }}
+                className="avatar-left"
                 src={actor?.URLavatar || ''}
                 alt="Actor"
               />
 
               {/* Actor Name */}
-              <div
-                style={{
-                  width: '368px',
-                  height: '204.01px',
-                  left: '901px',
-                  top: '457.34px',
-                  position: 'absolute',
-                  color: 'white',
-                  fontSize: '150px',
-                  fontFamily: 'Inter',
-                  fontWeight: '400',
-                  wordWrap: 'break-word',
-                  animation: 'fadeIn 0.6s ease-out 0.1s backwards',
-                }}
-              >
+              <div className="actor-name">
                 {actor?.name}
               </div>
 
               {/* Target Name */}
-              <div
-                style={{
-                  width: '426px',
-                  height: '204.01px',
-                  left: '0px',
-                  top: '416.99px',
-                  position: 'absolute',
-                  color: 'white',
-                  fontSize: '150px',
-                  fontFamily: 'Inter',
-                  fontWeight: '400',
-                  wordWrap: 'break-word',
-                  animation: 'fadeIn 0.6s ease-out 0.2s backwards',
-                }}
-              >
+              <div className="target-name">
                 {target?.name}
               </div>
 
               {/* Effect Image */}
               {config.effect && (
                 <img
-                  style={{
-                    width: `${config.effect.width}px`,
-                    height: `${config.effect.height}px`,
-                    left: `${config.effect.left}px`,
-                    top: `${config.effect.top}px`,
-                    position: 'absolute',
-                    animation: 'fadeIn 0.6s ease-out 0.15s backwards',
-                  }}
+                  className="effect-image"
+                  style={computeImageStyle(config.effect, '0.15s')}
                   src={config.effect.image}
                   alt="Effect"
                 />
@@ -407,16 +363,8 @@ const ActionOverlay: React.FC<ActionOverlayProps> = ({
               {/* Gun/Attack Image */}
               {config.gun && (
                 <img
-                  style={{
-                    width: `${config.gun.width}px`,
-                    height: `${config.gun.height}px`,
-                    left: `${config.gun.left}px`,
-                    top: `${config.gun.top}px`,
-                    position: 'absolute',
-                    transform: `rotate(${config.gun.rotation}deg)`,
-                    transformOrigin: 'top left',
-                    animation: 'fadeIn 0.6s ease-out 0.25s backwards',
-                  }}
+                  className="gun-image"
+                  style={computeImageStyle(config.gun, '0.25s')}
                   src={config.gun.image}
                   alt="Gun"
                 />
@@ -424,16 +372,8 @@ const ActionOverlay: React.FC<ActionOverlayProps> = ({
 
               {/* Right Avatar */}
               <img
-                style={{
-                  width: '356px',
-                  height: '474px',
-                  left: '1287px',
-                  top: '474px',
-                  position: 'absolute',
-                  transform: 'rotate(180deg)',
-                  transformOrigin: 'top left',
-                }}
-                src={target?.URLavatar || ''}
+                className="avatar-right"
+                src={purpleAvatarImg}
                 alt="Target"
               />
             </>
@@ -442,52 +382,22 @@ const ActionOverlay: React.FC<ActionOverlayProps> = ({
           {/* Pattern 2: Self-Only Items */}
           {config.pattern === 'self-only' && config.item && (
             <>
-              {/* Actor Name */}
-              <div
-                style={{
-                  width: '368px',
-                  height: '204.01px',
-                  left: '587px',
-                  top: '455px',
-                  position: 'absolute',
-                  color: 'white',
-                  fontSize: '150px',
-                  fontFamily: 'Inter',
-                  fontWeight: '400',
-                  wordWrap: 'break-word',
-                  animation: 'fadeIn 0.6s ease-out 0.1s backwards',
-                }}
-              >
-                {actor?.name}
-              </div>
-
-              {/* Item Image */}
+              {/* Item Image - Render first (appears behind) */}
               <img
-                style={{
-                  width: `${config.item.width}px`,
-                  height: `${config.item.height}px`,
-                  left: `${config.item.left}px`,
-                  top: `${config.item.top}px`,
-                  position: 'absolute',
-                  transform: config.item.rotation ? `rotate(${config.item.rotation}deg)` : undefined,
-                  transformOrigin: 'top left',
-                  animation: 'fadeIn 0.6s ease-out 0.15s backwards',
-                }}
+                className="item-image"
+                style={computeImageStyle(config.item, '0.15s')}
                 src={config.item.image}
                 alt="Item"
               />
 
-              {/* Right Avatar */}
+              {/* Actor Name */}
+              <div className="actor-name pattern-2">
+                {actor?.name}
+              </div>
+
+              {/* Right Avatar - Render last (appears in front) */}
               <img
-                style={{
-                  width: '356px',
-                  height: '474px',
-                  left: '981px',
-                  top: '504px',
-                  position: 'absolute',
-                  transform: 'rotate(180deg)',
-                  transformOrigin: 'top left',
-                }}
+                className="avatar-right pattern-2"
                 src={actor?.URLavatar || ''}
                 alt="Actor"
               />
@@ -498,101 +408,48 @@ const ActionOverlay: React.FC<ActionOverlayProps> = ({
           {config.pattern === 'fire' && (
             <>
               {/* Actor Name */}
-              <div
-                style={{
-                  width: '368px',
-                  height: '204.01px',
-                  left: '587px',
-                  top: '455px',
-                  position: 'absolute',
-                  color: 'white',
-                  fontSize: '150px',
-                  fontFamily: 'Inter',
-                  fontWeight: '400',
-                  wordWrap: 'break-word',
-                  animation: 'fadeIn 0.6s ease-out 0.1s backwards',
-                }}
-              >
+              <div className="actor-name pattern-3">
                 {actor?.name}
               </div>
 
               {/* Gun Image */}
               {config.gun && (
                 <img
-                  style={{
-                    width: `${config.gun.width}px`,
-                    height: `${config.gun.height}px`,
-                    left: `${config.gun.left}px`,
-                    top: `${config.gun.top}px`,
-                    position: 'absolute',
-                    transform: `rotate(${config.gun.rotation}deg)`,
-                    transformOrigin: 'top left',
-                    animation: 'fadeIn 0.6s ease-out 0.15s backwards',
-                  }}
+                  className="gun-image pattern-3"
+                  style={computeImageStyle(config.gun, '0.15s')}
                   src={config.gun.image}
                   alt="Gun"
                 />
               )}
 
-              {/* Fire/Smoke Effect */}
-              {config.effect && (
-                <img
-                  style={{
-                    width: `${config.effect.width}px`,
-                    height: `${config.effect.height}px`,
-                    left: `${config.effect.left}px`,
-                    top: `${config.effect.top}px`,
-                    position: 'absolute',
-                    transform: `rotate(${config.effect.rotation}deg)`,
-                    transformOrigin: 'top left',
-                    animation: 'fadeIn 0.6s ease-out 0.25s backwards',
-                  }}
-                  src={config.effect.image}
-                  alt="Fire Effect"
-                />
-              )}
-
               {/* Right Avatar */}
               <img
-                style={{
-                  width: '356px',
-                  height: '474px',
-                  left: '981px',
-                  top: '504px',
-                  position: 'absolute',
-                  transform: 'rotate(180deg)',
-                  transformOrigin: 'top left',
-                }}
+                className="avatar-right pattern-3"
                 src={actor?.URLavatar || ''}
                 alt="Actor"
               />
+
+              {/* Effect Image - Render after avatar to appear in front */}
+              {config.effect && (
+                <img
+                  className="effect-image"
+                  style={computeImageStyle(config.effect, '0.15s')}
+                  src={config.effect.image}
+                  alt="Effect"
+                />
+              )}
             </>
           )}
         </div>
       </div>
 
-      {/* CSS Animations */}
-      <style>{`
-        @keyframes slideIn {
-          from {
-            opacity: 0;
-            transform: scale(0.95);
-          }
-          to {
-            opacity: 1;
-            transform: scale(1);
-          }
-        }
-
-        @keyframes fadeIn {
-          from {
-            opacity: 0;
-          }
-          to {
-            opacity: 1;
-          }
-        }
-      `}</style>
+      {/* Close Button */}
+      <button
+        className="overlay-close-button"
+        onClick={handleClose}
+      >
+        Close
+      </button>
     </div>
   );
 };
