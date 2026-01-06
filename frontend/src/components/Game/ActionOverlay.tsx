@@ -27,6 +27,7 @@ import gun2dImg from '../../assets/img/Gun/gun2d(no bg).png';
 
 // Avatars
 import purpleAvatarImg from '../../assets/img/avatar/purple.png';
+import { AVATAR_MAP, getColorFromAvatarUrl } from '../../utils/avatarMap';
 
 // Audio files
 import fireEventAudio from '../../assets/audio/fire event.mp3';
@@ -260,6 +261,18 @@ const ActionOverlay: React.FC<ActionOverlayProps> = ({
   onAnimationComplete,
 }) => {
   const [fadeOut, setFadeOut] = useState(false);
+  const audioRef = React.useRef<HTMLAudioElement | null>(null);
+
+  // Helper function to get avatar image - handles both color names and URLs
+  const getAvatarImage = (avatarUrl?: string): string => {
+    if (!avatarUrl) return purpleAvatarImg;
+
+    // Parse color name from URL or plain color name
+    const colorName = getColorFromAvatarUrl(avatarUrl);
+    const avatarImage = AVATAR_MAP[colorName.toLowerCase()];
+
+    return avatarImage || purpleAvatarImg;
+  };
 
   // Helper function to check if action is a use item action
   const isUseItemAction = (type?: string): boolean => {
@@ -271,6 +284,17 @@ const ActionOverlay: React.FC<ActionOverlayProps> = ({
     setFadeOut(false);
   }, [isVisible]);
 
+
+  // Cleanup audio on unmount or when isVisible changes
+  React.useEffect(() => {
+    return () => {
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current.currentTime = 0;
+      }
+    };
+  }, []);
+
   // Play use glass audio IMMEDIATELY - highest priority
   React.useEffect(() => {
     if (!isVisible || actionType !== 'use glass') return;
@@ -279,6 +303,7 @@ const ActionOverlay: React.FC<ActionOverlayProps> = ({
     const audio = new Audio(useGlassAudio);
     audio.volume = 1;
     audio.currentTime = 0;
+    audioRef.current = audio;
 
     // Play audio and handle autoplay policy
     const playPromise = audio.play();
@@ -288,11 +313,19 @@ const ActionOverlay: React.FC<ActionOverlayProps> = ({
 
     // Stop after 3 seconds
     const stopTimer = setTimeout(() => {
-      audio.pause();
-      audio.currentTime = 0;
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current.currentTime = 0;
+      }
     }, 3000);
 
-    return () => clearTimeout(stopTimer);
+    return () => {
+      clearTimeout(stopTimer);
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current.currentTime = 0;
+      }
+    };
   }, [isVisible, actionType]);
 
   // Play other use item audio (beer, bullet, chainsaw, medicine)
@@ -304,6 +337,7 @@ const ActionOverlay: React.FC<ActionOverlayProps> = ({
     const audio = new Audio(useItemAudio);
     audio.volume = 1;
     audio.currentTime = 0;
+    audioRef.current = audio;
 
     // Play audio and handle autoplay policy
     const playPromise = audio.play();
@@ -313,11 +347,19 @@ const ActionOverlay: React.FC<ActionOverlayProps> = ({
 
     // Stop after 3 seconds
     const stopTimer = setTimeout(() => {
-      audio.pause();
-      audio.currentTime = 0;
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current.currentTime = 0;
+      }
     }, 3000);
 
-    return () => clearTimeout(stopTimer);
+    return () => {
+      clearTimeout(stopTimer);
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current.currentTime = 0;
+      }
+    };
   }, [isVisible, actionType]);
 
   // Play fire/attack audio with delays
@@ -329,12 +371,19 @@ const ActionOverlay: React.FC<ActionOverlayProps> = ({
     const isFireAction = actionType.startsWith('fire yourseft');
     const isAttackAction = actionType.startsWith('attack');
 
+    const audioRefs: HTMLAudioElement[] = [];
+
     const playAudio = (audioSrc: string, delay: number = 0, duration: number | null = null) => {
       const timer = setTimeout(() => {
         const audio = new Audio(audioSrc);
         audio.volume = 1;
         audio.currentTime = 0;
-        audio.play().catch(err => console.error('Error playing audio:', err));
+        audioRefs.push(audio);
+
+        const playPromise = audio.play();
+        if (playPromise !== undefined) {
+          playPromise.catch(err => console.error('Error playing audio:', err));
+        }
 
         // Stop after duration if specified
         if (duration !== null) {
@@ -362,6 +411,11 @@ const ActionOverlay: React.FC<ActionOverlayProps> = ({
       return () => {
         clearTimeout(fireTimer);
         clearTimeout(hitTimer);
+        // Cleanup all audio elements
+        audioRefs.forEach(audio => {
+          audio.pause();
+          audio.currentTime = 0;
+        });
       };
     }
   }, [isVisible, actionType]);
@@ -374,7 +428,6 @@ const ActionOverlay: React.FC<ActionOverlayProps> = ({
   };
 
   if (!isVisible || !actionType) {
-    console.log('❌ ActionOverlay: Not rendering -', { isVisible, actionType });
     return null;
   }
 
@@ -416,7 +469,6 @@ const ActionOverlay: React.FC<ActionOverlayProps> = ({
   };
   // --- end helper ---
 
-  console.log('✅ ActionOverlay: Rendering -', { isVisible, actionType, pattern: config.pattern });
 
   return (
     <div className={`overlay-wrapper ${fadeOut ? 'fade-out' : ''}`}>
@@ -441,11 +493,11 @@ const ActionOverlay: React.FC<ActionOverlayProps> = ({
           {/* Pattern 1: Two-Sided */}
           {config.pattern === 'two-sided' && (
             <>
-              {/* Left Avatar */}
+              {/* Left Avatar - TARGET */}
               <img
                 className="avatar-left"
-                src={actor?.URLavatar || ''}
-                alt="Actor"
+                src={getAvatarImage(target?.URLavatar)}
+                alt="Target"
               />
 
               {/* Actor Name */}
@@ -478,11 +530,11 @@ const ActionOverlay: React.FC<ActionOverlayProps> = ({
                 />
               )}
 
-              {/* Right Avatar */}
+              {/* Right Avatar - ACTOR */}
               <img
                 className="avatar-right"
-                src={purpleAvatarImg}
-                alt="Target"
+                src={getAvatarImage(actor?.URLavatar)}
+                alt="Actor"
               />
             </>
           )}
@@ -506,7 +558,7 @@ const ActionOverlay: React.FC<ActionOverlayProps> = ({
               {/* Right Avatar - Render last (appears in front) */}
               <img
                 className="avatar-right pattern-2"
-                src={actor?.URLavatar || ''}
+                src={getAvatarImage(actor?.URLavatar)}
                 alt="Actor"
               />
             </>
@@ -533,7 +585,7 @@ const ActionOverlay: React.FC<ActionOverlayProps> = ({
               {/* Right Avatar */}
               <img
                 className="avatar-right pattern-3"
-                src={actor?.URLavatar || ''}
+                src={getAvatarImage(actor?.URLavatar)}
                 alt="Actor"
               />
 

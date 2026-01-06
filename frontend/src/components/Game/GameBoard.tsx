@@ -6,6 +6,8 @@ import { useState, useEffect } from 'react';
 import GameLayout from './GameLayout';
 import ActionOverlay from './ActionOverlay';
 import { ActionOverlayTestPanel } from './ActionOverlayTestPanel';
+import { getColorFromAvatarUrl, AVATAR_MAP } from '../../utils/avatarMap';
+import purpleAvatarImg from '../../assets/img/avatar/purple.png';
 
 export default function GameBoard() {
   const { roomStatus, isMyTurn, myPlayer, clearRoom } = useGameStore();
@@ -18,6 +20,24 @@ export default function GameBoard() {
     actor: any;
     target: any;
   } | null>(null);
+  const [lastProcessedActionId, setLastProcessedActionId] = useState<string | null>(null);
+
+  // Function to convert avatar color name to image path using utility functions
+  const getAvatarUrl = (avatar: string): string => {
+    if (!avatar) return purpleAvatarImg;
+
+    // Parse color name from URL or plain color name
+    const colorName = getColorFromAvatarUrl(avatar);
+    const colorLower = colorName.toLowerCase();
+
+    // Return imported image path from AVATAR_MAP
+    if (AVATAR_MAP[colorLower]) {
+      return AVATAR_MAP[colorLower];
+    }
+
+    // Fallback: construct URL from color name
+    return `/assets/img/avatar/${colorLower}.png`;
+  };
 
   console.log('🎮 GameBoard render - roomStatus:', roomStatus);
   console.log('📊 Room status value:', roomStatus?.status);
@@ -27,23 +47,94 @@ export default function GameBoard() {
   // Watch for action responses
   useEffect(() => {
     if (roomStatus?.actionResponse?.action) {
-      const { action, actor, targetid } = roomStatus.actionResponse;
-      const targetPlayer = roomStatus.players.find(p => p.ID === targetid);
+      const { action, actorId, targetid } = roomStatus.actionResponse;
 
+      // Create stable ID for this action to prevent duplicate processing
+      // Using only action, actorId, targetid (no timestamp) so it's consistent across renders
+      const actionId = `${action}-${actorId}-${targetid}`;
+
+      // Skip if we already processed this exact action
+      if (lastProcessedActionId === actionId) {
+        console.log('⏭️ Action already processed, skipping:', actionId);
+        return;
+      }
+
+      console.log('🎯 Processing action:', actionId);
+
+      // Get actor and target from roomStatus.players
+      let actor = roomStatus.players?.find(p => p.ID === actorId);
+      let targetPlayer = roomStatus.players?.find(p => p.ID === targetid);
+
+      // Convert avatar BEFORE rendering - set URLavatar properly
+      if (actor) {
+        actor.URLavatar = getAvatarUrl(actor.URLavatar);
+      }
+      if (targetPlayer) {
+        targetPlayer.URLavatar = getAvatarUrl(targetPlayer.URLavatar);
+      }
+
+      // Map backend action to ActionOverlay action type
+      let mappedAction = action;
+
+      if (action === 'FIRE_REAL') {
+        mappedAction = actorId === targetid ? 'fire yourseft real' : 'attack real';
+      } else if (action === 'FIRE_FAKE') {
+        mappedAction = actorId === targetid ? 'fire yourseft fake' : 'attack fake';
+      } else if (action.startsWith('USE_ITEM_')) {
+        const itemType = action.replace('USE_ITEM_', '');
+        const itemNameMap: Record<string, string> = {
+          '1': 'use beer',
+          '2': 'use bullet',
+          '3': 'use chainsaw',
+          '4': 'use medicine',
+          '5': 'use glass',
+          '6': 'use handcuff',
+          '7': 'use solo',
+        };
+        mappedAction = itemNameMap[itemType] || action;
+      } else {
+        // Skip TARGET or any other non-action types
+        console.log('⏭️ Skipping non-action type:', action);
+        setLastProcessedActionId(actionId);
+        return;
+      }
+
+      console.log('🎬 Showing ActionOverlay for action:', mappedAction);
+
+      // Mark this action as processed BEFORE setting state
+      setLastProcessedActionId(actionId);
+
+      // Set overlay data with converted avatars - actor/target sẽ render với avatar đúng ngay lần đầu
       setOverlayData({
-        actionType: action,
+        actionType: mappedAction,
         actor,
         target: targetPlayer || null,
       });
       setShowActionOverlay(true);
-
-      console.log('⚔️ Action triggered:', action, { actor, target: targetPlayer });
     } else {
-      // Reset overlay when actionResponse is cleared
       setShowActionOverlay(false);
       setOverlayData(null);
     }
-  }, [roomStatus?.actionResponse?.action, roomStatus?.players]);
+  }, [roomStatus?.actionResponse, roomStatus?.players, lastProcessedActionId]);
+
+  // Separate effect for auto-hiding overlay after 3 seconds
+  // This prevents cleanup from canceling the timeout on re-renders
+  useEffect(() => {
+    if (!showActionOverlay) return;
+
+    console.log('⏱️ Starting 3-second hide timer for overlay');
+
+    const hideTimer = setTimeout(() => {
+      console.log('⏱️ 3 seconds passed - hiding overlay');
+      setShowActionOverlay(false);
+      setOverlayData(null);
+    }, 3000);
+
+    return () => {
+      console.log('⏱️ Cleanup: clearing hide timer');
+      clearTimeout(hideTimer);
+    };
+  }, [showActionOverlay]);
 
   // Game Ended - Hiển thị thông báo kết thúc
   if (roomStatus && roomStatus.status === 'Ended') {

@@ -224,7 +224,7 @@ public class Room implements IRoomAction {
                 this.gun.resetGun();
 
                 for (Player p : this.players) {
-                    p.setHealth(6);
+                    p.setHealth(5);
                     p.setIsSoloing(false);
                     p.getItems().clear();
                 }

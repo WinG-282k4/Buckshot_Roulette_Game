@@ -50,6 +50,7 @@ public class Service {
         for(Player p : tempRoom.getPlayers()){
             p.getItems().clear();
             p.CreateStarterItems();
+            p.setHealth(5);
         }
 
         System.out.println("Room infor at start game:");
@@ -212,8 +213,10 @@ public class Service {
         //Buil action response
         roomresponse.setActionResponse(ActionResponse.builder()
                 .actorId(playeridActor)
+//                .actoravatar(tempPlayerActor.getURLavatar())
                 .action("USE_ITEM_" + useItem.getTypeItem())
                 .targetid(playerIDtarget)
+//                .targetavatar(tempPlayerTarget.getURLavatar())
                 .build());
         return roomresponse;
     }
@@ -282,8 +285,10 @@ public class Service {
         //Build action response
         roomResponse.setActionResponse(ActionResponse.builder()
                 .actorId(playeridActor)
+//                .actoravatar(tempPlayerActor.getURLavatar())
                 .action(dmg == 0 ? "FIRE_FAKE" : "FIRE_REAL")
                 .targetid(playeridTarget)
+//                .targetavatar(tempPlayerTarget.getURLavatar())
                 .build());
 
         return  roomResponse;
