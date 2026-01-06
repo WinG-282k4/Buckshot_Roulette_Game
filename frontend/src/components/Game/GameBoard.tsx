@@ -40,10 +40,6 @@ export default function GameBoard() {
     return `/assets/img/avatar/${colorLower}.png`;
   };
 
-  console.log('🎮 GameBoard render - roomStatus:', roomStatus);
-  console.log('📊 Room status value:', roomStatus?.status);
-  console.log('🔍 ActionResponse:', roomStatus?.actionResponse);
-  console.log('📌 Overlay state:', { showActionOverlay, overlayData });
 
   // Watch for action responses
   useEffect(() => {
@@ -95,17 +91,14 @@ export default function GameBoard() {
         mappedAction = itemNameMap[itemType] || action;
       } else {
         // Skip TARGET or any other non-action types
-        console.log('⏭️ Skipping non-action type:', action);
         setLastProcessedActionId(actionId);
         return;
       }
 
-      console.log('🎬 Showing ActionOverlay for action:', mappedAction);
-
-      // Mark this action as processed BEFORE setting state
+      // Mark this action as processed
       setLastProcessedActionId(actionId);
 
-      // Set overlay data with converted avatars - actor/target sẽ render với avatar đúng ngay lần đầu
+      // Set overlay data with converted avatars
       setOverlayData({
         actionType: mappedAction,
         actor,
@@ -347,7 +340,7 @@ export default function GameBoard() {
 
   const handleBack = () => {
     // Leave room and go back to lobby
-    console.log('👋 Leaving room...');
+    // console.log('👋 Leaving room...');
     const roomId = roomStatus?.roomid;
     if (roomId) {
       wsService.leaveRoom(roomId);

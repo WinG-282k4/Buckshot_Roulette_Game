@@ -234,43 +234,43 @@ function testStoreIntegration() {
  * =========================
  */
 function runFullTestSuite() {
-  console.clear();
-  console.log('🚀 ActionOverlay Full Test Suite\n');
+  // console.clear();
+  // console.log('🚀 ActionOverlay Full Test Suite\n');
 
-  console.log('=== TEST 1: Component Status ===');
+  // console.log('=== TEST 1: Component Status ===');
   checkComponentStatus();
 
-  console.log('\n=== TEST 2: Avatar Images ===');
+  // console.log('\n=== TEST 2: Avatar Images ===');
   testAvatarImages();
 
-  console.log('\n=== TEST 3: Effect Images ===');
+  // console.log('\n=== TEST 3: Effect Images ===');
   testEffectImages();
 
-  console.log('\n=== TEST 4: Store Integration ===');
+  // console.log('\n=== TEST 4: Store Integration ===');
   testStoreIntegration();
 
-  console.log('\n=== TEST 5: Single Action ===');
-  console.log('Testing "use beer"...');
+  // console.log('\n=== TEST 5: Single Action ===');
+  // console.log('Testing "use beer"...');
   testSingleAction('use beer');
 
-  console.log('\n✅ Test suite completed!');
-  console.log('\nAvailable test functions:');
-  console.log('  testSingleAction(actionType) - Test one action');
-  console.log('  testAllActions() - Test all 11 actions');
-  console.log('  testActionWithTarget(actionType) - Test with target');
-  console.log('  testPerformance() - Performance test');
-  console.log('  checkComponentStatus() - Check component mounted');
-  console.log('  testAvatarImages() - Test avatar image loading');
-  console.log('  testEffectImages() - Test effect image loading');
-  console.log('  testStoreIntegration() - Check store integration');
-  console.log('  runFullTestSuite() - Run all tests');
+  // console.log('\n✅ Test suite completed!');
+  // console.log('\nAvailable test functions:');
+  // console.log('  testSingleAction(actionType) - Test one action');
+  // console.log('  testAllActions() - Test all 11 actions');
+  // console.log('  testActionWithTarget(actionType) - Test with target');
+  // console.log('  testPerformance() - Performance test');
+  // console.log('  checkComponentStatus() - Check component mounted');
+  // console.log('  testAvatarImages() - Test avatar image loading');
+  // console.log('  testEffectImages() - Test effect image loading');
+  // console.log('  testStoreIntegration() - Check store integration');
+  // console.log('  runFullTestSuite() - Run all tests');
 }
 
 // Auto-run on load
-console.log('%c🧪 ActionOverlay Test Script Ready', 'color: #00ff00; font-size: 16px; font-weight: bold;');
-console.log('%cAvailable commands:', 'color: #ffaa00; font-weight: bold;');
-console.log('  runFullTestSuite() - Run comprehensive tests');
-console.log('  testSingleAction("action_name") - Test one action');
-console.log('  testAllActions() - Test all 11 actions sequentially');
-console.log('  checkComponentStatus() - Verify component is mounted');
+// console.log('%c🧪 ActionOverlay Test Script Ready', 'color: #00ff00; font-size: 16px; font-weight: bold;');
+// console.log('%cAvailable commands:', 'color: #ffaa00; font-weight: bold;');
+// console.log('  runFullTestSuite() - Run comprehensive tests');
+// console.log('  testSingleAction("action_name") - Test one action');
+// console.log('  testAllActions() - Test all 11 actions sequentially');
+// console.log('  checkComponentStatus() - Verify component is mounted');
 

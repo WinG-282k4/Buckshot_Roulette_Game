@@ -147,16 +147,19 @@ export class WebSocketService {
 
     this.roomId = roomId;
 
-    // Start message timeout to detect disconnections
-    this.startMessageTimeout();
-
     // Subscribe to room updates
     this.roomSubscription = this.client.subscribe(`/topic/room/${roomId}`, (message: IMessage) => {
       const data = JSON.parse(message.body);
       console.log('📨 Room update received:', data);
 
-      // Reset timeout on every message received
-      this.startMessageTimeout();
+      // Only start timeout when game is PLAYING, not during Waiting or Ended
+      if (data.status === 'Playing') {
+        console.log('🎮 Game is PLAYING - starting 20s timeout check');
+        this.startMessageTimeout();
+      } else {
+        console.log('⏸️ Game is ' + data.status + ' - skipping timeout check');
+        this.clearMessageTimeout();
+      }
 
       // Handle RoomStatusResponse (from join success or game actions)
       if (data.status || data.roomid !== undefined || data.players) {
@@ -292,7 +295,7 @@ export class WebSocketService {
 
   setPlayerId(id: string) {
     this.playerId = id;
-    console.log('Player ID stored:', id);
+    // console.log('Player ID stored:', id);
   }
 
   getPlayerId(): string | null {
@@ -302,7 +305,7 @@ export class WebSocketService {
   // Set pending room rejoin for page reload scenario
   setPendingRoomRejoin(roomId: number, playerName: string) {
     this.pendingRoomRejoin = { roomId, playerName };
-    console.log('🔔 Pending room rejoin set:', { roomId, playerName });
+    // console.log('🔔 Pending room rejoin set:', { roomId, playerName });
   }
 }
 

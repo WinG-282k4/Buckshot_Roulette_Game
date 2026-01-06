@@ -141,6 +141,80 @@ export default function GuidePage() {
           }}
           onScroll={handleScroll}
         >
+          {/* Section 0: Giới thiệu Trang Guide */}
+          <section style={{ marginBottom: '50px' }}>
+            <div style={{
+              background: 'linear-gradient(135deg, rgba(147, 51, 234, 0.15) 0%, rgba(59, 130, 246, 0.15) 100%)',
+              border: '2px solid #7c3aed',
+              borderRadius: '16px',
+              padding: '40px',
+              marginBottom: '30px',
+              textAlign: 'center'
+            }}>
+              <h2 style={{
+                fontSize: '34px',
+                fontWeight: 'bold',
+                color: '#a78bfa',
+                marginBottom: '20px',
+                letterSpacing: '1px'
+              }}>
+                🎮 Chào Mừng Đến Buckshot Roulette
+              </h2>
+              <p style={{
+                fontSize: '18px',
+                color: '#e5e7eb',
+                marginBottom: '20px',
+                lineHeight: '1.8'
+              }}>
+                Trang hướng dẫn này sẽ giúp bạn hiểu rõ về luật chơi, cách sử dụng các vật phẩm, và những mẹo chiến lược để chiến thắng.
+                Hãy đọc kỹ từng phần để trở thành một người chơi thực thụ!
+              </p>
+
+              {/* Note about resolution */}
+              <div style={{
+                background: 'linear-gradient(135deg, rgba(251, 146, 60, 0.2) 0%, rgba(239, 68, 68, 0.2) 100%)',
+                border: '2px solid #fb923c',
+                borderRadius: '12px',
+                padding: '20px',
+                marginTop: '25px',
+                textAlign: 'left'
+              }}>
+                <p style={{
+                  fontSize: '16px',
+                  color: '#fbbf24',
+                  fontWeight: 'bold',
+                  marginBottom: '10px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px'
+                }}>
+                  📌 LƯU Ý QUAN TRỌNG:
+                </p>
+                <p style={{
+                  fontSize: '15px',
+                  color: '#fed7aa',
+                  marginBottom: '8px',
+                  lineHeight: '1.6'
+                }}>
+                  Nếu độ phân giải màn hình của bạn nhỏ hơn <strong>2K (2560x1440)</strong>, hãy
+                  <strong style={{ color: '#fbbf24' }}> giảm tỷ lệ zoom xuống 80%</strong> trên trình duyệt để có trải nghiệm giao diện tốt nhất.
+                  Bạn có thể sử dụng các phím tắt sau:
+                </p>
+                <ul style={{
+                  fontSize: '14px',
+                  color: '#fcd34d',
+                  marginLeft: '20px',
+                  marginTop: '10px',
+                  marginBottom: '0'
+                }}>
+                  <li><strong>Windows/Linux:</strong> Ctrl + Minus (−) hoặc Ctrl + Wheel Down</li>
+                  <li><strong>Mac:</strong> Cmd + Minus (−) hoặc Cmd + Wheel Down</li>
+                  <li><strong>Reset zoom:</strong> Ctrl + 0 (Windows/Linux) hoặc Cmd + 0 (Mac)</li>
+                </ul>
+              </div>
+            </div>
+          </section>
+
           {/* Section 1: Giới thiệu */}
           <section style={{ marginBottom: '40px' }}>
             <h2 style={{
