@@ -40,6 +40,7 @@
   overflow: hidden;
   background-size: cover;
   background-position: center;
+  animation: shakeJump 1s ease-out, flash 1s ease-out;
 }
 
 /* ========== NOTIFY ACTION TEXT - Action title text ========== */
@@ -53,7 +54,7 @@
   font-family: Inter;
   font-weight: 400;
   word-wrap: break-word;
-  animation: fadeIn 0.6s ease-out;
+  animation: fadeIn 0.6s ease-out 1s backwards;
 }
 
 /* ========== DYNAMIC ACTION STRUCTURE - Main content container ========== */
@@ -65,7 +66,7 @@
   position: absolute;
   background: transparent;
   overflow: visible;
-  animation: slideIn 0.4s ease-out;
+  animation: slideIn 0.4s ease-out 1s backwards;
 }
 
 /* ========== AVATAR LEFT - Pattern 1 left side avatar ========== */
@@ -223,3 +224,64 @@
     opacity: 1;
   }
 }
+
+@keyframes rotate-shake {
+  0% {
+    transform: rotate(0deg);
+  }
+  10% {
+    transform: rotate(0.5deg);
+  }
+  20% {
+    transform: rotate(0deg);
+  }
+  35% {
+    transform: rotate(0.5deg);
+  }
+  50% {
+    transform: rotate(0deg);
+  }
+  65% {
+    transform: rotate(0.5deg);
+  }
+  100% {
+    transform: rotate(0deg);
+  }
+}
+
+@keyframes shakeJump {
+  0% {
+    transform: rotate(0deg) translateY(0);
+  }
+  15% {
+    transform: rotate(10deg) translateY(-10px);
+  }
+  30% {
+    transform: rotate(0deg) translateY(0);
+  }
+  45% {
+    transform: rotate(-10deg) translateY(10px);
+  }
+  60% {
+    transform: rotate(0deg) translateY(0);
+  }
+  75% {
+    transform: rotate(10deg) translateY(-10px);
+  }
+  100% {
+    transform: rotate(0deg) translateY(0);
+  }
+}
+
+@keyframes flash {
+  0%, 100% {
+    opacity: 1;
+  }
+  20% {
+    opacity: 0.3;
+  }
+  30% {
+    opacity: 1;
+  }
+}
+

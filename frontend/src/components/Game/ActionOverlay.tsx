@@ -28,6 +28,13 @@ import gun2dImg from '../../assets/img/Gun/gun2d(no bg).png';
 // Avatars
 import purpleAvatarImg from '../../assets/img/avatar/purple.png';
 
+// Audio files
+import fireEventAudio from '../../assets/audio/fire event.mp3';
+import hitRealAudio from '../../assets/audio/hit real.mp3';
+import hitFakeAudio from '../../assets/audio/hit fake.mp3';
+import useItemAudio from '../../assets/audio/use-item.mp3';
+import useGlassAudio from '../../assets/audio/use glass.mp3';
+
 interface Player {
   ID: string;
   name: string;
@@ -254,10 +261,110 @@ const ActionOverlay: React.FC<ActionOverlayProps> = ({
 }) => {
   const [fadeOut, setFadeOut] = useState(false);
 
+  // Helper function to check if action is a use item action
+  const isUseItemAction = (type?: string): boolean => {
+    return type ? type.startsWith('use') : false;
+  };
+
   // Reset fadeOut when isVisible changes
   React.useEffect(() => {
     setFadeOut(false);
   }, [isVisible]);
+
+  // Play use glass audio IMMEDIATELY - highest priority
+  React.useEffect(() => {
+    if (!isVisible || actionType !== 'use glass') return;
+
+    // Create and play audio immediately without delay
+    const audio = new Audio(useGlassAudio);
+    audio.volume = 1;
+    audio.currentTime = 0;
+
+    // Play audio and handle autoplay policy
+    const playPromise = audio.play();
+    if (playPromise !== undefined) {
+      playPromise.catch(err => console.error('Error playing use glass audio:', err));
+    }
+
+    // Stop after 3 seconds
+    const stopTimer = setTimeout(() => {
+      audio.pause();
+      audio.currentTime = 0;
+    }, 3000);
+
+    return () => clearTimeout(stopTimer);
+  }, [isVisible, actionType]);
+
+  // Play other use item audio (beer, bullet, chainsaw, medicine)
+  React.useEffect(() => {
+    if (!isVisible || !actionType) return;
+    if (!actionType.startsWith('use') || actionType === 'use glass') return;
+
+    // Play use item audio immediately
+    const audio = new Audio(useItemAudio);
+    audio.volume = 1;
+    audio.currentTime = 0;
+
+    // Play audio and handle autoplay policy
+    const playPromise = audio.play();
+    if (playPromise !== undefined) {
+      playPromise.catch(err => console.error('Error playing use item audio:', err));
+    }
+
+    // Stop after 3 seconds
+    const stopTimer = setTimeout(() => {
+      audio.pause();
+      audio.currentTime = 0;
+    }, 3000);
+
+    return () => clearTimeout(stopTimer);
+  }, [isVisible, actionType]);
+
+  // Play fire/attack audio with delays
+  React.useEffect(() => {
+    if (!isVisible || !actionType) return;
+    if (actionType.startsWith('use')) return; // Skip use item actions
+
+    // Check if this is a fire action or attack action
+    const isFireAction = actionType.startsWith('fire yourseft');
+    const isAttackAction = actionType.startsWith('attack');
+
+    const playAudio = (audioSrc: string, delay: number = 0, duration: number | null = null) => {
+      const timer = setTimeout(() => {
+        const audio = new Audio(audioSrc);
+        audio.volume = 1;
+        audio.currentTime = 0;
+        audio.play().catch(err => console.error('Error playing audio:', err));
+
+        // Stop after duration if specified
+        if (duration !== null) {
+          setTimeout(() => {
+            audio.pause();
+            audio.currentTime = 0;
+          }, duration);
+        }
+      }, delay);
+
+      return timer;
+    };
+
+    if (isFireAction || isAttackAction) {
+      // Play fire event audio immediately
+      const fireTimer = playAudio(fireEventAudio, 0, 3000);
+
+      // Play hit audio after 1 second
+      const hitTimer = setTimeout(() => {
+        const isReal = actionType.includes('real');
+        const hitAudio = isReal ? hitRealAudio : hitFakeAudio;
+        playAudio(hitAudio, 0, 1000);
+      }, 1000);
+
+      return () => {
+        clearTimeout(fireTimer);
+        clearTimeout(hitTimer);
+      };
+    }
+  }, [isVisible, actionType]);
 
   const handleClose = () => {
     setFadeOut(true);
@@ -313,6 +420,7 @@ const ActionOverlay: React.FC<ActionOverlayProps> = ({
 
   return (
     <div className={`overlay-wrapper ${fadeOut ? 'fade-out' : ''}`}>
+
       {/* Overlay Container */}
       <div className="overlay-container">
         {/* Background Layer */}
