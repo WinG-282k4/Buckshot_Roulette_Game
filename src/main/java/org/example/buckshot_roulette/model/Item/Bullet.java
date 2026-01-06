@@ -14,7 +14,7 @@ public class Bullet extends  Item {
         context.getGun().Randomadd();
         return ActionResult.builder()
                 .isSuccess(true)
-                .message("You used a Bullet. A random bullet has been added to the gun.")
+                .message(context.getArtor().getName() + " used Bullet")
                 .build();
     }
 }

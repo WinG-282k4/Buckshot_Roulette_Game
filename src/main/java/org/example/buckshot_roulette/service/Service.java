@@ -43,6 +43,7 @@ public class Service {
         }
 
         tempRoom.setTurnOrder();
+        tempRoom.setIsSoloMode(false);
 
         int PlayerCount = tempRoom.getPlayers().size();
         tempRoom.getGun().reload(PlayerCount);
@@ -319,7 +320,25 @@ public class Service {
         Room tempRoom = getRoom(roomid);
         Player tempPlayer = tempRoom.getPlayer(playerid);
 
-        return tempRoom.getTurnOrder().peek() == tempPlayer;
+        Boolean result = false;
+
+        //Check tunroder om solo mode or not
+        if (tempRoom.getIsSoloMode()) {
+
+            //Check solo turn order to get currrent turn
+            assert tempRoom.getSoloTurnOrder().peek() != null;
+            if(tempRoom.getSoloTurnOrder().peek().getId().equals(playerid)){
+                result = true;
+            }
+        }else {
+
+            //if not, check normal turn order
+            assert tempRoom.getTurnOrder().peek() != null;
+            if (tempRoom.getTurnOrder().peek().getId().equals(playerid)) {
+                result = true;
+            }
+        }
+        return result;
     }
 
     public List<RoomLoby> getAnyRoom(int pageNumber) {

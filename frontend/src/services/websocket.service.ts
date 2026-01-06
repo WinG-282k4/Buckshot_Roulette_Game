@@ -10,6 +10,8 @@ export class WebSocketService {
   private lastJoinRoomId: number | null = null;  // Track last join to prevent duplicates
   private lastJoinPlayerName: string | null = null;
   private roomSubscription: any = null;  // Track current room subscription
+  private lastMessageTime: number = 0;  // Track last message time
+  private messageTimeoutId: NodeJS.Timeout | null = null;  // Track timeout ID for clearing
 
   // Callbacks
   private onRoomUpdateCallback: ((data: RoomStatusResponse) => void) | null = null;
@@ -77,6 +79,47 @@ export class WebSocketService {
     if (this.client?.active) {
       this.client.deactivate();
     }
+    this.clearMessageTimeout();
+  }
+
+  // Start/reset 20-second timeout to detect missing messages
+  private startMessageTimeout() {
+    // Clear previous timeout
+    this.clearMessageTimeout();
+
+    this.lastMessageTime = Date.now();
+
+    // Set new timeout - if no message in 20 seconds, fetch and reconnect
+    this.messageTimeoutId = setTimeout(() => {
+      console.warn('⚠️ No WebSocket message received for 20 seconds');
+      console.log('🔄 Attempting to fetch room status and reconnect...');
+
+      if (this.roomId) {
+        // Fetch latest room status
+        this.fetchRoomStatus(this.roomId).then(() => {
+          console.log('✅ Room status updated');
+        }).catch(() => {
+          console.error('❌ Failed to fetch room status');
+        });
+
+        // Try to reconnect WebSocket
+        if (this.client && !this.client.connected) {
+          console.log('🔌 Reconnecting WebSocket...');
+          this.client.activate();
+        }
+      }
+
+      // Restart timeout for next check
+      this.startMessageTimeout();
+    }, 20000);  // 20 seconds
+  }
+
+  // Clear message timeout
+  private clearMessageTimeout() {
+    if (this.messageTimeoutId) {
+      clearTimeout(this.messageTimeoutId);
+      this.messageTimeoutId = null;
+    }
   }
 
   // Join room and subscribe to updates
@@ -104,10 +147,16 @@ export class WebSocketService {
 
     this.roomId = roomId;
 
+    // Start message timeout to detect disconnections
+    this.startMessageTimeout();
+
     // Subscribe to room updates
     this.roomSubscription = this.client.subscribe(`/topic/room/${roomId}`, (message: IMessage) => {
       const data = JSON.parse(message.body);
       console.log('📨 Room update received:', data);
+
+      // Reset timeout on every message received
+      this.startMessageTimeout();
 
       // Handle RoomStatusResponse (from join success or game actions)
       if (data.status || data.roomid !== undefined || data.players) {

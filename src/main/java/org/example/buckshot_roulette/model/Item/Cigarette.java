@@ -15,7 +15,7 @@ public class Cigarette extends Item {
         context.getArtor().heal();
         return ActionResult.builder()
                 .isSuccess(true)
-                .message("You used a Cigarette. Your health has been increased by 1.")
+                .message(context.getArtor().getName() + " used a Cigarette. " + context.getArtor().getName() + " health has been increased by 1.")
                 .build();
     }
 }

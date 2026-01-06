@@ -19,6 +19,7 @@ export default function GameBoard() {
     actionType: string;
     actor: any;
     target: any;
+    message?: string;
   } | null>(null);
   const [lastProcessedActionId, setLastProcessedActionId] = useState<string | null>(null);
 
@@ -109,6 +110,7 @@ export default function GameBoard() {
         actionType: mappedAction,
         actor,
         target: targetPlayer || null,
+        message: roomStatus?.message,  // Include message from roomStatus
       });
       setShowActionOverlay(true);
     } else {
@@ -385,6 +387,7 @@ export default function GameBoard() {
             actionType={overlayData.actionType}
             actor={overlayData.actor}
             target={overlayData.target}
+            message={overlayData.message}
             isVisible={showActionOverlay}
             onAnimationComplete={() => {
               setShowActionOverlay(false);

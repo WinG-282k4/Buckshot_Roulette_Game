@@ -45,6 +45,7 @@
 
 /* ========== NOTIFY ACTION TEXT - Action title text ========== */
 .notify-action-text {
+  width: 1600px;
   left: 50%;
   transform: translateX(-50%);
   top: 140px;
@@ -53,6 +54,7 @@
   font-size: 60px;
   font-family: Inter;
   font-weight: 400;
+  text-align: center;
   word-wrap: break-word;
   animation: fadeIn 0.6s ease-out 1s backwards;
 }

@@ -17,13 +17,13 @@ public class Handcuffs extends Item {
         if (Objects.equals(context.getArtor().getId(), context.getTarget().getId())) {
             return ActionResult.builder()
                     .isSuccess(false)
-                    .message("You cannot handcuff yourself.")
+                    .message(context.getArtor().getName() + " cannot handcuff yourself.")
                     .build();
         }
         context.getTarget().setHandcuffed(true);
         return ActionResult.builder()
                 .isSuccess(true)
-                .message("You used Handcuffs on " + context.getTarget().getName() + ". They are now handcuffed.")
+                .message( context.getArtor() .getName() +" used Handcuffs on " + context.getTarget().getName() + ". " + context.getTarget().getName() +" is now handcuffed.")
                 .build();
     }
 }

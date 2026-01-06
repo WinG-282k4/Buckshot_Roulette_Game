@@ -14,7 +14,7 @@ public class Beer extends  Item {
         context.getGun().eject();
         return ActionResult.builder()
                 .isSuccess(true)
-                .message("You used a Beer. The next bullet has been ejected from the gun.")
+                .message(context.getArtor().getName() + " used Beer")
                 .build();
     }
 }

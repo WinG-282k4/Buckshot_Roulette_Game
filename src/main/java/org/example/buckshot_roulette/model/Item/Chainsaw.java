@@ -14,7 +14,7 @@ public class Chainsaw extends Item {
         context.getGun().setdoubledmg();
         return ActionResult.builder()
                 .isSuccess(true)
-                .message("You used a Chainsaw. Your next shot will deal double damage.")
+                .message(context.getArtor().getName() + " used Chainsaw")
                 .build();
     }
 }

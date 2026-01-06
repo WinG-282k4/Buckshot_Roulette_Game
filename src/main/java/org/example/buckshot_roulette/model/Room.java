@@ -36,10 +36,16 @@ public class Room implements IRoomAction {
     //Method
     @Override
     public void setSoloMode(boolean isSolo, String playerIdActor, String playerTargetId) {
+
+        //chech if playerIdActor equals playerTargetId
         if (Objects.equals(playerIdActor, playerTargetId)) {
             throw new IllegalArgumentException("Can not solo against yourself");
         }
 
+        //end action of current turn order
+        this.endAction();
+
+        //Logic set solo mode and turn order for solo mode
         this.isSoloMode = isSolo;
         this.SoloTurnOrder = new LinkedList<Player>();
         for (Player p : this.turnOrder) {
@@ -48,6 +54,14 @@ public class Room implements IRoomAction {
                 this.SoloTurnOrder.add(p);
             }
         }
+
+        //Check an actor must be first in solo turn order
+        Player firstPlayer = this.SoloTurnOrder.peek();
+        if (firstPlayer != null && !Objects.equals(firstPlayer.getId(), playerIdActor)) {
+            Player pollplayer = this.SoloTurnOrder.poll();
+            this.SoloTurnOrder.add(pollplayer);
+        }
+
     }
 
     //Create turn order

@@ -47,6 +47,7 @@ interface ActionOverlayProps {
   actionType?: string;
   actor?: Player | null;
   target?: Player | null;
+  message?: string;
   isVisible: boolean;
   onAnimationComplete?: () => void;
 }
@@ -257,6 +258,7 @@ const ActionOverlay: React.FC<ActionOverlayProps> = ({
   actionType,
   actor,
   target,
+  message,
   isVisible,
   onAnimationComplete,
 }) => {
@@ -482,9 +484,9 @@ const ActionOverlay: React.FC<ActionOverlayProps> = ({
             backgroundImage: `url(${backgroundEventImg})`,
           }}
         >
-          {/* Notify Action Text */}
+          {/* Notify Action Text - Show for all actions */}
           <div className="notify-action-text">
-            {config.notifyText}
+            {message || config.notifyText}
           </div>
         </div>
 

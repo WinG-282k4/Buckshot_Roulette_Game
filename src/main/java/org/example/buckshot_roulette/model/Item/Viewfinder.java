@@ -18,7 +18,7 @@ public class Viewfinder extends Item{
         if(Objects.equals(context.getArtor().getId(), context.getTarget().getId())){
             return ActionResult.builder()
                     .isSuccess(false)
-                    .message("You cannot activate solo mode with yourself.")
+                    .message(context.getArtor().getName() + " cannot activate solo mode with yourself.")
                     .build();
         }
         context.getRoom().setSoloMode(true, context.getArtor().getId(), context.getTarget().getId());
@@ -26,7 +26,7 @@ public class Viewfinder extends Item{
         System.out.println("You have activated solo mode between " + context.getArtor().getName() + " and " + context.getTarget().getName() + ".");
         return ActionResult.builder()
                 .isSuccess(true)
-                .message("You used Viewfinder to activate solo mode between " + context.getArtor().getName() + " and " + context.getTarget().getName() + ".")
+                .message( context.getArtor() .getName() +" activated Solo Mode with " + context.getTarget().getName() + ".")
                 .build();
     }
 }
