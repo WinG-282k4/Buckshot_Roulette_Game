@@ -14,6 +14,7 @@ import java.util.stream.Collectors;
 public class RoomStatusResponse {
     private String status;
     private String message;  // Thông báo chung trong phòng
+    private String ownerid;
     private int roomid;
     private int[] gun;
     private List<PlayerResponseDTO> players;
@@ -32,6 +33,7 @@ public class RoomStatusResponse {
             List<Player> playerList,
             Player nextPlayer,
             Boolean isSoloMode,
+            String ownerid,
             ActionResponse actionResponse) {
 
         List<PlayerResponseDTO> playerDTOs = playerList.stream()
@@ -48,6 +50,7 @@ public class RoomStatusResponse {
                 .players(playerDTOs)
                 .nextPlayer(nextPlayerDTO)
                 .isSoloMode(isSoloMode)
+                .ownerid(ownerid)
                 .actionResponse(actionResponse)
                 .build();
     }

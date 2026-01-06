@@ -56,7 +56,7 @@ public class roomController {
             return ResponseEntity.badRequest().body("Player is already in a room");
         }
         logger.info("Received API: POST /api/createroom");
-        int roomid = service.CreaterRoom();
+        int roomid = service.CreaterRoom(player.getId());
         return ResponseEntity.ok("Room created with ID: " + roomid);
     }
 

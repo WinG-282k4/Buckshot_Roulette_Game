@@ -8,6 +8,7 @@ export interface RoomStatusResponse {
   players: Player[];
   nextPlayer: Player | null;
   isSoloMode: boolean;
+  ownerid?: string;  // ID của chủ phòng
   actionResponse: ActionResponse | null;
 }
 

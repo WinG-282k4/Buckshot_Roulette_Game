@@ -1,6 +1,7 @@
 package org.example.buckshot_roulette.controller;
 
 import org.example.buckshot_roulette.dto.ActionResponse;
+import org.example.buckshot_roulette.dto.ActionResult;
 import org.example.buckshot_roulette.dto.RoomStatusResponse;
 import org.example.buckshot_roulette.dto.itemRequest;
 import org.example.buckshot_roulette.model.Player;
@@ -33,11 +34,20 @@ public class gameController {
 
     @MessageMapping("/room/{roomid}/startgame")
     public void StartGame(
-            @DestinationVariable String roomid
+            @DestinationVariable String roomid,
+            SimpMessageHeaderAccessor headerAccessor
     ){
+        Player player = (Player) Objects.requireNonNull(headerAccessor.getSessionAttributes()).get("player");
         logger.info("Received API: POST /app/room/{}/startgame", roomid);
         //Call server to handle logic
-        RoomStatusResponse room = service.StartGame(Integer.parseInt(roomid));
+        ActionResult result = service.StartGame(Integer.parseInt(roomid), player.getId());
+
+        if (!result.getIsSuccess()) {
+            logger.info("Start game failed: {}", result.getMessage());
+            return;
+        }
+
+        RoomStatusResponse room = service.getRoom(Integer.parseInt(roomid)).toRoomStatus(result.getMessage());
 
         //Build action response to notify
         room.setActionResponse(ActionResponse.builder()

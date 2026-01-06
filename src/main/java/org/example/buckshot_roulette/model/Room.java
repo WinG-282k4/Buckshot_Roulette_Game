@@ -23,9 +23,11 @@ public class Room implements IRoomAction {
     private Queue<Player> SoloTurnOrder;
     private Gun gun;
     private Boolean isSoloMode;
+    private String ownerid;
 
-    public Room(int ID) {
+    public Room(int ID, String ownerid) {
         this.ID = ID;
+        this.ownerid = ownerid;
         this.isSoloMode = false;
         this.players = new LinkedList<Player>();
         this.gun = new Gun();
@@ -212,6 +214,7 @@ public class Room implements IRoomAction {
                 this.getPlayers(),
                 nextPlayer,
                 this.getIsSoloMode(),
+                this.getOwnerid(),
                 null
         );
     }

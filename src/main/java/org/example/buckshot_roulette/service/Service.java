@@ -35,8 +35,16 @@ public class Service {
     }
 
     //Start Game
-    public RoomStatusResponse StartGame(int roomid){
+    public ActionResult StartGame(int roomid, String playerid){
         Room tempRoom = getRoom(roomid);
+
+        if (!tempRoom.getOwnerid().equals(playerid)) {
+            return ActionResult.builder()
+                    .isSuccess(false)
+                    .message("Only the room owner can start the game")
+                    .data(null)
+                    .build();
+        }
 
         if(tempRoom == null){
             throw new IllegalArgumentException("Room not found");
@@ -57,14 +65,18 @@ public class Service {
         System.out.println("Room infor at start game:");
         tempRoom.Print();
 
-        return tempRoom.toRoomStatus("Game has started!");
+        return ActionResult.builder()
+                .isSuccess(true)
+                .message("Game started successfully")
+                .data(roomid)
+                .build();
     }
 
     //Create new Room
-    public int CreaterRoom(){
+    public int CreaterRoom(String ownerid){
         int random = ThreadLocalRandom.current().nextInt(0,999);
         int NewRoomID = rooms.size()*1000 + random; //RandomID
-        Room room = new Room(NewRoomID);
+        Room room = new Room(NewRoomID, ownerid);
         rooms.add(room);
         return room.getID();
     }

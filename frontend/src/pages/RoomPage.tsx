@@ -18,7 +18,7 @@ export default function RoomPage() {
   const [isViewer, setIsViewer] = useState(false);
   const [selectedAvatar, setSelectedAvatar] = useState('purple');
   const [isLeavingRoom, setIsLeavingRoom] = useState(false);
-  const { roomStatus, setRoomStatus, setCurrentPlayer, clearRoom } = useGameStore();
+  const { roomStatus, setRoomStatus, setCurrentPlayer, clearRoom, currentPlayer } = useGameStore();
 
   // Ref to prevent duplicate WebSocket connections
   const wsConnectionSetupRef = useRef(false);
@@ -318,7 +318,7 @@ export default function RoomPage() {
             </h2>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
-              {roomStatus?.players.map((player, index) => (
+              {roomStatus?.players.map((player) => (
                 <div
                   key={player.ID}
                   style={{
@@ -376,7 +376,7 @@ export default function RoomPage() {
                       ● Đã sẵn sàng
                     </div>
                   </div>
-                  {index === 0 && (
+                  {player.ID === roomStatus?.ownerid && (
                     <div style={{
                       background: '#fbbf24',
                       color: '#000',
@@ -427,28 +427,28 @@ export default function RoomPage() {
           {/* Start Button */}
           <button
             onClick={() => wsService.startGame()}
-            disabled={!roomStatus || roomStatus.players.length < 2 || isViewer}
+            disabled={!roomStatus || roomStatus.players.length < 2 || isViewer || (currentPlayer && roomStatus.ownerid !== currentPlayer.ID) ? true : false}
             style={{
               width: '100%',
               padding: '20px',
-              background: (roomStatus && roomStatus.players.length >= 2 && !isViewer) ? '#22c55e' : '#4b5563',
+              background: (roomStatus && roomStatus.players.length >= 2 && !isViewer && currentPlayer && roomStatus.ownerid === currentPlayer.ID) ? '#22c55e' : '#4b5563',
               color: 'white',
               border: 'none',
               borderRadius: '12px',
               fontSize: '24px',
               fontWeight: 'bold',
-              cursor: (roomStatus && roomStatus.players.length >= 2 && !isViewer) ? 'pointer' : 'not-allowed',
+              cursor: (roomStatus && roomStatus.players.length >= 2 && !isViewer && currentPlayer && roomStatus.ownerid === currentPlayer.ID) ? 'pointer' : 'not-allowed',
               transition: 'all 0.3s',
               marginBottom: '20px'
             }}
             onMouseEnter={(e) => {
-              if (roomStatus && roomStatus.players.length >= 2 && !isViewer) {
+              if (roomStatus && roomStatus.players.length >= 2 && !isViewer && currentPlayer && roomStatus.ownerid === currentPlayer.ID) {
                 e.currentTarget.style.background = '#16a34a';
                 e.currentTarget.style.transform = 'translateY(-3px)';
               }
             }}
             onMouseLeave={(e) => {
-              if (roomStatus && roomStatus.players.length >= 2 && !isViewer) {
+              if (roomStatus && roomStatus.players.length >= 2 && !isViewer && currentPlayer && roomStatus.ownerid === currentPlayer.ID) {
                 e.currentTarget.style.background = '#22c55e';
                 e.currentTarget.style.transform = 'translateY(0)';
               }
@@ -456,17 +456,21 @@ export default function RoomPage() {
           >
             {isViewer ? (
               <>📺 BẠN LÀ VIEWER</>
-            ) : roomStatus && roomStatus.players.length >= 2 ? (
-              <>🎮 BẮT ĐẦU GAME</>
+            ) : currentPlayer && roomStatus && roomStatus.ownerid === currentPlayer.ID ? (
+              roomStatus.players.length >= 2 ? (
+                <>🎮 BẮT ĐẦU GAME</>
+              ) : (
+                <>⏳ CHỜ NGƯỜI CHƠI</>
+              )
             ) : (
-              <>⏳ CHỜ NGƯỜI CHƠI</>
+              <>⏳ ĐỢI CHỦ PHÒNG BẮT ĐẦU GAME</>
             )}
           </button>
 
           {/* Back button */}
           <button
             onClick={handleLeaveRoom}
-            disabled={isLeavingRoom || (roomStatus && roomStatus.status === 'Playing')}
+            disabled={isLeavingRoom || (roomStatus && roomStatus.status === 'Playing') ? true : false}
             style={{
               width: '100%',
               padding: '14px',
