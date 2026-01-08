@@ -1,6 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import { useState } from 'react';
 import { useGameStore } from '../stores/gameStore';
+import { API_BASE_URL } from '../config/api.config';
 import backgroundImage from '../assets/img/background/background main v2.png';
 
 export default function HomePage() {
@@ -20,8 +21,7 @@ export default function HomePage() {
 
     setIsLoading(true);
     try {
-      const backendUrl = `http://${window.location.hostname}:8080`;
-      const response = await fetch(`${backendUrl}/user/create/${encodeURIComponent(playerName)}`, {
+      const response = await fetch(`${API_BASE_URL}/user/create/${encodeURIComponent(playerName)}`, {
         method: 'POST',
         credentials: 'include'
       });

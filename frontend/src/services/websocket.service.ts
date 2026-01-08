@@ -1,6 +1,7 @@
 import { Client, IMessage, IFrame } from '@stomp/stompjs';
 import SockJS from 'sockjs-client';
 import { RoomStatusResponse } from '../types/room.types';
+import { API_BASE_URL } from '../config/api.config';
 
 export class WebSocketService {
   private client: Client | null = null;
@@ -11,7 +12,7 @@ export class WebSocketService {
   private lastJoinPlayerName: string | null = null;
   private roomSubscription: any = null;  // Track current room subscription
   private lastMessageTime: number = 0;  // Track last message time
-  private messageTimeoutId: NodeJS.Timeout | null = null;  // Track timeout ID for clearing
+  private messageTimeoutId: number | null = null;  // Track timeout ID for clearing
 
   // Callbacks
   private onRoomUpdateCallback: ((data: RoomStatusResponse) => void) | null = null;
@@ -21,6 +22,10 @@ export class WebSocketService {
   constructor(serverUrl?: string) {
     // Auto-detect backend URL từ frontend hostname
     const backendUrl = serverUrl || (() => {
+      // Check for env variable first (Docker mode)
+      if (import.meta.env.VITE_BACKEND_URL) {
+        return import.meta.env.VITE_BACKEND_URL;
+      }
       // Lấy hostname hiện tại (có thể là localhost, 192.168.153.1, etc.)
       const hostname = window.location.hostname;
       // Nếu là localhost/127.0.0.1, dùng localhost (dev mode)
@@ -32,39 +37,41 @@ export class WebSocketService {
 
     this.client = new Client({
       webSocketFactory: () => new SockJS(`${backendUrl}/ws-game`),
-      debug: (str) => console.log('[STOMP]', str),
+      debug: (str: string) => console.log('[STOMP]', str),
       reconnectDelay: 5000,
       heartbeatIncoming: 4000,
       heartbeatOutgoing: 4000,
     });
 
-    this.client.onConnect = () => {
-      console.log('✅ WebSocket connected!');
+    if (this.client) {
+      this.client.onConnect = () => {
+        console.log('✅ WebSocket connected!');
 
-      // Subscribe to leave result (ActionResult from leave request)
-      this.client.subscribe('/user/topic/leave-result', (message: IMessage) => {
-        const data = JSON.parse(message.body);
-        console.log('🚪 Leave result:', data);
-        (window as any).__lastLeaveResult = data;
-      });
+        // Subscribe to leave result (ActionResult from leave request)
+        this.client!.subscribe('/user/topic/leave-result', (message: IMessage) => {
+          const data = JSON.parse(message.body);
+          console.log('🚪 Leave result:', data);
+          (window as any).__lastLeaveResult = data;
+        });
 
-      // Auto-rejoin phòng nếu có pending rejoin (from page reload)
-      if (this.pendingRoomRejoin) {
-        console.log('🔄 Auto-rejoin phòng after reconnection:', this.pendingRoomRejoin);
-        const { roomId, playerName } = this.pendingRoomRejoin;
-        setTimeout(() => {
-          this.joinRoom(roomId, playerName);
-        }, 500);
-        this.pendingRoomRejoin = null; // Clear after rejoin
-      }
+        // Auto-rejoin phòng nếu có pending rejoin (from page reload)
+        if (this.pendingRoomRejoin) {
+          console.log('🔄 Auto-rejoin phòng after reconnection:', this.pendingRoomRejoin);
+          const { roomId, playerName } = this.pendingRoomRejoin;
+          setTimeout(() => {
+            this.joinRoom(roomId, playerName);
+          }, 500);
+          this.pendingRoomRejoin = null; // Clear after rejoin
+        }
 
-      this.onConnectCallback?.();
-    };
+        this.onConnectCallback?.();
+      };
 
-    this.client.onStompError = (frame: IFrame) => {
-      console.error('❌ STOMP error:', frame);
-      this.onErrorCallback?.(frame);
-    };
+      this.client.onStompError = (frame: IFrame) => {
+        console.error('❌ STOMP error:', frame);
+        this.onErrorCallback?.(frame);
+      };
+    }
   }
 
   // Connect to WebSocket
@@ -186,7 +193,7 @@ export class WebSocketService {
   // Fetch room status từ REST API
   public async fetchRoomStatus(roomId: number) {
     try {
-      const response = await fetch(`http://${window.location.hostname}:8080/api/rooms/${roomId}`, {
+      const response = await fetch(`${API_BASE_URL}/api/rooms/${roomId}`, {
         credentials: 'include'
       });
       if (response.ok) {

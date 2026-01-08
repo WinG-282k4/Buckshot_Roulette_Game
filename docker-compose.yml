@@ -1,0 +1,25 @@
+version: '3.8'
+
+services:
+  buckshot-app:
+    build: . 
+    container_name: buckshot_server
+    restart: on-failure
+    ports:
+      - "8080:8080"
+    environment:
+      - LOGGING_LEVEL_ORG_EXAMPLE_BUCKSHOT_ROULETTE=DEBUG
+      - SPRING_DEVTOOLS_RESTART_ENABLED=false
+      - SERVER_SERVLET_SESSION_TIMEOUT=30m
+      
+  frontend:
+    build: ./frontend
+    image: npthanh24/buckshot-frontend:latest
+    container_name: buckshot_frontend
+    restart: on-failure
+    ports:
+      - "3000:3000"
+    environment:
+      - VITE_BACKEND_URL=http://buckshot-app:8080
+    depends_on:
+      - buckshot-app

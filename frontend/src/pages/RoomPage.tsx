@@ -2,6 +2,7 @@ import { useEffect, useState, useRef } from 'react';
 import { useParams, useSearchParams, useNavigate } from 'react-router-dom';
 import { wsService } from '../services/websocket.service';
 import { useGameStore } from '../stores/gameStore';
+import { API_BASE_URL } from '../config/api.config';
 import GameBoard from '../components/Game/GameBoard';
 import { getColorFromAvatarUrl, AVATAR_MAP } from '../utils/avatarMap';
 
@@ -32,8 +33,7 @@ export default function RoomPage() {
     if (name === 'Anonymous') {
       const fetchPlayerName = async () => {
         try {
-          const backendUrl = `http://${window.location.hostname}:8080`;
-          const response = await fetch(`${backendUrl}/user/me`, {
+          const response = await fetch(`${API_BASE_URL}/user/me`, {
             method: 'POST',
             credentials: 'include'
           });

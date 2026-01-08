@@ -62,13 +62,8 @@ export default function GameBoard() {
       let actor = roomStatus.players?.find(p => p.ID === actorId);
       let targetPlayer = roomStatus.players?.find(p => p.ID === targetid);
 
-      // Convert avatar BEFORE rendering - set URLavatar properly
-      if (actor) {
-        actor.URLavatar = getAvatarUrl(actor.URLavatar);
-      }
-      if (targetPlayer) {
-        targetPlayer.URLavatar = getAvatarUrl(targetPlayer.URLavatar);
-      }
+      // Note: Do NOT modify player.URLavatar directly as it breaks the data model
+      // GameLayout will handle avatar URL conversion when rendering
 
       // Map backend action to ActionOverlay action type
       let mappedAction = action;
