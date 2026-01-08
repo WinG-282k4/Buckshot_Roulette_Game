@@ -1,6 +1,7 @@
 import { Client, IMessage, IFrame } from '@stomp/stompjs';
 import SockJS from 'sockjs-client';
 import { RoomStatusResponse } from '../types/room.types';
+import { API_BASE_URL } from '../config/api.config';
 
 export class WebSocketService {
   private client: Client | null = null;
@@ -21,6 +22,10 @@ export class WebSocketService {
   constructor(serverUrl?: string) {
     // Auto-detect backend URL từ frontend hostname
     const backendUrl = serverUrl || (() => {
+      // Check for env variable first (Docker mode)
+      if (import.meta.env.VITE_BACKEND_URL) {
+        return import.meta.env.VITE_BACKEND_URL;
+      }
       // Lấy hostname hiện tại (có thể là localhost, 192.168.153.1, etc.)
       const hostname = window.location.hostname;
       // Nếu là localhost/127.0.0.1, dùng localhost (dev mode)
@@ -186,7 +191,7 @@ export class WebSocketService {
   // Fetch room status từ REST API
   public async fetchRoomStatus(roomId: number) {
     try {
-      const response = await fetch(`http://${window.location.hostname}:8080/api/rooms/${roomId}`, {
+      const response = await fetch(`${API_BASE_URL}/api/rooms/${roomId}`, {
         credentials: 'include'
       });
       if (response.ok) {

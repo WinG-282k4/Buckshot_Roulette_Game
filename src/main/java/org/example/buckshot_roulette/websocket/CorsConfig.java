@@ -23,6 +23,8 @@ public class CorsConfig {
         config.addAllowedOriginPattern("http://192.168.153.1:*");
         config.addAllowedOriginPattern("http://192.168.31.86:*");
         config.addAllowedOriginPattern("http://*.168.*.1:*"); // Cho phép bất kỳ IP 192.168.*.1
+        config.addAllowedOriginPattern("http://buckshot_frontend:*"); // Docker container
+        config.addAllowedOriginPattern("*"); // Allow all for Docker internal network
 
         // Allow all headers
         config.addAllowedHeader("*");

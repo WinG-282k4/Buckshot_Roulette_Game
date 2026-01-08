@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
+import { API_BASE_URL } from '../config/api.config';
 import backgroundImage from '../assets/img/background/background main v2.png';
 
 // Avatar map for display
@@ -42,8 +43,7 @@ export default function LobbyPage() {
 
   const fetchRooms = async () => {
     try {
-      const backendUrl = `http://${window.location.hostname}:8080`;
-      const response = await fetch(`${backendUrl}/api/rooms/list/0`, {
+      const response = await fetch(`${API_BASE_URL}/api/rooms/list/0`, {
         credentials: 'include'
       });
 
@@ -65,8 +65,7 @@ export default function LobbyPage() {
 
   const handleCreateRoom = async () => {
     try {
-      const backendUrl = `http://${window.location.hostname}:8080`;
-      const response = await fetch(`${backendUrl}/api/createroom`, {
+      const response = await fetch(`${API_BASE_URL}/api/createroom`, {
         method: 'POST',
         credentials: 'include'
       });
@@ -93,8 +92,7 @@ export default function LobbyPage() {
   const handleUpdateAvatar = async () => {
     try {
       setIsUpdatingAvatar(true);
-      const backendUrl = `http://${window.location.hostname}:8080`;
-      const response = await fetch(`${backendUrl}/user/updateavatar/${tempSelectedAvatar}`, {
+      const response = await fetch(`${API_BASE_URL}/user/updateavatar/${tempSelectedAvatar}`, {
         method: 'POST',
         credentials: 'include'
       });
@@ -116,8 +114,7 @@ export default function LobbyPage() {
 
   const handleBack = async () => {
     try {
-      const backendUrl = `http://${window.location.hostname}:8080`;
-      const response = await fetch(`${backendUrl}/user/off`, {
+      const response = await fetch(`${API_BASE_URL}/user/off`, {
         method: 'POST',
         credentials: 'include'
       });
