@@ -20,7 +20,7 @@ function testSingleAction(actionType = 'use beer') {
         : 'Charlie',
       URLavatar: '/assets/img/avatar/blue.png'
     },
-    targetid: (actionType.includes('solo') || actionType.includes('handcuff') || actionType === 'attack fake' || (actionType === 'use chainsaw' && actionType !== 'use chainsaw (self)'))
+    targetid: (actionType.includes('solo') || actionType.includes('handcuff') || actionType === 'attack fake' || (actionType.includes('chainsaw') && actionType !== 'use chainsaw (self)'))
       ? 'test_target_1'
       : null,
   };
@@ -28,9 +28,9 @@ function testSingleAction(actionType = 'use beer') {
   // Update Zustand store
   try {
     // Method 1: Direct window reference
-    if (window.__gameStoreInstance) {
-      window.__gameStoreInstance.setRoomStatus({
-        ...window.__gameStoreInstance.roomStatus,
+    if ((window as any).__gameStoreInstance) {
+      (window as any).__gameStoreInstance.setRoomStatus({
+        ...(window as any).__gameStoreInstance.roomStatus,
         actionResponse: mockActionResponse
       });
       console.log('✅ Action triggered via window reference');

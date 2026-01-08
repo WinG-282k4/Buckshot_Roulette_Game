@@ -12,7 +12,7 @@ export class WebSocketService {
   private lastJoinPlayerName: string | null = null;
   private roomSubscription: any = null;  // Track current room subscription
   private lastMessageTime: number = 0;  // Track last message time
-  private messageTimeoutId: NodeJS.Timeout | null = null;  // Track timeout ID for clearing
+  private messageTimeoutId: number | null = null;  // Track timeout ID for clearing
 
   // Callbacks
   private onRoomUpdateCallback: ((data: RoomStatusResponse) => void) | null = null;
@@ -37,39 +37,41 @@ export class WebSocketService {
 
     this.client = new Client({
       webSocketFactory: () => new SockJS(`${backendUrl}/ws-game`),
-      debug: (str) => console.log('[STOMP]', str),
+      debug: (str: string) => console.log('[STOMP]', str),
       reconnectDelay: 5000,
       heartbeatIncoming: 4000,
       heartbeatOutgoing: 4000,
     });
 
-    this.client.onConnect = () => {
-      console.log('✅ WebSocket connected!');
+    if (this.client) {
+      this.client.onConnect = () => {
+        console.log('✅ WebSocket connected!');
 
-      // Subscribe to leave result (ActionResult from leave request)
-      this.client.subscribe('/user/topic/leave-result', (message: IMessage) => {
-        const data = JSON.parse(message.body);
-        console.log('🚪 Leave result:', data);
-        (window as any).__lastLeaveResult = data;
-      });
+        // Subscribe to leave result (ActionResult from leave request)
+        this.client!.subscribe('/user/topic/leave-result', (message: IMessage) => {
+          const data = JSON.parse(message.body);
+          console.log('🚪 Leave result:', data);
+          (window as any).__lastLeaveResult = data;
+        });
 
-      // Auto-rejoin phòng nếu có pending rejoin (from page reload)
-      if (this.pendingRoomRejoin) {
-        console.log('🔄 Auto-rejoin phòng after reconnection:', this.pendingRoomRejoin);
-        const { roomId, playerName } = this.pendingRoomRejoin;
-        setTimeout(() => {
-          this.joinRoom(roomId, playerName);
-        }, 500);
-        this.pendingRoomRejoin = null; // Clear after rejoin
-      }
+        // Auto-rejoin phòng nếu có pending rejoin (from page reload)
+        if (this.pendingRoomRejoin) {
+          console.log('🔄 Auto-rejoin phòng after reconnection:', this.pendingRoomRejoin);
+          const { roomId, playerName } = this.pendingRoomRejoin;
+          setTimeout(() => {
+            this.joinRoom(roomId, playerName);
+          }, 500);
+          this.pendingRoomRejoin = null; // Clear after rejoin
+        }
 
-      this.onConnectCallback?.();
-    };
+        this.onConnectCallback?.();
+      };
 
-    this.client.onStompError = (frame: IFrame) => {
-      console.error('❌ STOMP error:', frame);
-      this.onErrorCallback?.(frame);
-    };
+      this.client.onStompError = (frame: IFrame) => {
+        console.error('❌ STOMP error:', frame);
+        this.onErrorCallback?.(frame);
+      };
+    }
   }
 
   // Connect to WebSocket

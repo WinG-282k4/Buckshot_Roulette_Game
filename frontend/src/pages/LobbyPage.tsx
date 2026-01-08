@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { API_BASE_URL } from '../config/api.config';
 import backgroundImage from '../assets/img/background/background main v2.png';
@@ -220,8 +220,8 @@ export default function LobbyPage() {
                       cursor: 'pointer',
                       fontSize: '14px'
                     }}
-                    onMouseEnter={(e) => (e.currentTarget.style.background = '#4b5563')}
-                    onMouseLeave={(e) => (e.currentTarget.style.background = '#374151')}
+                    onMouseEnter={(e: React.MouseEvent<HTMLButtonElement>) => (e.currentTarget.style.background = '#4b5563')}
+                    onMouseLeave={(e: React.MouseEvent<HTMLButtonElement>) => (e.currentTarget.style.background = '#374151')}
                   >
                     🔄 Làm mới
                   </button>
@@ -250,7 +250,7 @@ export default function LobbyPage() {
                   </div>
                 ) : (
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
-                    {rooms.map((room) => (
+                    {rooms.map((room: Room) => (
                       <div
                         key={room.roomid}
                         style={{
@@ -263,11 +263,11 @@ export default function LobbyPage() {
                           alignItems: 'center',
                           transition: 'all 0.3s'
                         }}
-                        onMouseEnter={(e) => {
+                        onMouseEnter={(e: React.MouseEvent<HTMLDivElement>) => {
                           e.currentTarget.style.borderColor = '#ef4444';
                           e.currentTarget.style.transform = 'translateX(5px)';
                         }}
-                        onMouseLeave={(e) => {
+                        onMouseLeave={(e: React.MouseEvent<HTMLDivElement>) => {
                           e.currentTarget.style.borderColor = '#374151';
                           e.currentTarget.style.transform = 'translateX(0)';
                         }}
@@ -306,12 +306,12 @@ export default function LobbyPage() {
                             fontWeight: 'bold',
                             cursor: room.status === 'Waiting' ? 'pointer' : 'not-allowed'
                           }}
-                          onMouseEnter={(e) => {
+                          onMouseEnter={(e: React.MouseEvent<HTMLButtonElement>) => {
                             if (room.status === 'Waiting') {
                               e.currentTarget.style.background = '#2563eb';
                             }
                           }}
-                          onMouseLeave={(e) => {
+                          onMouseLeave={(e: React.MouseEvent<HTMLButtonElement>) => {
                             if (room.status === 'Waiting') {
                               e.currentTarget.style.background = '#3b82f6';
                             }
@@ -364,11 +364,11 @@ export default function LobbyPage() {
                     cursor: 'pointer',
                     transition: 'all 0.3s'
                   }}
-                  onMouseEnter={(e) => {
+                  onMouseEnter={(e: React.MouseEvent<HTMLButtonElement>) => {
                     e.currentTarget.style.background = '#b91c1c';
                     e.currentTarget.style.transform = 'translateY(-2px)';
                   }}
-                  onMouseLeave={(e) => {
+                  onMouseLeave={(e: React.MouseEvent<HTMLButtonElement>) => {
                     e.currentTarget.style.background = '#dc2626';
                     e.currentTarget.style.transform = 'translateY(0)';
                   }}
@@ -416,8 +416,8 @@ export default function LobbyPage() {
                     marginBottom: '15px',
                     boxSizing: 'border-box'
                   }}
-                  onFocus={(e) => (e.target.style.borderColor = '#3b82f6')}
-                  onBlur={(e) => (e.target.style.borderColor = '#374151')}
+                  onFocus={(e: React.FocusEvent<HTMLInputElement>) => (e.target.style.borderColor = '#3b82f6')}
+                  onBlur={(e: React.FocusEvent<HTMLInputElement>) => (e.target.style.borderColor = '#374151')}
                 />
                 <button
                   onClick={() => handleJoinRoom(roomIdInput)}
@@ -433,10 +433,10 @@ export default function LobbyPage() {
                     fontWeight: 'bold',
                     cursor: roomIdInput ? 'pointer' : 'not-allowed'
                   }}
-                  onMouseEnter={(e) => {
+                  onMouseEnter={(e: React.MouseEvent<HTMLButtonElement>) => {
                     if (roomIdInput) e.currentTarget.style.background = '#2563eb';
                   }}
-                  onMouseLeave={(e) => {
+                  onMouseLeave={(e: React.MouseEvent<HTMLButtonElement>) => {
                     if (roomIdInput) e.currentTarget.style.background = '#3b82f6';
                   }}
                 >
@@ -473,7 +473,7 @@ export default function LobbyPage() {
                     gap: '10px'
                   }}
                 >
-                  {avatarOptions.map((avatar) => (
+                  {avatarOptions.map((avatar: typeof avatarOptions[0]) => (
                     <button
                       key={avatar.key}
                       onClick={() => handleAvatarSelect(avatar.key)}
@@ -489,11 +489,11 @@ export default function LobbyPage() {
                         gap: '4px',
                         transition: 'all 0.2s'
                       }}
-                      onMouseEnter={(e) => {
+                      onMouseEnter={(e: React.MouseEvent<HTMLButtonElement>) => {
                         e.currentTarget.style.background = tempSelectedAvatar === avatar.key ? '#3b82f6' : '#374151';
                         e.currentTarget.style.transform = 'scale(1.05)';
                       }}
-                      onMouseLeave={(e) => {
+                      onMouseLeave={(e: React.MouseEvent<HTMLButtonElement>) => {
                         e.currentTarget.style.background = tempSelectedAvatar === avatar.key ? '#3b82f6' : '#1f2937';
                         e.currentTarget.style.transform = 'scale(1)';
                       }}
@@ -539,12 +539,12 @@ export default function LobbyPage() {
                     opacity: tempSelectedAvatar === selectedAvatar ? 0.6 : 1,
                     transition: 'all 0.2s'
                   }}
-                  onMouseEnter={(e) => {
+                  onMouseEnter={(e: React.MouseEvent<HTMLButtonElement>) => {
                     if (tempSelectedAvatar !== selectedAvatar && !isUpdatingAvatar) {
                       e.currentTarget.style.background = '#059669';
                     }
                   }}
-                  onMouseLeave={(e) => {
+                  onMouseLeave={(e: React.MouseEvent<HTMLButtonElement>) => {
                     if (tempSelectedAvatar !== selectedAvatar) {
                       e.currentTarget.style.background = '#10b981';
                     }
@@ -567,11 +567,11 @@ export default function LobbyPage() {
                   fontSize: '14px',
                   cursor: 'pointer'
                 }}
-                onMouseEnter={(e) => {
+                onMouseEnter={(e: React.MouseEvent<HTMLButtonElement>) => {
                   e.currentTarget.style.background = '#4b5563';
                   e.currentTarget.style.color = 'white';
                 }}
-                onMouseLeave={(e) => {
+                onMouseLeave={(e: React.MouseEvent<HTMLButtonElement>) => {
                   e.currentTarget.style.background = '#374151';
                   e.currentTarget.style.color = '#9ca3af';
                 }}
