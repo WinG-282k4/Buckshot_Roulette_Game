@@ -147,14 +147,15 @@ public class Room implements IRoomAction {
 
     //Get next player
     public Player getNextPlayer(){
-        if (this.turnOrder != null && !this.turnOrder.isEmpty()) {
-            return this.turnOrder.peek();
-        }
 
         if(this.isSoloMode){
             if (this.SoloTurnOrder != null && !this.SoloTurnOrder.isEmpty()){
                 return this.SoloTurnOrder.peek();
             }
+        }
+
+        if (this.turnOrder != null && !this.turnOrder.isEmpty()) {
+            return this.turnOrder.peek();
         }
 
         return null;
