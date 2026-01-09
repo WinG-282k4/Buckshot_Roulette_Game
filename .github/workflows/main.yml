@@ -7,6 +7,7 @@ on:
 jobs:
   build-and-push: # Đặt tên job
     runs-on: ubuntu-latest
+    environment: Docket hub
 
     steps:
     # --- PHẦN 1: GIỐNG HỆT CÁI BẠN GỬI (Để test code) ---
