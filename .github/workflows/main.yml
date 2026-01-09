@@ -39,4 +39,4 @@ jobs:
       with:
         context: .
         push: true
-        tags: wing2k4/buckshot_roulette_game:lastest
+        tags: wing2k4/buckshot_roulette_game:backend
