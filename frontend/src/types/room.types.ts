@@ -18,6 +18,6 @@ export interface ActionResponse {
   actorId?: string;
   targetid?: string;
   message?: string;
-  result?: any;
+  result?: Record<string, unknown>;
 }
 

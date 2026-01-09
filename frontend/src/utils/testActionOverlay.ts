@@ -28,8 +28,11 @@ function testSingleAction(actionType = 'use beer') {
   // Update Zustand store
   try {
     // Method 1: Direct window reference
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     if ((window as any).__gameStoreInstance) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (window as any).__gameStoreInstance.setRoomStatus({
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         ...(window as any).__gameStoreInstance.roomStatus,
         actionResponse: mockActionResponse
       });
@@ -49,6 +52,7 @@ function testSingleAction(actionType = 'use beer') {
  * TEST 2: Test All 11 Actions Sequentially
  * ==========================================
  */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function testAllActions() {
   const allActions = [
     // Pattern 1: Two-Sided
@@ -92,6 +96,7 @@ function testAllActions() {
  * TEST 3: Test with Target Player
  * ================================
  */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function testActionWithTarget(actionType = 'use solo') {
   console.log(`🎬 Testing: ${actionType} with target`);
 
@@ -113,6 +118,7 @@ function testActionWithTarget(actionType = 'use solo') {
  * TEST 4: Performance Test
  * ========================
  */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function testPerformance() {
   console.log('📊 Starting performance test...');
 
@@ -233,6 +239,7 @@ function testStoreIntegration() {
  * COMPREHENSIVE TEST SUITE
  * =========================
  */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function runFullTestSuite() {
   // console.clear();
   // console.log('🚀 ActionOverlay Full Test Suite\n');

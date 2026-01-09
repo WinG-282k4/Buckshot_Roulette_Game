@@ -6,8 +6,13 @@ import { useState, useEffect } from 'react';
 import GameLayout from './GameLayout';
 import ActionOverlay from './ActionOverlay';
 import { ActionOverlayTestPanel } from './ActionOverlayTestPanel';
-import { getColorFromAvatarUrl, AVATAR_MAP } from '../../utils/avatarMap';
-import purpleAvatarImg from '../../assets/img/avatar/purple.png';
+
+interface OverlayData {
+  actionType: string;
+  actor: { ID: string; name: string; URLavatar?: string; color?: string } | undefined;
+  target: { ID: string; name: string; URLavatar?: string; color?: string } | null;
+  message?: string;
+}
 
 export default function GameBoard() {
   const { roomStatus, isMyTurn, myPlayer, clearRoom } = useGameStore();
@@ -15,30 +20,9 @@ export default function GameBoard() {
   const navigate = useNavigate();
   const [localSelectedTarget, setLocalSelectedTarget] = useState<string | null>(null);
   const [showActionOverlay, setShowActionOverlay] = useState(false);
-  const [overlayData, setOverlayData] = useState<{
-    actionType: string;
-    actor: any;
-    target: any;
-    message?: string;
-  } | null>(null);
+  const [overlayData, setOverlayData] = useState<OverlayData | null>(null);
   const [lastProcessedActionId, setLastProcessedActionId] = useState<string | null>(null);
 
-  // Function to convert avatar color name to image path using utility functions
-  const getAvatarUrl = (avatar: string): string => {
-    if (!avatar) return purpleAvatarImg;
-
-    // Parse color name from URL or plain color name
-    const colorName = getColorFromAvatarUrl(avatar);
-    const colorLower = colorName.toLowerCase();
-
-    // Return imported image path from AVATAR_MAP
-    if (AVATAR_MAP[colorLower]) {
-      return AVATAR_MAP[colorLower];
-    }
-
-    // Fallback: construct URL from color name
-    return `/assets/img/avatar/${colorLower}.png`;
-  };
 
 
   // Watch for action responses
@@ -59,8 +43,8 @@ export default function GameBoard() {
       console.log('🎯 Processing action:', actionId);
 
       // Get actor and target from roomStatus.players
-      let actor = roomStatus.players?.find(p => p.ID === actorId);
-      let targetPlayer = roomStatus.players?.find(p => p.ID === targetid);
+      const actor = roomStatus.players?.find(p => p.ID === actorId);
+      const targetPlayer = roomStatus.players?.find(p => p.ID === targetid);
 
       // Note: Do NOT modify player.URLavatar directly as it breaks the data model
       // GameLayout will handle avatar URL conversion when rendering
@@ -105,7 +89,7 @@ export default function GameBoard() {
       setShowActionOverlay(false);
       setOverlayData(null);
     }
-  }, [roomStatus?.actionResponse, roomStatus?.players, lastProcessedActionId]);
+  }, [roomStatus?.actionResponse, roomStatus?.players, roomStatus?.message, lastProcessedActionId]);
 
   // Separate effect for auto-hiding overlay after 3 seconds
   // This prevents cleanup from canceling the timeout on re-renders

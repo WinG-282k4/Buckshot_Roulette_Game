@@ -39,7 +39,7 @@ export default function LobbyPage() {
     fetchRooms();
     // Initialize tempSelectedAvatar with selectedAvatar
     setTempSelectedAvatar(selectedAvatar);
-  }, []);
+  }, [selectedAvatar]);
 
   const fetchRooms = async () => {
     try {

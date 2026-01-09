@@ -5,7 +5,6 @@ import './ActionOverlay.css';
 import backgroundEventImg from '../../assets/img/background/background event.png';
 
 // Pattern 1 - Two-sided actions
-import chainsawGunImg from '../../assets/img/Action/chainsaw gun.png';
 import goSoloImg from '../../assets/img/Action/go solo.png';
 import handcuffImg from '../../assets/img/Action/còng tay.jpeg';
 import hitFakeImg from '../../assets/img/Action/hit fake.png';
@@ -276,10 +275,7 @@ const ActionOverlay: React.FC<ActionOverlayProps> = ({
     return avatarImage || purpleAvatarImg;
   };
 
-  // Helper function to check if action is a use item action
-  const isUseItemAction = (type?: string): boolean => {
-    return type ? type.startsWith('use') : false;
-  };
+  // Helper function to check if action is a use item action (kept for potential future use)
 
   // Reset fadeOut when isVisible changes
   React.useEffect(() => {

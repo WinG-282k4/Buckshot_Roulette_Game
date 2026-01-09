@@ -62,7 +62,7 @@ export default function RoomPage() {
       localStorage.setItem('lastPlayerName', name);
       console.log('💾 Saved room info to localStorage:', { roomId, playerName: name });
     }
-  }, []); // Empty dependency - run only once
+  }, [roomId, searchParams]); // Include dependencies
 
   // Nếu không có roomId từ URL, thử lấy từ localStorage
   useEffect(() => {
@@ -182,12 +182,14 @@ export default function RoomPage() {
     setIsLeavingRoom(true);
     hasRequestedLeaveRef.current = true; // Mark that user explicitly requested leave
     console.log('👋 Requesting to leave room:', roomId);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (window as any).__lastLeaveResult = null; // Clear any previous result
     wsService.leaveRoom(Number(roomId));
 
     // Check leave result after a moment
     const timeoutId = setTimeout(() => {
-      const leaveResult = (window as any).__lastLeaveResult;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const leaveResult = (window as any).__lastLeaveResult as { isSuccess: boolean; message?: string } | null;
       console.log('🔍 Leave result received:', leaveResult);
       console.log('  - isSuccess type:', typeof leaveResult?.isSuccess, 'value:', leaveResult?.isSuccess);
 
@@ -212,6 +214,7 @@ export default function RoomPage() {
         setIsLeavingRoom(false);
       }
       // Clear the result
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (window as any).__lastLeaveResult = null;
     }, 500);
 

@@ -10,7 +10,7 @@ export class WebSocketService {
   private pendingRoomRejoin: { roomId: number; playerName: string } | null = null;
   private lastJoinRoomId: number | null = null;  // Track last join to prevent duplicates
   private lastJoinPlayerName: string | null = null;
-  private roomSubscription: any = null;  // Track current room subscription
+  private roomSubscription: { unsubscribe: () => void } | null = null;  // Track current room subscription
   private lastMessageTime: number = 0;  // Track last message time
   private messageTimeoutId: number | null = null;  // Track timeout ID for clearing
 
@@ -49,9 +49,9 @@ export class WebSocketService {
 
         // Subscribe to leave result (ActionResult from leave request)
         this.client!.subscribe('/user/topic/leave-result', (message: IMessage) => {
-          const data = JSON.parse(message.body);
+          const data = JSON.parse(message.body) as Record<string, unknown>;
           console.log('🚪 Leave result:', data);
-          (window as any).__lastLeaveResult = data;
+          (window as unknown as Record<string, unknown>).__lastLeaveResult = data;
         });
 
         // Auto-rejoin phòng nếu có pending rejoin (from page reload)
@@ -156,7 +156,7 @@ export class WebSocketService {
 
     // Subscribe to room updates
     this.roomSubscription = this.client.subscribe(`/topic/room/${roomId}`, (message: IMessage) => {
-      const data = JSON.parse(message.body);
+      const data = JSON.parse(message.body) as RoomStatusResponse;
       console.log('📨 Room update received:', data);
 
       // Only start timeout when game is PLAYING, not during Waiting or Ended
