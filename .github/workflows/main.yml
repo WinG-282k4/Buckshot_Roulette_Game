@@ -5,12 +5,12 @@ on:
     branches: [ "main" ]
 
 jobs:
-  build-and-push: # Đặt tên job
+  build-and-push-to-dockerhub:
     runs-on: ubuntu-latest
-    environment: Docket hub
+    environment: Docker hub
 
     steps:
-    # --- PHẦN 1: GIỐNG HỆT CÁI BẠN GỬI (Để test code) ---
+    # --- PHẦN 1: Dùng java để build và test ---
     - uses: actions/checkout@v4
     
     - name: Set up JDK 17
@@ -20,7 +20,7 @@ jobs:
         distribution: 'temurin'
         cache: maven
         
-    - name: Build & Test with Maven (Tạo ra file .jar)
+    - name: Build & Test with Maven
       run: mvn -B package --file pom.xml
       # Lưu ý: Bước này chạy test. Nếu test fail, quy trình dừng ngay tại đây.
 
