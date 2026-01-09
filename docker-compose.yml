@@ -2,7 +2,7 @@ version: '3.8'
 
 services:
   buckshot-app:
-    image: wing2k4/buckshot-backend:latest
+    image: wing2k4/buckshot-backend:v1.0.0
     build: . 
     container_name: buckshot_server
     restart: on-failure
@@ -15,7 +15,7 @@ services:
       
   frontend:
     build: ./frontend
-    image: wing2k4/buckshot-frontend:latest
+    image: wing2k4/buckshot-frontend:v1.0.0
     container_name: buckshot_frontend
     restart: on-failure
     ports:
