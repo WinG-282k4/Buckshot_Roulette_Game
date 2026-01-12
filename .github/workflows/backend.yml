@@ -3,8 +3,18 @@ name: Build & Push Backend
 on:
   push:
     branches: [ "main" ]
+    paths:
+      - 'src/**'
+      - 'pom.xml'
+      - 'Dockerfile'
+      - '.github/workflows/backend.yml'
   pull_request:
     branches: [ "main" ]
+    paths:
+      - 'src/**'
+      - 'pom.xml'
+      - 'Dockerfile'
+      - '.github/workflows/backend.yml'
 
 jobs:
   build-backend:
