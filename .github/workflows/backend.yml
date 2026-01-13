@@ -62,20 +62,23 @@ jobs:
           host: ${{ secrets.HOST }}
           username: ${{ secrets.USERNAME }}
           key: ${{ secrets.SSH_KEY }}
+          envs: DOCKER_USERNAME
+          env:
+            DOCKER_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
           port: 22
           script: |
             # Dừng và xóa container cũ
-            docker stop game-container || true
-            docker rm game-container || true
+            docker stop gameserver-container || true
+            docker rm gameserver-container || true
 
             # Xóa images cũ
-            docker rmi ${{ secrets.DOCKER_USERNAME }}/buckshot-backend:latest || true
+            docker rmi $DOCKER_USERNAME/buckshot-backend:v1.0.0 || true
             
             # Tải images mới
-            docker pull ${{ secrets.DOCKER_USERNAME }}/buckshot-backend:v1.0.0
+            docker pull $DOCKER_USERNAME/buckshot-backend:v1.0.0
             # Chạy game
             docker run -d \
               --name gameserver-container \
               --restart always \
               -p 8080:8080 \
-              ${{ secrets.DOCKER_USERNAME }}/buckshot-frontend:v1.0.0
+              $DOCKER_USERNAME/buckshot-frontend:v1.0.0

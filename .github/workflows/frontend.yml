@@ -58,8 +58,8 @@ jobs:
         with:
           context: ./frontend
           push: true
-          tags: wing2k4/buckshot-frontend:v1.0.0,
-            wing2k4/buckshot-frontend:latest
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/buckshot-frontend:v1.0.0,
+            ${{ secrets.DOCKERHUB_USERNAME }}/buckshot-frontend:latest
 
   deploy-azure:
     needs: build-frontend
@@ -74,19 +74,23 @@ jobs:
           username: ${{ secrets.USERNAME }}
           key: ${{ secrets.SSH_KEY }}
           port: 22
+          envs: DOCKER_USERNAME
+          env:
+            DOCKER_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
           script: |
             # Dừng và xóa container cũ
             docker stop game-container || true
             docker rm game-container || true
 
             # Xóa images cũ
-            docker rmi ${{ secrets.DOCKER_USERNAME }}/buckshot-frontend:v1.0.0 || true
+            docker rmi $DOCKER_USERNAME/buckshot-frontend:v1.0.0 || true
 
             # Tải images mới
-            docker pull ${{ secrets.DOCKER_USERNAME }}/buckshot-frontend:v1.0.0
+            docker pull $DOCKER_USERNAME/buckshot-frontend:v1.0.0
+
             # Chạy game
             docker run -d \
               --name game-container \
               --restart always \
               -p 3000:3000 \
-              ${{ secrets.DOCKER_USERNAME }}/buckshot-frontend:v1.0.0
+              $DOCKER_USERNAME/buckshot-frontend:v1.0.0
