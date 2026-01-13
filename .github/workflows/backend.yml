@@ -58,13 +58,13 @@ jobs:
     steps:
       - name: Deploy to Azure Server via SSH
         uses: appleboy/ssh-action@v1.0.3
+        env:
+          DOCKER_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
         with:
           host: ${{ secrets.HOST }}
           username: ${{ secrets.USERNAME }}
           key: ${{ secrets.SSH_KEY }}
           envs: DOCKER_USERNAME
-          env:
-            DOCKER_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
           port: 22
           script: |
             # Dừng và xóa container cũ
