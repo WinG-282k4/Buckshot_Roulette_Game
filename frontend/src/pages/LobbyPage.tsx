@@ -43,7 +43,7 @@ export default function LobbyPage() {
 
   const fetchRooms = async () => {
     try {
-      const response = await fetch(`${API_BASE_URL}/rooms/list/0`, {
+      const response = await fetch(`${API_BASE_URL}/api/rooms/list/0`, {
         credentials: 'include'
       });
 
@@ -65,7 +65,7 @@ export default function LobbyPage() {
 
   const handleCreateRoom = async () => {
     try {
-      const response = await fetch(`${API_BASE_URL}/createroom`, {
+      const response = await fetch(`${API_BASE_URL}/api/room/createroom`, {
         method: 'POST',
         credentials: 'include'
       });
@@ -92,7 +92,7 @@ export default function LobbyPage() {
   const handleUpdateAvatar = async () => {
     try {
       setIsUpdatingAvatar(true);
-      const response = await fetch(`${API_BASE_URL}/user/updateavatar/${tempSelectedAvatar}`, {
+      const response = await fetch(`${API_BASE_URL}/api/user/updateavatar/${tempSelectedAvatar}`, {
         method: 'POST',
         credentials: 'include'
       });
@@ -114,7 +114,7 @@ export default function LobbyPage() {
 
   const handleBack = async () => {
     try {
-      const response = await fetch(`${API_BASE_URL}/user/off`, {
+      const response = await fetch(`${API_BASE_URL}/api/user/off`, {
         method: 'POST',
         credentials: 'include'
       });

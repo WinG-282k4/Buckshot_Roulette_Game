@@ -33,7 +33,7 @@ export default function RoomPage() {
     if (name === 'Anonymous') {
       const fetchPlayerName = async () => {
         try {
-          const response = await fetch(`${API_BASE_URL}/user/me`, {
+          const response = await fetch(`${API_BASE_URL}/api/user/me`, {
             method: 'POST',
             credentials: 'include'
           });

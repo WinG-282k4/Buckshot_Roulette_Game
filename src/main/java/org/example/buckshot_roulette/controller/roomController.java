@@ -40,7 +40,7 @@ public class roomController {
     @Autowired
     private SimpMessagingTemplate messagingTemplate;
 
-    @PostMapping("/createroom")
+    @PostMapping("/room/createroom")
     public ResponseEntity<String> createRoom(
             HttpSession session
     ) {
@@ -55,7 +55,7 @@ public class roomController {
         if(player.getIsInRoom()){
             return ResponseEntity.badRequest().body("Player is already in a room");
         }
-        logger.info("Received API: POST /createroom");
+        logger.info("Received API: POST /room/createroom");
         int roomid = service.CreaterRoom(player.getId());
         return ResponseEntity.ok("Room created with ID: " + roomid);
     }
@@ -144,11 +144,11 @@ public class roomController {
         }
     }
 
-    @GetMapping("/rooms/{roomid}")
+    @GetMapping("/api/rooms/{roomid}")
     public ResponseEntity<RoomStatusResponse> getRoomById(
             @PathVariable int roomid
     ) {
-        logger.info("Received API: GET /rooms/{} (get room by ID)", roomid);
+        logger.info("Received API: GET /api/rooms/{} (get room by ID)", roomid);
         Room room = service.getRoom(roomid);
 
         if (room == null) {
@@ -159,13 +159,13 @@ public class roomController {
         return ResponseEntity.ok(room.toRoomStatus(""));
     }
 
-    @GetMapping("/rooms/list/{page}")
+    @GetMapping("/api/rooms/list/{page}")
     public ResponseEntity<List<RoomLoby>> getAllRooms(
             @PathVariable int page,
             HttpSession session
     ) {
         if (session == null) { return ResponseEntity.notFound().build(); }
-        logger.info("Received API: GET /rooms/list/{} (get room list)", page);
+        logger.info("Received API: GET /api/rooms/list/{} (get room list)", page);
         List<RoomLoby> rooms = service.getAnyRoom(page);
         return ResponseEntity.ok(rooms);
     }

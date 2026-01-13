@@ -21,7 +21,7 @@ export default function HomePage() {
 
     setIsLoading(true);
     try {
-      const response = await fetch(`${API_BASE_URL}/user/create/${encodeURIComponent(playerName)}`, {
+      const response = await fetch(`${API_BASE_URL}/api/user/create/${encodeURIComponent(playerName)}`, {
         method: 'POST',
         credentials: 'include'
       });
