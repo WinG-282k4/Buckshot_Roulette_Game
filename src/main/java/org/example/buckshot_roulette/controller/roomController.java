@@ -144,11 +144,11 @@ public class roomController {
         }
     }
 
-    @GetMapping("/api/rooms/{roomid}")
+    @GetMapping("/rooms/{roomid}")
     public ResponseEntity<RoomStatusResponse> getRoomById(
             @PathVariable int roomid
     ) {
-        logger.info("Received API: GET /api/rooms/{} (get room by ID)", roomid);
+        logger.info("Received API: GET /rooms/{} (get room by ID)", roomid);
         Room room = service.getRoom(roomid);
 
         if (room == null) {
@@ -159,13 +159,13 @@ public class roomController {
         return ResponseEntity.ok(room.toRoomStatus(""));
     }
 
-    @GetMapping("/api/rooms/list/{page}")
+    @GetMapping("/rooms/list/{page}")
     public ResponseEntity<List<RoomLoby>> getAllRooms(
             @PathVariable int page,
             HttpSession session
     ) {
         if (session == null) { return ResponseEntity.notFound().build(); }
-        logger.info("Received API: GET /api/rooms/list/{} (get room list)", page);
+        logger.info("Received API: GET /rooms/list/{} (get room list)", page);
         List<RoomLoby> rooms = service.getAnyRoom(page);
         return ResponseEntity.ok(rooms);
     }

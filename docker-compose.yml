@@ -1,6 +1,18 @@
 version: '3.8'
 
 services:
+  nginx:
+    image: nginx:latest
+    container_name: buckshot_nginx
+    restart: on-failure
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - buckshot-app
+      - frontend
+
   buckshot-app:
     image: wing2k4/buckshot-backend:v1.0.0
 #    build: .
@@ -20,7 +32,5 @@ services:
     restart: on-failure
     ports:
       - "3000:3000"
-    environment:
-      - VITE_BACKEND_URL=http://buckshot-app:8080/api
     depends_on:
       - buckshot-app
