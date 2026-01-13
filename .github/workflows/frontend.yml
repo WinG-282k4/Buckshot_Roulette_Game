@@ -60,3 +60,33 @@ jobs:
           push: true
           tags: wing2k4/buckshot-frontend:v1.0.0,
             wing2k4/buckshot-frontend:latest
+
+  deploy-azure:
+    needs: build-frontend
+    runs-on: ubuntu-latest
+    environment: Docker hub
+
+    steps:
+      - name: Deploy to Azure Server via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.SSH_KEY }}
+          port: 22
+          script: |
+            # Dừng và xóa container cũ
+            docker stop game-container || true
+            docker rm game-container || true
+
+            # Xóa images cũ
+            docker rmi ${{ secrets.DOCKER_USERNAME }}/buckshot-frontend:v1.0.0 || true
+
+            # Tải images mới
+            docker pull ${{ secrets.DOCKER_USERNAME }}/buckshot-frontend:v1.0.0
+            # Chạy game
+            docker run -d \
+              --name game-container \
+              --restart always \
+              -p 3000:3000 \
+              ${{ secrets.DOCKER_USERNAME }}/buckshot-frontend:v1.0.0
