@@ -53,14 +53,18 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: Build & Push Frontend Image
+      - name: Set image name
+        run: echo "IMAGE_NAME=${{ secrets.DOCKERHUB_USERNAME }}/buckshot-frontend" >> $GITHUB_ENV
+
+      - name: Build & Push frontend Image
         uses: docker/build-push-action@v5
         with:
-          context: ./frontend
+          context: .
           push: true
           tags: |
-            ${{ secrets.DOCKERHUB_USERNAME }}/buckshot-frontend:v1.0.0
-            ${{ secrets.DOCKERHUB_USERNAME }}/buckshot-frontend:latest
+            ${{ env.IMAGE_NAME }}:v1.0.0
+            ${{ env.IMAGE_NAME }}:latest
+  
 
   deploy-azure:
     needs: build-frontend
