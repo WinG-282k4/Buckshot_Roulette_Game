@@ -5,9 +5,9 @@ export const getBackendUrl = (): string => {
     return import.meta.env.VITE_BACKEND_URL;
   }
   
-  // Fallback to hostname:8080 for local dev
+  // Fallback to hostname:80 for local dev (HTTP default port)
   const hostname = window.location.hostname;
-  return `http://${hostname}:8080`;
+  return `http://${hostname}:80`;
 };
 
 export const API_BASE_URL = getBackendUrl();
