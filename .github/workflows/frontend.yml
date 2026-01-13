@@ -58,7 +58,8 @@ jobs:
         with:
           context: ./frontend
           push: true
-          tags: ${{ secrets.DOCKERHUB_USERNAME }}/buckshot-frontend:v1.0.0,
+          tags: |
+            ${{ secrets.DOCKERHUB_USERNAME }}/buckshot-frontend:v1.0.0
             ${{ secrets.DOCKERHUB_USERNAME }}/buckshot-frontend:latest
 
   deploy-azure:
@@ -69,16 +70,19 @@ jobs:
     steps:
       - name: Deploy to Azure Server via SSH
         uses: appleboy/ssh-action@v1.0.3
-        env:
-          DOCKER_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
-
         with:
           host: ${{ secrets.HOST }}
           username: ${{ secrets.USERNAME }}
           key: ${{ secrets.SSH_KEY }}
           port: 22
-          envs: DOCKER_USERNAME
+          envs: DOCKER_USERNAME,DOCKERHUB_TOKEN
+        env:
+          DOCKER_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+          DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
           script: |
+            # Đăng nhập Docker Hub
+            echo "$DOCKERHUB_TOKEN" | docker login -u "$DOCKER_USERNAME" --password-stdin
+            
             # Dừng và xóa container cũ
             docker stop game-container || true
             docker rm game-container || true
@@ -95,3 +99,6 @@ jobs:
               --restart always \
               -p 3000:3000 \
               $DOCKER_USERNAME/buckshot-frontend:v1.0.0
+            
+            # Đăng xuất Docker Hub (tùy chọn, để an toàn)
+            docker logout
