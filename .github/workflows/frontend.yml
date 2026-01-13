@@ -80,9 +80,6 @@ jobs:
           key: ${{ secrets.SSH_KEY }}
           port: 22
           envs: DOCKER_USERNAME,DOCKERHUB_TOKEN
-        env:
-          DOCKER_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
-          DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
           script: |
             # Đăng nhập Docker Hub
             echo "$DOCKERHUB_TOKEN" | docker login -u "$DOCKER_USERNAME" --password-stdin
@@ -106,3 +103,7 @@ jobs:
             
             # Đăng xuất Docker Hub (tùy chọn, để an toàn)
             docker logout
+
+        env:
+          DOCKER_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+          DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
