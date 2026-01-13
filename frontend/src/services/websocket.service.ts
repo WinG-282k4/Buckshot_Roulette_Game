@@ -30,7 +30,7 @@ export class WebSocketService {
       const hostname = window.location.hostname;
       // Nếu là localhost/127.0.0.1, dùng localhost (dev mode)
       // Nếu là IP, dùng IP đó (production/LAN mode)
-      return `http://${hostname}:8080`;
+      return `http://${hostname}:80`;
     })();
 
     console.log('🔌 Connecting to backend at:', backendUrl);
