@@ -12,7 +12,8 @@ services:
       - LOGGING_LEVEL_ORG_EXAMPLE_BUCKSHOT_ROULETTE=DEBUG
       - SPRING_DEVTOOLS_RESTART_ENABLED=false
       - SERVER_SERVLET_SESSION_TIMEOUT=30m
-      
+      - SPRING_WEBMVC_SERVLET_PATH=/api
+
   frontend:
     image: wing2k4/buckshot-frontend:v1.0.0
 #    build: ./frontend

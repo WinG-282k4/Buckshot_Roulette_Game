@@ -43,7 +43,7 @@ export default function LobbyPage() {
 
   const fetchRooms = async () => {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/rooms/list/0`, {
+      const response = await fetch(`${API_BASE_URL}/rooms/list/0`, {
         credentials: 'include'
       });
 
@@ -65,7 +65,7 @@ export default function LobbyPage() {
 
   const handleCreateRoom = async () => {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/createroom`, {
+      const response = await fetch(`${API_BASE_URL}/createroom`, {
         method: 'POST',
         credentials: 'include'
       });

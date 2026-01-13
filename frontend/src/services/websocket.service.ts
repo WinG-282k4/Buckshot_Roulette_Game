@@ -193,7 +193,7 @@ export class WebSocketService {
   // Fetch room status từ REST API
   public async fetchRoomStatus(roomId: number) {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/rooms/${roomId}`, {
+      const response = await fetch(`${API_BASE_URL}/rooms/${roomId}`, {
         credentials: 'include'
       });
       if (response.ok) {
