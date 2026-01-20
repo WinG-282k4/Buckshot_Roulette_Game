@@ -15,14 +15,17 @@ import java.util.concurrent.ThreadLocalRandom;
 @org.springframework.stereotype.Service
 public class Service {
 
-    public static List<Room> rooms;
+    private static List<Room> rooms;
+    private static int maxroom;
 
     @Autowired
     private playerService playerservice;
 
     public Service() {
         rooms = new java.util.ArrayList<Room>();
+        maxroom = 0;
     }
+
 
     //Get rooms
     public Room getRoom(int roomid) {
@@ -84,10 +87,11 @@ public class Service {
 
     //Create new Room
     public int CreaterRoom(String ownerid){
-        int random = ThreadLocalRandom.current().nextInt(0,999);
-        int NewRoomID = rooms.size()*1000 + random; //RandomID
+        int random = ThreadLocalRandom.current().nextInt(0,99);
+        int NewRoomID = maxroom*100 + random; //RandomID
         Room room = new Room(NewRoomID, ownerid);
         rooms.add(room);
+        maxroom += 1;
         return room.getID();
     }
 
