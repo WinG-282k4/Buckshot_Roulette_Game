@@ -42,12 +42,23 @@ public class roomController {
     public ResponseEntity<String> createRoom(
             HttpSession session
     ) {
+        // Check session
+        if (session == null) {
+            logger.warn("No session found for createRoom request");
+            return ResponseEntity.status(401).build();
+        }
 
         Player player =(Player) session.getAttribute("player");
 
+        if(player == null){
+            logger.warn("No player in session for createRoom request");
+            return ResponseEntity.status(401).build();
+        }
+
         player = playerservice.getPlayerById(player.getId());
         if(player == null){
-            return ResponseEntity.badRequest().body("Player not found in session");
+            logger.warn("Player not found in database");
+            return ResponseEntity.badRequest().body("Player not found in database");
         }
 
         if(player.getIsInRoom()){
@@ -146,9 +157,22 @@ public class roomController {
 
     @GetMapping("/{roomid}")
     public ResponseEntity<RoomStatusResponse> getRoomById(
-            @PathVariable int roomid
+            @PathVariable int roomid,
+            HttpSession session
     ) {
-        logger.info("Received API: GET /rooms/{} (get room by ID)", roomid);
+        // Check session
+        if (session == null) {
+            logger.warn("No session found for getRoomById request");
+            return ResponseEntity.status(401).build();
+        }
+
+        Player player = (Player) session.getAttribute("player");
+        if (player == null) {
+            logger.warn("No player in session for getRoomById request");
+            return ResponseEntity.status(401).build();
+        }
+
+        logger.info("Received API: GET /room/{} by player {} (name={})", roomid, player.getId(), player.getName());
         Room room = service.getRoom(roomid);
 
         if (room == null) {
@@ -164,8 +188,19 @@ public class roomController {
             @PathVariable int page,
             HttpSession session
     ) {
-        if (session == null) { return ResponseEntity.notFound().build(); }
-        logger.info("Received API: GET /rooms/list/{} (get room list)", page);
+        // Check session
+        if (session == null) {
+            logger.warn("No session found for getAllRooms request");
+            return ResponseEntity.status(401).build();
+        }
+
+        Player player = (Player) session.getAttribute("player");
+        if (player == null) {
+            logger.warn("No player in session for getAllRooms request");
+            return ResponseEntity.status(401).build();
+        }
+
+        logger.info("Received API: GET /room/list/{} by player {} (name={})", page, player.getId(), player.getName());
         List<RoomLoby> rooms = service.getAnyRoom(page);
         return ResponseEntity.ok(rooms);
     }

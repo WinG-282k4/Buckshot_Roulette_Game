@@ -5,6 +5,8 @@ import { useGameStore } from '../stores/gameStore';
 import { API_BASE_URL } from '../config/api.config';
 import GameBoard from '../components/Game/GameBoard';
 import { getColorFromAvatarUrl, AVATAR_MAP } from '../utils/avatarMap';
+import { Player } from '../types/player.types';
+import { RoomStatusResponse } from '../types/room.types';
 
 export default function RoomPage() {
   const { roomId } = useParams<{ roomId: string }>();
@@ -72,7 +74,7 @@ export default function RoomPage() {
       localStorage.setItem('lastPlayerName', name);
       console.log('💾 Saved room info to localStorage:', { roomId, playerName: name });
     }
-  }, [roomId, searchParams]); // Include dependencies
+  }, [roomId, searchParams, currentPlayer?.name, navigate]); // Include dependencies
 
   // Nếu không có roomId từ URL, thử lấy từ localStorage
   useEffect(() => {
@@ -97,9 +99,9 @@ export default function RoomPage() {
         });
 
         if (response.ok) {
-          const roomData = await response.json();
+          const roomData: RoomStatusResponse = await response.json();
           console.log('✅ Initial room data received:', roomData);
-          console.log('👥 Players in room:', roomData.players.map((p: any) => ({ id: p.ID, name: p.name })));
+          console.log('👥 Players in room:', roomData.players.map((p: Player) => ({ id: p.ID, name: p.name })));
 
           // Set room status immediately so UI shows players
           setRoomStatus(roomData);

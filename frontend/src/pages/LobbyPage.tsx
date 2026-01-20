@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { API_BASE_URL } from '../config/api.config';
 import backgroundImage from '../assets/img/background/background main v2.png';
@@ -48,13 +48,7 @@ export default function LobbyPage() {
     }
   }, [currentPlayer, navigate]);
 
-  useEffect(() => {
-    fetchRooms();
-    // Initialize tempSelectedAvatar with selectedAvatar
-    setTempSelectedAvatar(selectedAvatar);
-  }, [selectedAvatar]);
-
-  const fetchRooms = async () => {
+  const fetchRooms = useCallback(async () => {
     try {
       const response = await fetch(`${API_BASE_URL}/api/room/list/0`, {
         credentials: 'include'
@@ -81,7 +75,17 @@ export default function LobbyPage() {
       setRooms([]);
       setIsLoading(false);
     }
-  };
+  }, [navigate]);
+
+  // Fetch rooms on component mount
+  useEffect(() => {
+    fetchRooms();
+  }, [fetchRooms]);
+
+  useEffect(() => {
+    // Initialize tempSelectedAvatar with selectedAvatar
+    setTempSelectedAvatar(selectedAvatar);
+  }, [selectedAvatar]);
 
   const handleCreateRoom = async () => {
     try {
