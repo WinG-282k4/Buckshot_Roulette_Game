@@ -1,6 +1,7 @@
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useState } from 'react';
 import backgroundImage from '../assets/img/background/background main v2.png';
+import { useGameStore } from '../stores/gameStore';
 
 // Import item images
 import beerImg from '../assets/img/item/Beer .png';
@@ -16,7 +17,8 @@ export default function GuidePage() {
   const [scrollProgress, setScrollProgress] = useState(0);
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const playerName = searchParams.get('name') || 'Player';
+  const { currentPlayer } = useGameStore();
+  const playerName = currentPlayer?.name || searchParams.get('name') || 'Player';
 
   const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
     const element = e.currentTarget;

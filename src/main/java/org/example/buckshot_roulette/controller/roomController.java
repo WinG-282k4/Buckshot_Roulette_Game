@@ -2,10 +2,10 @@ package org.example.buckshot_roulette.controller;
 
 import jakarta.servlet.http.HttpSession;
 import org.example.buckshot_roulette.dto.ActionResult;
+import org.example.buckshot_roulette.dto.RoomLoby;
 import org.example.buckshot_roulette.dto.RoomStatusResponse;
 import org.example.buckshot_roulette.model.Player;
 import org.example.buckshot_roulette.model.Room;
-import org.example.buckshot_roulette.dto.RoomLoby;
 import org.example.buckshot_roulette.service.Service;
 import org.example.buckshot_roulette.service.playerService;
 import org.slf4j.Logger;
@@ -17,15 +17,13 @@ import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
-import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Map;
 
-@Controller
+@RestController
+@RequestMapping("/room")
 public class roomController {
 
     // Logger for incoming APIs
@@ -40,7 +38,7 @@ public class roomController {
     @Autowired
     private SimpMessagingTemplate messagingTemplate;
 
-    @PostMapping("/room/createroom")
+    @PostMapping("/createroom")
     public ResponseEntity<String> createRoom(
             HttpSession session
     ) {
@@ -85,6 +83,7 @@ public class roomController {
         if (result.getIsSuccess()) {
             Room room = service.getRoom(Integer.parseInt(roomid));
             if (room != null) {
+//                sessionAttributes.put("roomid", room.getID()); // Lưu roomid vào session
                 return room.toRoomStatus("");
             }
         }
@@ -136,6 +135,7 @@ public class roomController {
         if (result.getIsSuccess()) {
             Room room = service.getRoom(Integer.parseInt(roomid));
             if (room != null) {
+//                sessionAttributes.remove("roomid"); // Xoá roomid khỏi session
                 messagingTemplate.convertAndSend(
                         "/topic/room/" + roomid,
                         room.toRoomStatus("")
@@ -144,7 +144,7 @@ public class roomController {
         }
     }
 
-    @GetMapping("/rooms/{roomid}")
+    @GetMapping("/{roomid}")
     public ResponseEntity<RoomStatusResponse> getRoomById(
             @PathVariable int roomid
     ) {
@@ -159,7 +159,7 @@ public class roomController {
         return ResponseEntity.ok(room.toRoomStatus(""));
     }
 
-    @GetMapping("/rooms/list/{page}")
+    @GetMapping("/list/{page}")
     public ResponseEntity<List<RoomLoby>> getAllRooms(
             @PathVariable int page,
             HttpSession session

@@ -34,6 +34,16 @@ public class Service {
         return null;
     }
 
+    //Get room by player ID
+    public Room getRoomByPlayerId(String playerId) {
+        for(Room r : rooms){
+            if(r.isExistPlayer(playerId)){
+                return r;
+            }
+        }
+        return null;
+    }
+
     //Start Game
     public ActionResult StartGame(int roomid, String playerid){
         Room tempRoom = getRoom(roomid);

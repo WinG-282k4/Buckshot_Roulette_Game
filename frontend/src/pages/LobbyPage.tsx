@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { API_BASE_URL } from '../config/api.config';
 import backgroundImage from '../assets/img/background/background main v2.png';
+import { useGameStore } from '../stores/gameStore';
 
 // Avatar map for display
 import { AVATAR_MAP } from '../utils/avatarMap';
@@ -25,8 +26,11 @@ interface Room {
 
 export default function LobbyPage() {
   const [searchParams] = useSearchParams();
-  const playerName = searchParams.get('name') || 'Anonymous';
   const navigate = useNavigate();
+  const { currentPlayer } = useGameStore();
+
+  // Get player name from currentPlayer (from session) or from URL param or fallback to Anonymous
+  const playerName = currentPlayer?.name || searchParams.get('name') || 'Anonymous';
 
   const [rooms, setRooms] = useState<Room[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -34,6 +38,15 @@ export default function LobbyPage() {
   const [selectedAvatar, setSelectedAvatar] = useState('purple');
   const [tempSelectedAvatar, setTempSelectedAvatar] = useState('purple');
   const [isUpdatingAvatar, setIsUpdatingAvatar] = useState(false);
+
+  // Check session khi component mount
+  useEffect(() => {
+    // Nếu không có currentPlayer, redirect về home
+    if (!currentPlayer) {
+      console.log('❌ No session found in LobbyPage, redirecting to home');
+      navigate('/', { replace: true });
+    }
+  }, [currentPlayer, navigate]);
 
   useEffect(() => {
     fetchRooms();
@@ -43,9 +56,16 @@ export default function LobbyPage() {
 
   const fetchRooms = async () => {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/rooms/list/0`, {
+      const response = await fetch(`${API_BASE_URL}/api/room/list/0`, {
         credentials: 'include'
       });
+
+      // Nếu session hết hạn (401) hoặc không có quyền (403), redirect về home
+      if (response.status === 401 || response.status === 403) {
+        console.log('❌ Session expired or unauthorized, redirecting to home');
+        navigate('/', { replace: true });
+        return;
+      }
 
       if (!response.ok) {
         throw new Error('Failed to fetch rooms');
