@@ -5,6 +5,8 @@ import { useGameStore } from '../stores/gameStore';
 import { API_BASE_URL } from '../config/api.config';
 import GameBoard from '../components/Game/GameBoard';
 import { getColorFromAvatarUrl, AVATAR_MAP } from '../utils/avatarMap';
+import { Player } from '../types/player.types';
+import { RoomStatusResponse } from '../types/room.types';
 
 export default function RoomPage() {
   const { roomId } = useParams<{ roomId: string }>();
@@ -25,16 +27,20 @@ export default function RoomPage() {
   const wsConnectionSetupRef = useRef(false);
   const hasRequestedLeaveRef = useRef(false);
 
-  // Initialize playerName - run only once on mount
+  // Initialize playerName from gameStore or URL or localStorage
   useEffect(() => {
-    const name = searchParams.get('name') || localStorage.getItem('lastPlayerName') || 'Anonymous';
+    let name = currentPlayer?.name;
+
+    if (!name) {
+      name = searchParams.get('name') || localStorage.getItem('lastPlayerName') || 'Anonymous';
+    }
 
     // If playerName is still 'Anonymous', try to fetch from backend (incognito mode scenario)
     if (name === 'Anonymous') {
       const fetchPlayerName = async () => {
         try {
           const response = await fetch(`${API_BASE_URL}/api/user/me`, {
-            method: 'POST',
+            method: 'GET',
             credentials: 'include'
           });
 
@@ -43,6 +49,12 @@ export default function RoomPage() {
             console.log('✅ Got player from backend:', player.name);
             setPlayerName(player.name);
           } else {
+            // Nếu không có session (401/403), redirect về home
+            if (response.status === 401 || response.status === 403) {
+              console.log('❌ Session expired or unauthorized, redirecting to home');
+              navigate('/', { replace: true });
+              return;
+            }
             // Backend returned error, use Anonymous
             setPlayerName('Anonymous');
           }
@@ -62,7 +74,7 @@ export default function RoomPage() {
       localStorage.setItem('lastPlayerName', name);
       console.log('💾 Saved room info to localStorage:', { roomId, playerName: name });
     }
-  }, [roomId, searchParams]); // Include dependencies
+  }, [roomId, searchParams, currentPlayer?.name, navigate]); // Include dependencies
 
   // Nếu không có roomId từ URL, thử lấy từ localStorage
   useEffect(() => {
@@ -74,6 +86,36 @@ export default function RoomPage() {
       }
     }
   }, [roomId, playerName, navigate]);
+
+  // Fetch room data when roomId is available
+  useEffect(() => {
+    if (!roomId) return;
+
+    const fetchRoomData = async () => {
+      try {
+        console.log('📡 Fetching initial room data for room:', roomId);
+        const response = await fetch(`${API_BASE_URL}/api/room/${roomId}`, {
+          credentials: 'include'
+        });
+
+        if (response.ok) {
+          const roomData: RoomStatusResponse = await response.json();
+          console.log('✅ Initial room data received:', roomData);
+          console.log('👥 Players in room:', roomData.players.map((p: Player) => ({ id: p.ID, name: p.name })));
+
+          // Set room status immediately so UI shows players
+          setRoomStatus(roomData);
+        } else {
+          console.warn('Failed to fetch room data:', response.status);
+        }
+      } catch (error) {
+        console.error('Error fetching room data:', error);
+      }
+    };
+
+    // Fetch immediately when component loads/roomId changes
+    fetchRoomData();
+  }, [roomId, setRoomStatus]);
 
   // Initialize player creation and setup WebSocket
   useEffect(() => {

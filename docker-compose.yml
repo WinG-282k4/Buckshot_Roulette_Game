@@ -14,8 +14,8 @@ services:
       - frontend
 
   buckshot-app:
-    image: wing2k4/buckshot-backend:v1.0.0
-#    build: .
+#    image: wing2k4/buckshot-backend:v1.0.0
+    build: .
     container_name: buckshot_server
     restart: on-failure
     ports:
@@ -26,8 +26,8 @@ services:
       - SERVER_SERVLET_SESSION_TIMEOUT=30m
 
   frontend:
-    image: wing2k4/buckshot-frontend:v1.0.0
-#    build: ./frontend
+#    image: wing2k4/buckshot-frontend:v1.0.0
+    build: ./frontend
     container_name: buckshot_frontend
     restart: on-failure
     ports:

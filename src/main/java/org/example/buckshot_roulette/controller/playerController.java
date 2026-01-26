@@ -4,15 +4,17 @@ import jakarta.servlet.http.HttpSession;
 import org.example.buckshot_roulette.dto.ActionResult;
 import org.example.buckshot_roulette.dto.PlayerResponseDTO;
 import org.example.buckshot_roulette.model.Player;
+import org.example.buckshot_roulette.model.Room;
 import org.example.buckshot_roulette.service.playerService;
+import org.example.buckshot_roulette.service.Service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.HashMap;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/user")
@@ -23,6 +25,9 @@ public class playerController {
 
     @Autowired
     private playerService playerservice;
+
+    @Autowired
+    private Service service;
 
     @PostMapping("/create/{name}")
     public ResponseEntity<PlayerResponseDTO> CreatePlayer(
@@ -80,12 +85,12 @@ public class playerController {
         }
     }
 
-    @PostMapping("/me")
-    public ResponseEntity<PlayerResponseDTO> GetCurrentPlayer(
+    @GetMapping("/me")
+    public ResponseEntity<Map<String, Object>> GetCurrentPlayer(
             HttpSession session
     ) {
         Player player = (Player) session.getAttribute("player");
-        logger.info("Received API: POST /user/me");
+        logger.info("Received API: GET /user/me");
 
         if (player == null) {
             logger.warn("No player in session");
@@ -93,6 +98,21 @@ public class playerController {
         }
 
         logger.info("Returning current player: {}", player.getName());
-        return ResponseEntity.ok(PlayerResponseDTO.fromPlayer(player));
+        Map<String, Object> playermap = new HashMap<>();
+        playermap.put("name", player.getName());
+        playermap.put("ID", player.getId());
+        playermap.put("URLavatar", player.getURLavatar());
+
+        // Find room by player ID instead of relying on session attribute
+        Room playerRoom = service.getRoomByPlayerId(player.getId());
+        if (playerRoom != null) {
+            playermap.put("roomid", playerRoom.getID());
+            logger.info("Found player {} in room {}", player.getName(), playerRoom.getID());
+        } else {
+            playermap.put("roomid", null);
+            logger.info("Player {} is not in any room", player.getName());
+        }
+
+        return ResponseEntity.ok(playermap);
     }
 }
